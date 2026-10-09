@@ -690,6 +690,22 @@ const defs: Meta[] = [
     },
     example: '<button data-fx="press" data-fx-style="burst" data-fx-done="Added ✓">Add to cart</button>',
   },
+  {
+    name: 'form',
+    title: 'Smart form',
+    kind: 'js',
+    desc: 'Validation that feels alive, with the same rules on your server: messages slide in under the field, email typos get a "Did you mean…?" fix, phone numbers settle into international format, passwords get a strength meter, and AJAX submits show server errors on the right fields. Rules come from native attributes (required, type="email", minlength…) or data-rules="required email phone:AL".',
+    options: {
+      locale: { type: 'string', desc: 'Message language: en or sq (Albanian). Default: the page language.' },
+      country: { type: 'string', default: 'AL', desc: 'Default country for phone numbers typed without +.' },
+      ajax: flag('Submit with fetch and show the result in place (server errors appear on their fields).'),
+      spam: flag('Add a honeypot field and a time trap that schema().validate(…, { spam: true }) checks.', true),
+      reset: flag('Clear the form after a successful AJAX submit.'),
+      success: { type: 'string', desc: 'Selector of a message to reveal after a successful AJAX submit (or put data-fx-success on an element inside the form).' },
+      color: color('#ffb547', 'Accent for focus, the strength meter and the sending spinner.'),
+    },
+    example: '<form data-fx="form" data-fx-ajax action="/api/contact" method="post"><input name="email" type="email" required>…</form>',
+  },
 ];
 
 export const META: Record<string, Meta> = Object.fromEntries(defs.map((d) => [d.name, d as Meta]));

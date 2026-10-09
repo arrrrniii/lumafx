@@ -28,6 +28,10 @@
       "types": "./dist/types/auto.d.ts",
       "import": "./dist/auto.mjs"
     },
+    "./forms": {
+      "types": "./dist/types/forms/core.d.ts",
+      "import": "./dist/forms.mjs"
+    },
     "./react": {
       "types": "./dist/types/react/index.d.ts",
       "import": "./dist/react/index.mjs"

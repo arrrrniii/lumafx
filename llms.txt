@@ -446,6 +446,18 @@ Options:
   - data-fx-color: color. Effect color (defaults to the current text color).
   - data-fx-done: string. Label shown for a moment after a click, e.g. "Added ✓".
 
+### form — Smart form [js]
+Validation that feels alive, with the same rules on your server: messages slide in under the field, email typos get a "Did you mean…?" fix, phone numbers settle into international format, passwords get a strength meter, and AJAX submits show server errors on the right fields. Rules come from native attributes (required, type="email", minlength…) or data-rules="required email phone:AL".
+Example: <form data-fx="form" data-fx-ajax action="/api/contact" method="post"><input name="email" type="email" required>…</form>
+Options:
+  - data-fx-locale: string. Message language: en or sq (Albanian). Default: the page language.
+  - data-fx-country: string (default: AL). Default country for phone numbers typed without +.
+  - data-fx-ajax: boolean (default: false). Submit with fetch and show the result in place (server errors appear on their fields).
+  - data-fx-spam: boolean (default: true). Add a honeypot field and a time trap that schema().validate(…, { spam: true }) checks.
+  - data-fx-reset: boolean (default: false). Clear the form after a successful AJAX submit.
+  - data-fx-success: string. Selector of a message to reveal after a successful AJAX submit (or put data-fx-success on an element inside the form).
+  - data-fx-color: color (default: #ffb547). Accent for focus, the strength meter and the sending spinner.
+
 ## JavaScript API
 - start(options?) · stop() · refresh() · mount(root) · stats() · register(effect)
 - transition(update, { preset }) — runs a DOM update inside a View Transition (presets: fade, slide, slide-back, zoom, wipe).

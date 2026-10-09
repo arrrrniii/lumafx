@@ -533,6 +533,26 @@ button { font: inherit; color: inherit; }
 .dr-line span { color: #a3a6b5; }
 .dr-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid rgb(255 255 255 / .08); color: #a3a6b5; font-size: 14px; }
 
+
+/* ---------- v0.3: forms ---------- */
+.form-demo { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .form-demo { grid-template-columns: minmax(0, 1fr); } }
+.fd { display: grid; gap: 14px; }
+.fd .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .fd .two { grid-template-columns: 1fr; } }
+.fd label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.fd label > span { color: var(--fg); font-weight: 500; }
+.fd input:not([type=checkbox]), .fd textarea { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--stage-2); color: var(--fg); font: inherit; font-size: 15px; resize: vertical; transition: border-color .2s; }
+.fd input:focus, .fd textarea:focus { border-color: var(--lamp); outline: none; }
+.fd .check { display: flex; gap: 10px; align-items: center; color: var(--fg); }
+.fd .check input { width: 18px; height: 18px; accent-color: var(--lamp); }
+.fd button[type=submit] { justify-self: start; }
+.fd [data-fx-success] { padding: 14px 16px; border-radius: 12px; background: color-mix(in oklab, #3ecf8e 16%, var(--stage-2)); color: var(--fg); }
+.fd .note b { color: var(--fg); }
+.form-code { margin: 0; padding: 18px 20px; border-radius: 14px; background: var(--code); border: 1px solid var(--line); overflow-x: auto; font: 400 12.5px/1.75 var(--font-mono); color: var(--muted); }
+.form-code b { color: var(--fg); font-weight: 500; }
+.form-code i { color: var(--lamp); font-style: normal; }
+
 /* ---------- use it ---------- */
 .use { padding-block: 72px 40px; display: grid; gap: 28px; border-top: 1px solid var(--line); }
 .use h2 { font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -.03em; }
@@ -689,6 +709,10 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
       <li><a href="#rotate-words">rotate-words <span class="kind js">js</span></a></li>
       <li><a href="#clock">clock <span class="kind js">js</span></a></li>
       <li><a href="#ring">ring <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Forms</h4>
+    <ul>
+      <li><a href="#form">form <span class="kind js">js+server</span></a></li>
     </ul>
     <h4>Cards &amp; buttons</h4>
     <ul>
@@ -1326,6 +1350,50 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
       <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"ring"</i>&gt;&lt;figure&gt;…&lt;/figure&gt;…&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <!-- ======================= FORMS (v0.3) ======================= -->
+    <h2 class="group-title" id="forms">Forms</h2>
+
+    <section class="spec" id="form">
+      <div class="spec-head"><h3>form</h3><span class="kind js">runtime + server</span></div>
+      <p class="spec-desc">One rule language for the browser and your server. Errors slide in under the field and update as you type, email typos get a one-tap fix, phone numbers settle into international format, passwords get a strength meter, and the server's answer lands on the right field. Try gmial.com, 069 123 4567, or taken@sphere.al.</p>
+      <div class="stage form-demo">
+        <form class="fd" id="join-form" data-fx="form" data-fx-ajax action="/demo/join" method="post">
+          <div class="two">
+            <label><span>Name</span><input name="name" required data-rules="name" autocomplete="name"></label>
+            <label><span>Phone</span><input name="phone" type="tel" placeholder="069 123 4567" autocomplete="tel"></label>
+          </div>
+          <label><span>Email</span><input name="email" type="email" required autocomplete="email" placeholder="you@studio.com"></label>
+          <div class="two">
+            <label><span>Password</span><input name="password" type="password" required data-rules="password" autocomplete="new-password"></label>
+            <label><span>Repeat password</span><input name="confirm" type="password" required data-rules="match:password" autocomplete="new-password"></label>
+          </div>
+          <label><span>What are you building?</span><textarea name="about" rows="3" maxlength="160" data-rules="minlength:10"></textarea></label>
+          <label class="check"><input type="checkbox" name="terms" required> I agree to get one email a month</label>
+          <button type="submit" class="btn primary small" data-fx-sent="You're in ✓">Create account</button>
+          <p data-fx-success hidden><b>Welcome!</b> The server accepted it: same schema, same rules.</p>
+        </form>
+<pre class="form-code"><i>// rules.ts: written once</i>
+<b>export const</b> join = schema({
+  name: <i>'required name'</i>,
+  email: <i>'required email'</i>,
+  phone: <i>'phone:AL'</i>,
+  password: <i>'required password'</i>,
+  confirm: <i>'required match:password'</i>,
+  about: <i>'minlength:10 maxlength:160'</i>,
+  terms: <i>'accepted'</i>,
+});
+
+<i>// app/api/join/route.ts (Next.js)</i>
+<b>export async function</b> POST(req) {
+  <b>const</b> r = join.validate(<b>await</b> req.formData(), { spam: <b>true</b> });
+  <b>if</b> (!r.ok) <b>return</b> Response.json(r, { status: 422 });
+  <i>// r.data.phone === '+355691234567'</i>
+  <b>return</b> Response.json({ ok: <b>true</b> });
+}</pre>
+      </div>
+      <div class="codeline"><code>&lt;form <b>data-fx</b>=<i>"form"</i> data-fx-ajax action=<i>"/api/join"</i>&gt;&lt;input name=<i>"email"</i> type=<i>"email"</i> required&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
     <!-- ======================= CARDS (v0.3) ======================= -->
     <h2 class="group-title" id="cards">Cards &amp; buttons</h2>
 
@@ -1701,6 +1769,23 @@ Elementor, Bricks, Divi: add the class
     rx.textContent = ((e.clientX - r.left) / r.width).toFixed(3);
     ry.textContent = ((e.clientY - r.top) / r.height).toFixed(3);
   });
+
+  // Forms: a stand-in for /api/join that runs the very same schema the server would.
+  const F = window.lumafx.forms;
+  const joinRules = F.schema({
+    name: 'required name', email: 'required email', phone: 'phone:AL', password: 'required password',
+    confirm: 'required match:password', about: 'minlength:10 maxlength:160', terms: 'accepted',
+  });
+  const realFetch = window.fetch.bind(window);
+  window.fetch = async (url, init) => {
+    if (String(url).endsWith('/demo/join')) {
+      await new Promise((r) => setTimeout(r, 900));
+      const r = joinRules.validate(init.body, { spam: true });
+      if (r.ok && r.data.email === 'taken@sphere.al') r.ok = false, r.errors.email = { code: 'taken', message: 'That email is already on the list.' };
+      return new Response(JSON.stringify(r.ok ? { ok: true, data: r.data } : r), { status: r.ok ? 200 : 422, headers: { 'Content-Type': 'application/json' } });
+    }
+    return realFetch(url, init);
+  };
 
   // Live count of mounted effects
   const count = document.getElementById('live-count');

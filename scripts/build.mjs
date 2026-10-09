@@ -53,6 +53,8 @@ await build({
     index: 'src/index.ts',
     core: 'src/core.ts',
     auto: 'src/auto.ts',
+    // Isomorphic validation (no DOM): the same rules in route handlers and server actions.
+    forms: 'src/forms/core.ts',
   },
   absWorkingDir: root,
   outdir: dist,

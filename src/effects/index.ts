@@ -17,6 +17,7 @@ import { chat } from './chat';
 import { imageReveal, expand, imageTrail, videoScrub, frames } from './media';
 import { svgDraw, dotField, typewriter, rotateWords, clock, ring } from './live';
 import { card, press } from './cards';
+import { form } from './form';
 
 /** Pure-CSS effects: the runtime only maps options to CSS variables and pauses them off-screen. */
 const css = (name: string): Effect => ({ name, meta: META[name] });
@@ -73,6 +74,7 @@ export {
   ring,
   card,
   press,
+  form,
 };
 
 export const allEffects: Effect[] = [
@@ -128,4 +130,5 @@ export const allEffects: Effect[] = [
   // v0.3
   card,
   press,
+  form,
 ];

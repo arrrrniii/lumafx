@@ -140,3 +140,5 @@ export const Card = named('card', 'article');
 export const Press = named('press', 'button');
 /** A side panel or bottom sheet. Renders the panel itself so React keeps owning the content. */
 export const Drawer = named('drawer', 'dialog', (children) => createElement('div', { className: 'fx-md-panel' }, children));
+/** Smart form: validation rules from attributes or data-rules, AJAX submit with server errors. */
+export const Form = named('form', 'form');
