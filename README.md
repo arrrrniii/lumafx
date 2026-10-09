@@ -521,7 +521,7 @@ cd mcp && npm install && npm run build && npm test && npm run test:view   # MCP 
 
 1. Bump `version` in `package.json`, `mcp/package.json` and `wordpress/lumafx/lumafx.php`, add the notes to [`CHANGELOG.md`](CHANGELOG.md).
 2. `npm run build && npm test`, then commit (with `dist/`).
-3. `git tag v0.5.1 && git push --follow-tags`.
+3. On GitHub, **Releases → Draft a new release**, type the new tag (`v0.5.1`), target `main`, and publish. Or from a terminal: `git tag v0.5.1 && git push --follow-tags`.
 
 The [Release workflow](.github/workflows/release.yml) builds, tests and attaches `lumafx-<version>.tgz`, `lumafx-mcp-<version>.tgz` and `lumafx-wordpress.zip` to the GitHub release. To publish on npm as well: `npm publish` in the root and in `mcp/` (both names are free); the CDN links then also work as `cdn.jsdelivr.net/npm/lumafx@<version>/dist/…`.
 

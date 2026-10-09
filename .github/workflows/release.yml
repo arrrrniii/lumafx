@@ -1,10 +1,17 @@
 name: Release
 
-# Push a tag like v0.5.1 and this builds, tests and attaches the packages to the GitHub release:
+# Publish a release on GitHub (Releases → Draft a new release → tag v0.5.1) or push a tag like v0.5.1,
+# and this builds, tests and attaches the packages to that release:
 #   lumafx-<version>.tgz, lumafx-mcp-<version>.tgz and lumafx-wordpress.zip
 on:
   push:
     tags: ['v*']
+  release:
+    types: [published]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -36,6 +43,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ github.event.release.tag_name || github.ref_name }}"
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "lumafx ${TAG#v}" --generate-notes
           gh release upload "$TAG" lumafx-*.tgz lumafx-wordpress.zip --clobber
