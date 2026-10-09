@@ -1,4 +1,6 @@
+/* Shared by modal (centred) and drawer (docked to an edge): drawer.css includes this file. */
 --_md-c: var(--fx-color, #20232e);
+--_md-size: var(--fx-size, 560px);
 --_md-r: 26px;
 /* A lighter top edge makes the surface read as a glossy material, not a flat stain. */
 --_md-sheen: linear-gradient(180deg, rgb(255 255 255 / .16), rgb(255 255 255 / 0) 64px);
@@ -67,15 +69,45 @@
 
 &[data-fx-style-active="glass"] > .fx-md-panel {
   background:
-    linear-gradient(140deg, rgb(255 255 255 / .16), rgb(255 255 255 / .03) 40%, transparent 70%),
-    color-mix(in oklab, var(--_md-c) 62%, transparent);
-  -webkit-backdrop-filter: blur(26px) saturate(1.7);
-  backdrop-filter: blur(26px) saturate(1.7);
+    radial-gradient(120% 60% at 0% 0%, rgb(255 255 255 / .18), transparent 60%),
+    linear-gradient(140deg, rgb(255 255 255 / .14), rgb(255 255 255 / .02) 45%, rgb(255 255 255 / .06)),
+    color-mix(in oklab, var(--_md-c) 36%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(1.9) brightness(1.04);
+  backdrop-filter: blur(30px) saturate(1.9) brightness(1.04);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / .35),
-    inset 0 0 0 1px rgb(255 255 255 / .12),
-    0 30px 80px -20px rgb(0 0 0 / .55);
+    inset 0 1px 0 rgb(255 255 255 / .45),
+    inset 1px 0 0 rgb(255 255 255 / .18),
+    inset 0 -1px 0 rgb(255 255 255 / .08),
+    inset 0 0 0 1px rgb(255 255 255 / .1),
+    0 30px 80px -20px rgb(0 0 0 / .5);
 }
+/* Drawers: docked to an edge, floating a little inside it. */
+&[data-fx-side-active="right"][open] { place-items: stretch end; padding: 12px; }
+&[data-fx-side-active="left"][open] { place-items: stretch start; padding: 12px; }
+&[data-fx-side-active="bottom"][open] { place-items: end center; padding: 12px; }
+&[data-fx-side-active="top"][open] { place-items: start center; padding: 12px; }
+&:is([data-fx-side-active="right"], [data-fx-side-active="left"]) > .fx-md-panel {
+  width: min(var(--_md-size), 100%);
+  height: 100%;
+  max-height: none;
+}
+&:is([data-fx-side-active="bottom"], [data-fx-side-active="top"]) > .fx-md-panel {
+  width: min(960px, 100%);
+  max-height: min(var(--_md-size), 100%);
+}
+/* Liquid glass: a clear, saturated pane with a bright rim, so the page reads through it. */
+&[data-fx-style-active="glass"]::backdrop {
+  background: rgb(3 4 8 / .28);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Scale: the page itself shrinks back, so the backdrop only dims it. */
+&[data-fx-style-active="scale"]::backdrop {
+  background: rgb(0 0 0 / .3);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 /* Phones: a bottom sheet that still lifts off the bottom edge. */
 @media (max-width: 560px) {
   &[open] { place-items: end center; padding: 10px; }

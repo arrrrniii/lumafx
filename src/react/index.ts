@@ -132,3 +132,11 @@ export const Clock = named('clock', 'time');
 export const Dapple = named('dapple', 'section');
 /** Renders the track itself so React keeps owning its children. */
 export const Ring = named('ring', 'div', (children) => createElement('div', { className: 'fx-ring-track' }, children));
+
+/* ---------------- v0.3 ---------------- */
+/** Card designs: glow, product, flip, cover, ticket. */
+export const Card = named('card', 'article');
+/** Click feedback: ripple, burst, fill, squish. */
+export const Press = named('press', 'button');
+/** A side panel or bottom sheet. Renders the panel itself so React keeps owning the content. */
+export const Drawer = named('drawer', 'dialog', (children) => createElement('div', { className: 'fx-md-panel' }, children));

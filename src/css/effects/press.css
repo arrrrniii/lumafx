@@ -1,0 +1,44 @@
+--_pr-c: var(--fx-color, currentColor);
+:where(&) {
+  position: relative;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  transition: scale .45s cubic-bezier(.2, .9, .25, 1.4), color .3s ease;
+}
+&:active { scale: .96; transition-duration: .08s; }
+/* Effects layer: clipped to the button's shape, under its label. */
+& > .fx-press-fx {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+& .fx-press-ripple {
+  position: absolute;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--_pr-c);
+}
+&:is([data-fx-style="squish"], .fx-style-squish):active { scale: .9 1.04; }
+/* fill: a circle from the cursor's entry point */
+& .fx-press-fill {
+  position: absolute;
+  left: var(--fx-x, 50%);
+  top: var(--fx-y, 50%);
+  width: 260%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  scale: 0;
+  border-radius: 50%;
+  background: var(--_pr-c);
+  transition: scale .55s cubic-bezier(.2, .8, .2, 1);
+}
+&:is([data-fx-style="fill"], .fx-style-fill):is(:hover, :focus-visible) { color: var(--fx-fill-ink, Canvas); }
+&:is([data-fx-style="fill"], .fx-style-fill):is(:hover, :focus-visible) .fx-press-fill { scale: 1; }
+& > .fx-press-done { display: inline-block; animation: fx-press-done .5s cubic-bezier(.2, .9, .25, 1.4) both; }
+@fx-reduced {
+  &:active, &:is([data-fx-style="squish"], .fx-style-squish):active { scale: none; }
+  & > .fx-press-done { animation: none; }
+}

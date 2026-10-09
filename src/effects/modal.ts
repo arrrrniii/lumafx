@@ -1,5 +1,5 @@
 import { META } from '../meta';
-import type { Effect } from '../core/types';
+import type { Ctx, Effect } from '../core/types';
 import { setState } from '../core/util';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -58,17 +58,36 @@ function delegate() {
   });
 }
 
-export const modal: Effect = {
-  name: 'modal',
-  meta: META.modal,
-  mount(el, ctx) {
-    if (!(el instanceof HTMLDialogElement)) {
-      console.warn('[lumafx] modal: use it on a <dialog> element');
-      return;
+type Side = 'center' | 'right' | 'left' | 'bottom' | 'top';
+const SIDES: Side[] = ['center', 'right', 'left', 'bottom', 'top'];
+
+/** The page wrapper that shrinks back behind a sheet (style "scale"). Never <body>: fixed elements would jump. */
+function sheetRoot(sel: string | undefined): HTMLElement | null {
+  const tries = [sel, '[data-fx-sheet-root]', '#__next', '#root', '#app', '.wp-site-blocks'].filter(Boolean) as string[];
+  for (const t of tries) {
+    try {
+      const el = document.querySelector<HTMLElement>(t);
+      if (el && el !== document.body && el !== document.documentElement) return el;
+    } catch {
+      /* bad selector */
     }
+  }
+  return null;
+}
+
+/** Shared engine for modal (centred) and drawer (docked to an edge). */
+function mountDialog(el: HTMLElement, ctx: Ctx, name: string, defaults: { style: string; side: Side }) {
+  if (!(el instanceof HTMLDialogElement)) {
+    console.warn(`[lumafx] ${name}: use it on a <dialog> element`);
+    return;
+  }
+  {
     const dlg = el;
-    const style = ctx.env.reduced ? 'fade' : ctx.str('style', 'liquid') || 'liquid';
+    const sideOpt = (ctx.str('side', defaults.side) || defaults.side) as Side;
+    const side: Side = SIDES.includes(sideOpt) ? sideOpt : defaults.side;
+    const style = ctx.env.reduced ? 'fade' : ctx.str('style', defaults.style) || defaults.style;
     dlg.setAttribute('data-fx-style-active', style);
+    dlg.setAttribute('data-fx-side-active', side);
 
     // Structure: dialog > (.fx-md-goo > shape, neck, drop) + .fx-md-panel > content.
     let panel = dlg.querySelector<HTMLElement>(':scope > .fx-md-panel');
@@ -262,27 +281,94 @@ export const modal: Effect = {
         raf = requestAnimationFrame(step);
       });
 
+    // Off-screen offset for a panel docked to an edge.
+    const away: Record<Side, string> = {
+      center: '0 0',
+      right: 'calc(100% + 24px) 0',
+      left: 'calc(-100% - 24px) 0',
+      bottom: '0 calc(100% + 24px)',
+      top: '0 calc(-100% - 24px)',
+    };
+    const horizontal = side === 'left' || side === 'right';
+
+    // "scale": the page behind shrinks back into a rounded card (needs a page wrapper, see sheetRoot).
+    let pageAnim: Animation | null = null;
+    let pageRoot: HTMLElement | null = null;
+    const scalePage = (opening: boolean, duration: number) => {
+      if (opening) {
+        pageRoot = sheetRoot(ctx.str('root'));
+        if (!pageRoot) return;
+        const r = pageRoot.getBoundingClientRect();
+        const vh = window.innerHeight;
+        // Clip to the visible part so the rounded corners show on screen, not at the page ends.
+        const topIn = Math.max(0, -r.top);
+        const botIn = Math.max(0, r.bottom - vh);
+        pageRoot.style.transformOrigin = `50% ${(topIn + Math.min(vh, r.height) / 2).toFixed(1)}px`;
+        document.documentElement.style.backgroundColor = '#000';
+        pageAnim = pageRoot.animate(
+          [
+            { scale: 1, clipPath: `inset(${topIn}px 0 ${botIn}px 0 round 0px)`, filter: 'brightness(1)' },
+            { scale: 0.93, clipPath: `inset(${topIn}px 0 ${botIn}px 0 round 22px)`, filter: 'brightness(.8)' },
+          ],
+          { duration, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' },
+        );
+      } else if (pageAnim && pageRoot) {
+        const root = pageRoot;
+        const a = pageAnim;
+        a.updatePlaybackRate(duration > 0 ? (a.effect?.getTiming().duration as number) / duration : 1);
+        a.reverse();
+        a.finished.then(() => {
+          a.cancel();
+          root.style.transformOrigin = '';
+          document.documentElement.style.backgroundColor = '';
+        });
+        pageAnim = null;
+      }
+    };
+
     const playSheet = async (opening: boolean) => {
       const { rise } = geometry();
-      const frames: Keyframe[] =
-        style === 'glass'
-          ? [
-              { translate: `0 ${rise}px`, scale: '0.92 1.08', opacity: 0.6 },
-              { translate: '0 -8px', scale: '1.01 0.99', opacity: 1, offset: 0.7 },
-              { translate: '0 0', scale: '1 1', opacity: 1 },
-            ]
-          : style === 'scale'
+      let frames: Keyframe[];
+      let duration: number;
+      let easing: string;
+      if (side !== 'center' && style !== 'fade') {
+        const off = away[side];
+        // Jelly: stretched along the axis it travels, a small overshoot, then settled.
+        const stretch = horizontal ? '0.9 1.02' : '1.02 0.9';
+        const over = horizontal ? '1.015 0.995' : '0.995 1.015';
+        frames =
+          style === 'glass'
             ? [
-                { scale: '0.9', opacity: 0 },
-                { scale: '1', opacity: 1 },
+                { translate: off, scale: stretch, opacity: 0.7 },
+                { translate: '0 0', scale: over, opacity: 1, offset: 0.62 },
+                { translate: '0 0', scale: '1 1', opacity: 1 },
               ]
-            : [{ opacity: 0 }, { opacity: 1 }];
-      const a = p.animate(frames, {
-        duration: style === 'glass' ? 700 : 260,
-        easing: style === 'glass' ? 'cubic-bezier(.2,.9,.25,1.05)' : 'ease-out',
-        fill: 'both',
-        direction: opening ? 'normal' : 'reverse',
-      });
+            : [{ translate: off }, { translate: '0 0' }];
+        p.style.transformOrigin = { right: '100% 50%', left: '0 50%', bottom: '50% 100%', top: '50% 0', center: '50% 50%' }[side];
+        duration = opening ? (style === 'glass' ? 720 : 560) : 380;
+        // Closing runs the keyframes in reverse, so an ease-out curve reads as accelerating away.
+        easing = opening ? 'cubic-bezier(.2,.9,.25,1.04)' : 'cubic-bezier(.25,.8,.45,1)';
+      } else {
+        frames =
+          style === 'glass'
+            ? [
+                { translate: `0 ${rise}px`, scale: '0.92 1.08', opacity: 0.6 },
+                { translate: '0 -8px', scale: '1.01 0.99', opacity: 1, offset: 0.7 },
+                { translate: '0 0', scale: '1 1', opacity: 1 },
+              ]
+            : style === 'scale'
+              ? [
+                  { scale: '0.9', opacity: 0 },
+                  { scale: '1', opacity: 1 },
+                ]
+              : [{ opacity: 0 }, { opacity: 1 }];
+        duration = style === 'glass' ? 700 : style === 'scale' ? 420 : 260;
+        easing = style === 'glass' ? 'cubic-bezier(.2,.9,.25,1.05)' : style === 'scale' ? 'cubic-bezier(.2,.9,.25,1.1)' : 'ease-out';
+        if (!opening) duration = Math.round(duration * 0.7);
+      }
+      if (style === 'scale') scalePage(opening, duration);
+      // On close, play the same path backwards (the panel leaves the way it came).
+      const a = p.animate(frames, { duration, easing, fill: 'both', direction: opening ? 'normal' : 'reverse' });
       anims.push(a);
       await a.finished;
     };
@@ -355,9 +441,23 @@ export const modal: Effect = {
         p.remove();
       }
       dlg.removeAttribute('data-fx-style-active');
+      dlg.removeAttribute('data-fx-side-active');
       ['opening', 'shown', 'closing'].forEach((s) => setState(dlg, s, false));
     };
-  },
+  }
+}
+
+export const modal: Effect = {
+  name: 'modal',
+  meta: META.modal,
+  mount: (el, ctx) => mountDialog(el, ctx, 'modal', { style: 'liquid', side: 'center' }),
+};
+
+/** A modal docked to an edge: side panels, bottom sheets. */
+export const drawer: Effect = {
+  name: 'drawer',
+  meta: META.drawer,
+  mount: (el, ctx) => mountDialog(el, ctx, 'drawer', { style: 'slide', side: 'right' }),
 };
 
 /** Opens or closes a lumafx modal from code. `from` is the element the liquid comes out of. */

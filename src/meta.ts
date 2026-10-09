@@ -397,11 +397,29 @@ const defs: Meta[] = [
     kind: 'js',
     desc: 'Accessible <dialog> that pulls out of the button, dock icon or link that opened it like a drop of liquid, detaches, and blooms into the panel; closing flows back into the trigger. Without a trigger it rises from the bottom edge. Open it with data-fx-open="#id", any link to href="#id", or modals.open().',
     options: {
-      style: choice(['liquid', 'glass', 'scale'], 'liquid', 'liquid = a gooey drop that pulls out of the trigger, glass = blurred glass sheet, scale = classic zoom.'),
+      style: choice(['liquid', 'glass', 'scale', 'slide'], 'liquid', 'liquid = a gooey drop that pulls out of the trigger, glass = liquid-glass sheet with a jelly overshoot, scale = the page shrinks back behind it, slide = a clean spring.'),
       from: choice(['auto', 'trigger', 'bottom'], 'auto', 'Where the liquid comes from: the button, icon or link that opened it (auto), or always the bottom edge.'),
+      side: choice(['center', 'right', 'left', 'bottom', 'top'], 'center', 'Dock the panel to an edge (a drawer or sheet) instead of the centre.'),
+      size: len('560px', 'Panel width (height for top and bottom).'),
+      root: { type: 'string', desc: 'Page wrapper that shrinks back with style "scale" (default: [data-fx-sheet-root], #__next, #root, #app).' },
       color: color('#20232e', 'Panel color.'),
     },
     example: '<button data-fx-open="#join">Join</button>\n<dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>',
+  },
+  {
+    name: 'drawer',
+    title: 'Drawer',
+    kind: 'js',
+    desc: 'A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation.',
+    options: {
+      side: choice(['right', 'left', 'bottom', 'top'], 'right', 'Edge it comes from.'),
+      style: choice(['slide', 'glass', 'scale', 'liquid'], 'slide', 'Motion and material.'),
+      size: len('560px', 'Width (height for top and bottom).'),
+      color: color('#20232e', 'Panel color.'),
+      from: choice(['auto', 'trigger', 'bottom'], 'auto', 'For style liquid: where the liquid comes from.'),
+      root: { type: 'string', desc: 'Page wrapper that shrinks back with style "scale".' },
+    },
+    example: '<button data-fx-open="#edit">Edit</button>\n<dialog id="edit" data-fx="drawer" data-fx-style="glass">…<button data-fx-close>Close</button></dialog>',
   },
   {
     name: 'hovercard',
@@ -645,6 +663,32 @@ const defs: Meta[] = [
       tilt: num(8, 'Viewing angle in degrees.'),
     },
     example: '<div data-fx="ring"><figure>…</figure><figure>…</figure></div>',
+  },
+
+  /* ---------------- v0.3 · cards & buttons ---------------- */
+  {
+    name: 'card',
+    title: 'Cards',
+    kind: 'hybrid',
+    desc: 'Five ready card designs for an image, a title, text and buttons: glow (border lights up around the cursor), product (lifts, image zooms), flip (3D flip to a back side), cover (full-bleed image, details slide up), ticket (event ticket with a perforated stub).',
+    options: {
+      style: choice(['glow', 'product', 'flip', 'cover', 'ticket'], 'glow', 'Card design.'),
+      color: color('#ffb547', 'Accent color.'),
+      radius: len('22px', 'Corner radius.'),
+    },
+    example: '<article data-fx="card" data-fx-style="product"><img src="…" alt="…"><div><h3>Title</h3><p>Text</p><button data-fx="press">Buy</button></div></article>',
+  },
+  {
+    name: 'press',
+    title: 'Button press',
+    kind: 'js',
+    desc: 'Click feedback for buttons and links: a ripple from the click point, a burst of sparks, a fill that follows the cursor in and out, or a squish. Can swap the label to a done state ("Added ✓").',
+    options: {
+      style: choice(['ripple', 'burst', 'fill', 'squish'], 'ripple', 'Feedback style.'),
+      color: color('', 'Effect color (defaults to the current text color).'),
+      done: { type: 'string', desc: 'Label shown for a moment after a click, e.g. "Added ✓".' },
+    },
+    example: '<button data-fx="press" data-fx-style="burst" data-fx-done="Added ✓">Add to cart</button>',
   },
 ];
 

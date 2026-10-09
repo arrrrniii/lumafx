@@ -173,7 +173,8 @@ The video plays as you scroll down and rewinds as you scroll up. Encode with sho
 | `morph` | JS | Names an element for View Transitions so it morphs between states or pages. Pair with lumafx.transition() or transitions.css. | `name` |
 | `page-transition` | JS | Animated SVG cover between pages of any site (WordPress and Webflow included). Covers on leave, reveals on arrival. Place one element anywhere in <body>. | `style`, `color`, `color-2`, `duration`, `label`, `links` |
 | `preloader` | JS | Full-screen intro with a 000→100 counter that follows real page loading, then lifts away. Hides itself after a few seconds even if JavaScript fails. | `style`, `color`, `min` |
-| `modal` | JS | Accessible <dialog> that pulls out of the button, dock icon or link that opened it like a drop of liquid, detaches, and blooms into the panel; closing flows back into the trigger. Without a trigger it rises from the bottom edge. Open it with data-fx-open="#id", any link to href="#id", or modals.open(). | `style`, `from`, `color` |
+| `modal` | JS | Accessible <dialog> that pulls out of the button, dock icon or link that opened it like a drop of liquid, detaches, and blooms into the panel; closing flows back into the trigger. Without a trigger it rises from the bottom edge. Open it with data-fx-open="#id", any link to href="#id", or modals.open(). | `style`, `from`, `side`, `size`, `root`, `color` |
+| `drawer` | JS | A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation. | `side`, `style`, `size`, `color`, `from`, `root` |
 | `hovercard` | JS | A small card that springs open right next to the hovered or focused element and stays inside the viewport. | `for`, `text`, `placement`, `delay` |
 | `chat` | JS | Animated chat launcher and panel: the button morphs into the window, messages slide in, a typing indicator bounces. Emits fx:chat-send so you can connect any backend. | `title`, `subtitle`, `greeting`, `placeholder`, `quick`, `color`, `position` |
 | `smart-header` | CSS + JS | Hides while you scroll down, slides back as glass when you scroll up, and can dock an oversized hero logo into the bar as you scroll. | `threshold`, `hide` |
@@ -194,6 +195,8 @@ The video plays as you scroll down and rewinds as you scroll up. Encode with sho
 | `clock` | JS | Shows the live time in any time zone, ticking every second. | `tz`, `seconds`, `hour12` |
 | `dapple` | CSS | Soft, slowly swaying shadows of leaves over a section, like sunlight through a tree. | `opacity`, `duration` |
 | `ring` | JS | Items stand on a 3D ring you can drag and fling; it turns slowly on its own when idle. | `speed`, `tilt` |
+| `card` | CSS + JS | Five ready card designs for an image, a title, text and buttons: glow (border lights up around the cursor), product (lifts, image zooms), flip (3D flip to a back side), cover (full-bleed image, details slide up), ticket (event ticket with a perforated stub). | `style`, `color`, `radius` |
+| `press` | JS | Click feedback for buttons and links: a ripple from the click point, a burst of sparks, a fill that follows the cursor in and out, or a squish. Can swap the label to a done state ("Added ✓"). | `style`, `color`, `done` |
 <!-- effects:end -->
 
 Options are `data-fx-<option>` attributes. Bare numbers get a unit from the option type: time → ms, length → px, percent → %.

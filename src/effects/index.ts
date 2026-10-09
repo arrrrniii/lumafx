@@ -11,11 +11,12 @@ import { glass } from './glass';
 import { ripple } from './ripple';
 import { morph } from './morph';
 import { pageTransition, preloader } from './navigation';
-import { modal } from './modal';
+import { modal, drawer } from './modal';
 import { hovercard, smartHeader, scrollbar, scrollProgress, dock, lightbox } from './components';
 import { chat } from './chat';
 import { imageReveal, expand, imageTrail, videoScrub, frames } from './media';
 import { svgDraw, dotField, typewriter, rotateWords, clock, ring } from './live';
+import { card, press } from './cards';
 
 /** Pure-CSS effects: the runtime only maps options to CSS variables and pauses them off-screen. */
 const css = (name: string): Effect => ({ name, meta: META[name] });
@@ -51,6 +52,7 @@ export {
   pageTransition,
   preloader,
   modal,
+  drawer,
   hovercard,
   chat,
   smartHeader,
@@ -69,6 +71,8 @@ export {
   rotateWords,
   clock,
   ring,
+  card,
+  press,
 };
 
 export const allEffects: Effect[] = [
@@ -100,6 +104,7 @@ export const allEffects: Effect[] = [
   pageTransition,
   preloader,
   modal,
+  drawer,
   hovercard,
   chat,
   smartHeader,
@@ -120,4 +125,7 @@ export const allEffects: Effect[] = [
   clock,
   dapple,
   ring,
+  // v0.3
+  card,
+  press,
 ];

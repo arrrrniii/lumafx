@@ -498,6 +498,41 @@ button { font: inherit; color: inherit; }
 /* Leave room for the custom scrollbar, which only appears with a mouse. */
 @media (hover: hover) and (pointer: fine) { .demo-chat { right: 40px; } }
 
+
+/* ---------- v0.3: cards ---------- */
+.cards-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); align-items: stretch; }
+.cards-grid .wide { grid-column: span 2; }
+@media (max-width: 640px) { .cards-grid .wide { grid-column: auto; } }
+.cards-grid [data-fx~="card"] { font-family: var(--font-body); }
+.cards-grid [data-fx~="card"] h3 { font-family: var(--font-display); }
+.press-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.press-row button { font: 600 15px/1 var(--font-body); padding: 15px 24px; border-radius: 999px; border: 0; cursor: pointer; }
+.press-row .p1 { background: var(--lamp); color: var(--lamp-ink); }
+.press-row .p2 { background: var(--fg); color: var(--bg); }
+.press-row .p3 { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--fg); }
+.press-row .p4 { background: #7c5cff; color: #fff; }
+
+
+/* ---------- v0.3: drawers ---------- */
+.dr { display: flex; flex-direction: column; gap: 18px; height: 100%; min-height: 0; color: #f2f1ee; }
+.dr-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.dr-head h3 { font: 700 1.5rem/1.15 var(--font-display); letter-spacing: -.02em; margin: 0; }
+.dr-head p { color: #a3a6b5; font-size: 14px; margin-top: 4px; }
+.dr-body { display: grid; gap: 14px; align-content: start; flex: 1; min-height: 0; overflow: auto; margin-inline: -4px; padding-inline: 4px; }
+.dr-body label { display: grid; gap: 6px; font-size: 14px; color: #c9cbd6; }
+.dr-body input:not([type=checkbox]), .dr-body textarea { padding: 12px 14px; border-radius: 12px; border: 1px solid rgb(255 255 255 / .1); background: rgb(0 0 0 / .25); color: #f2f1ee; font: inherit; resize: vertical; }
+.dr-photo { margin: 0; display: grid; gap: 8px; }
+.dr-photo img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; }
+.dr-photo figcaption { font-size: 12px; color: #8a8ea0; }
+.dr-checks label { display: flex; align-items: center; gap: 10px; font-size: 15px; color: #eceef4; padding: 10px 12px; border-radius: 12px; background: rgb(255 255 255 / .06); }
+.dr-share { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-content: center; }
+.dr-share .app { width: 64px; height: 64px; border: 0; border-radius: 18px; font: 700 13px/1 var(--font-body); cursor: pointer; }
+.dr-line { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 14px; background: rgb(255 255 255 / .05); }
+.dr-line img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; }
+.dr-line div { display: grid; gap: 2px; font-size: 14px; }
+.dr-line span { color: #a3a6b5; }
+.dr-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid rgb(255 255 255 / .08); color: #a3a6b5; font-size: 14px; }
+
 /* ---------- use it ---------- */
 .use { padding-block: 72px 40px; display: grid; gap: 28px; border-top: 1px solid var(--line); }
 .use h2 { font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -.03em; }
@@ -510,7 +545,7 @@ button { font: inherit; color: inherit; }
 .promises div { display: grid; gap: 4px; }
 .promises b { font: 600 1rem/1.3 var(--font-display); }
 .promises span { color: var(--muted); font-size: 14px; }
-footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(--font-mono); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
+main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(--font-mono); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
 
 /* ---------- narrow screens ---------- */
 @media (max-width: 900px) {
@@ -534,6 +569,7 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
 <div data-fx="scrollbar" data-fx-sections=".spec-head h3, .use h2"></div>
 <div id="pt" data-fx="page-transition" data-fx-style="wave" data-fx-label="lumafx" data-fx-links="a[data-transition]" data-fx-color="#ffb547" data-fx-color-2="#0b0c12"></div>
 
+<div data-fx-sheet-root>
 <header class="site-head" data-fx="smart-header">
   <a class="logo" href="#top" data-fx-logo="0.9" aria-label="lumafx, back to top"><span data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip" data-fx-trigger="load" data-fx-stagger="45">luma<em>fx</em></span></a>
   <nav class="site-nav" data-fx="hover-icon" aria-label="Sections">
@@ -575,7 +611,7 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
   <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a>
   <a href="#page-transition">page-transition</a><a href="#modal">modal</a><a href="#chat">chat</a><a href="#hovercard">hovercard</a>
   <a href="#lightbox">lightbox</a><a href="#video-scrub">video-scrub</a><a href="#frames">frames</a><a href="#svg-draw">svg-draw</a>
-  <a href="#ring">ring</a><a href="#use">install</a>
+  <a href="#ring">ring</a><a href="#card">cards</a><a href="#use">install</a>
 </nav>
 
 <div class="book">
@@ -629,6 +665,7 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
     <h4>Components</h4>
     <ul>
       <li><a href="#modal">modal <span class="kind js">js</span></a></li>
+      <li><a href="#drawer">drawer <span class="kind js">js</span></a></li>
       <li><a href="#hovercard">hovercard <span class="kind js">js</span></a></li>
       <li><a href="#chat">chat <span class="kind js">js</span></a></li>
       <li><a href="#dock">dock <span class="kind js">js</span></a></li>
@@ -652,6 +689,11 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
       <li><a href="#rotate-words">rotate-words <span class="kind js">js</span></a></li>
       <li><a href="#clock">clock <span class="kind js">js</span></a></li>
       <li><a href="#ring">ring <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Cards &amp; buttons</h4>
+    <ul>
+      <li><a href="#card">card <span class="kind css">css+js</span></a></li>
+      <li><a href="#press">press <span class="kind js">js</span></a></li>
     </ul>
   </aside>
 
@@ -1045,6 +1087,18 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
       <div class="codeline"><code>&lt;button data-fx-open=<i>"#join"</i>&gt; … &lt;dialog id=<i>"join"</i> <b>data-fx</b>=<i>"modal"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <section class="spec" id="drawer">
+      <div class="spec-head"><h3>drawer</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Side panels and bottom sheets on a real &lt;dialog&gt;. Four motions: a clean spring, stretchy liquid glass, the page shrinking back behind the sheet, or liquid pouring out of the button. Click outside, press Esc or use the close button: it leaves the way it came.</p>
+      <div class="stage center">
+        <button class="btn primary" data-fx-open="#dr-edit">Slide · right</button>
+        <button class="btn outline" data-fx-open="#dr-glass">Liquid glass · left</button>
+        <button class="btn outline" data-fx-open="#dr-scale">Scale · bottom sheet</button>
+        <button class="btn outline" data-fx-open="#dr-liquid">Liquid · from here</button>
+      </div>
+      <div class="codeline"><code>&lt;dialog <b>data-fx</b>=<i>"drawer"</i> data-fx-side=<i>"right"</i> data-fx-style=<i>"glass"</i>&gt;…&lt;/dialog&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
     <section class="spec" id="hovercard">
       <div class="spec-head"><h3>hovercard</h3><span class="kind js">runtime</span></div>
       <p class="spec-desc">Point at a word and a small card springs open beside it, flipping sides to stay on screen. It also opens on keyboard focus and is linked for screen readers.</p>
@@ -1270,6 +1324,73 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
       <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"ring"</i>&gt;&lt;figure&gt;…&lt;/figure&gt;…&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <!-- ======================= CARDS (v0.3) ======================= -->
+    <h2 class="group-title" id="cards">Cards &amp; buttons</h2>
+
+    <section class="spec" id="card">
+      <div class="spec-head"><h3>card</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">Five ready designs for an image, a title, text and buttons. Hover them, flip the third, and click the buttons: each one shows a different press effect.</p>
+      <div class="stage">
+        <div class="cards-grid">
+          <article data-fx="card" data-fx-style="glow">
+            <img src="img/theth-wide.jpg" alt="Theth valley at dusk">
+            <div>
+              <small>Membership</small>
+              <h3>Sphere Pass</h3>
+              <p>Skip the line at 40 venues across Tirana, all year.</p>
+              <button data-fx="press">Get the pass</button>
+            </div>
+          </article>
+          <article data-fx="card" data-fx-style="product">
+            <mark>New</mark>
+            <figure><img src="img/ksamil.jpg" alt="Ksamil islands"></figure>
+            <div>
+              <small>Day trip</small>
+              <h3>Ksamil islands by boat</h3>
+              <p>Four islands, one lunch, zero planning.</p>
+              <footer><strong>€45</strong><button data-fx="press" data-fx-style="burst" data-fx-done="Added ✓">Add to cart</button></footer>
+            </div>
+          </article>
+          <article data-fx="card" data-fx-style="flip" aria-label="Dajti at sunrise, flip for details">
+            <img src="img/dajti.jpg" alt="">
+            <div><small>Hike · 3 h</small><h3>Dajti at sunrise</h3></div>
+            <div><h3>What's included</h3><p>Pickup at 5:00, guide, coffee at the top and the cable car down.</p><button data-fx="press" data-fx-style="squish">Book · €30</button></div>
+          </article>
+          <article data-fx="card" data-fx-style="cover" class="wide">
+            <img src="img/blloku.jpg" alt="Rooftop at night">
+            <div>
+              <small>Tonight · 22:00</small>
+              <h3>Rooftop sessions, Blloku</h3>
+              <p>A live set over the city, with the best view of the lights.</p>
+              <button data-fx="press" data-fx-style="fill" data-fx-color="#ffb547" style="--fx-fill-ink:#18130a">Reserve a table</button>
+            </div>
+          </article>
+          <article data-fx="card" data-fx-style="ticket" class="wide">
+            <div><b>18</b><span>Oct</span></div>
+            <div>
+              <small>Sphere · Live</small>
+              <h3>Night at the Pyramid</h3>
+              <p>Piramida, Tirana · Doors 20:30</p>
+              <footer><strong>€25</strong><button data-fx="press" data-fx-style="burst" data-fx-done="See you there ✓">Get tickets</button></footer>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;article <b>data-fx</b>=<i>"card"</i> data-fx-style=<i>"product"</i>&gt;&lt;figure&gt;&lt;img…&gt;&lt;/figure&gt;&lt;div&gt;…&lt;/div&gt;&lt;/article&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="press">
+      <div class="spec-head"><h3>press</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Click feedback for any button or link: a ripple from the exact click point, a burst of sparks, a fill that follows the cursor in and out, or a squish. Add data-fx-done to confirm the action in place.</p>
+      <div class="stage press-row">
+        <button class="p1" data-fx="press">Ripple</button>
+        <button class="p2" data-fx="press" data-fx-style="burst" data-fx-color="#ffb547" data-fx-done="Sent ✓">Burst</button>
+        <button class="p3" data-fx="press" data-fx-style="fill">Fill on hover</button>
+        <button class="p4" data-fx="press" data-fx-style="squish">Squish</button>
+      </div>
+      <div class="codeline"><code>&lt;button <b>data-fx</b>=<i>"press"</i> data-fx-style=<i>"burst"</i> data-fx-done=<i>"Added ✓"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
     <!-- ======================= USE IT ======================= -->
     <section class="use" id="use">
       <h2>Use it anywhere</h2>
@@ -1328,6 +1449,52 @@ Elementor, Bricks, Divi: add the class
     </footer>
   </main>
 </div>
+
+</div><!-- /data-fx-sheet-root: the page wrapper that shrinks back behind "scale" sheets -->
+
+<dialog id="dr-edit" data-fx="drawer" aria-labelledby="dr-edit-title">
+  <div class="dr">
+    <header class="dr-head"><div><h3 id="dr-edit-title">Edit item</h3><p>Changes reach your menus after publishing.</p></div><button class="md-x" data-fx-close aria-label="Close">×</button></header>
+    <div class="dr-body">
+      <figure class="dr-photo"><img src="img/butrint.jpg" alt=""><figcaption>Square photo · 1:1</figcaption></figure>
+      <label>Item name<input value="Tavë kosi"></label>
+      <label>Description<textarea rows="3">Baked lamb with yogurt and rice, the Elbasan way.</textarea></label>
+      <label>Base price (ALL)<input value="1200" inputmode="numeric"></label>
+    </div>
+    <footer class="dr-foot"><span>Saved as a draft</span><button class="btn primary small" data-fx="press" data-fx-done="Saved ✓">Save item</button></footer>
+  </div>
+</dialog>
+<dialog id="dr-glass" data-fx="drawer" data-fx-side="left" data-fx-style="glass" data-fx-size="380" aria-labelledby="dr-glass-title">
+  <div class="dr">
+    <header class="dr-head"><div><h3 id="dr-glass-title">Filters</h3><p>Liquid glass: the page shows through.</p></div><button class="md-x" data-fx-close aria-label="Close">×</button></header>
+    <div class="dr-body dr-checks">
+      <label><input type="checkbox" checked> Concerts</label>
+      <label><input type="checkbox" checked> Theatre</label>
+      <label><input type="checkbox"> Festivals</label>
+      <label><input type="checkbox"> Tours</label>
+      <label><input type="checkbox" checked> This weekend</label>
+    </div>
+    <footer class="dr-foot"><span>128 events</span><button class="btn primary small" data-fx-close>Show results</button></footer>
+  </div>
+</dialog>
+<dialog id="dr-scale" data-fx="drawer" data-fx-side="bottom" data-fx-style="scale" data-fx-size="420" aria-labelledby="dr-scale-title">
+  <div class="dr">
+    <header class="dr-head"><div><h3 id="dr-scale-title">Share this event</h3><p>The page shrinks back behind the sheet.</p></div><button class="md-x" data-fx-close aria-label="Close">×</button></header>
+    <div class="dr-body dr-share">
+      <button class="app a4" data-fx="press">WA</button><button class="app a2" data-fx="press">IG</button><button class="app a5" data-fx="press">FB</button><button class="app a1" data-fx="press">Mail</button><button class="app a6" data-fx="press" data-fx-done="✓">Copy</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="dr-liquid" data-fx="drawer" data-fx-style="liquid" data-fx-size="420" aria-labelledby="dr-liquid-title">
+  <div class="dr">
+    <header class="dr-head"><div><h3 id="dr-liquid-title">Your cart</h3><p>Flowed out of the button you pressed.</p></div><button class="md-x" data-fx-close aria-label="Close">×</button></header>
+    <div class="dr-body">
+      <div class="dr-line"><img src="img/ksamil.jpg" alt=""><div><b>Ksamil islands by boat</b><span>2 × €45</span></div></div>
+      <div class="dr-line"><img src="img/blloku.jpg" alt=""><div><b>Rooftop sessions</b><span>1 × €18</span></div></div>
+    </div>
+    <footer class="dr-foot"><span>Total €108</span><button class="btn primary small" data-fx="press" data-fx-style="burst" data-fx-done="Paid ✓">Checkout</button></footer>
+  </div>
+</dialog>
 
 <dialog id="join" data-fx="modal" aria-labelledby="join-title">
   <div class="md-panel-body">

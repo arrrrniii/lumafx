@@ -1,0 +1,250 @@
+/* Five designs. glow is the default; the others override it. Content: an image (or a <figure> around one)
+   and a <div> with small/h3/p/footer/buttons. Every rule here has zero or low specificity, so your own
+   classes win. */
+--_cd-r: var(--fx-radius, 22px);
+--_cd-a: var(--fx-color, #ffb547);
+--_cd-spring: cubic-bezier(.2, .9, .25, 1.15);
+:where(&) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--_cd-r);
+  isolation: isolate;
+  text-align: start;
+}
+& > :where(img, picture, video, figure) { display: block; width: 100%; margin: 0; object-fit: cover; }
+& > :where(figure) { overflow: clip; }
+& > :where(figure) > :where(img, video) { display: block; width: 100%; height: 100%; object-fit: cover; }
+& > :where(div), & .fx-card-face > :where(div) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .55rem;
+  padding: 1.15rem 1.25rem 1.3rem;
+}
+/* With cards of equal height in a row, the call to action sits at the bottom. */
+& > :where(div) > :where(button, .fx-btn, footer):last-child { margin-top: auto; }
+& :where(h2, h3, h4) { margin: 0; font-size: 1.22em; line-height: 1.2; letter-spacing: -.012em; }
+& :where(p) { margin: 0; line-height: 1.5; font-size: .95em; opacity: .74; }
+& :where(small) { font-size: .72em; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; opacity: .68; }
+& :where(footer) { display: flex; align-self: stretch; align-items: center; justify-content: space-between; gap: .75rem; padding-top: .35rem; }
+& :where(footer) :where(strong, b) { font-size: 1.15em; }
+& > :where(mark) {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 3;
+  padding: .32em .7em;
+  border-radius: 999px;
+  background: var(--_cd-a);
+  color: #18130a;
+  font-size: .72em;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+& :where(button, .fx-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45em;
+  justify-self: start;
+  padding: .72em 1.2em;
+  border: 0;
+  border-radius: 999px;
+  background: var(--_cd-a);
+  color: #18130a;
+  font: inherit;
+  font-size: .92em;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+& :where(button, .fx-btn):focus-visible { outline: 2px solid var(--_cd-a); outline-offset: 3px; }
+
+/* ---- glow (default): a dark surface lit by the cursor, with a light-catching border ---- */
+--_cd-bg: #0f1117;
+background:
+  radial-gradient(520px circle at var(--fx-mx, 50%) var(--fx-my, -20%), color-mix(in oklab, var(--_cd-a) 13%, transparent), transparent 55%),
+  var(--_cd-bg);
+color: #eceef4;
+padding: 8px;
+box-shadow: inset 0 0 0 1px rgb(255 255 255 / .07), 0 22px 44px -26px rgb(0 0 0 / .7);
+transition: box-shadow .4s ease;
+& > :where(img, picture, video, figure) { aspect-ratio: 16 / 10; border-radius: calc(var(--_cd-r) - 8px); transition: filter .5s ease; }
+& > :where(div) { padding: 1rem .8rem .8rem; }
+&::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 1px;
+  border-radius: inherit;
+  background: radial-gradient(260px circle at var(--fx-mx, 50%) var(--fx-my, 0%), var(--_cd-a), color-mix(in oklab, var(--_cd-a) 30%, transparent) 40%, transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease;
+}
+&:hover::before { opacity: 1; }
+&:hover > :where(img, picture, video, figure) { filter: saturate(1.15) brightness(1.06); }
+
+/* ---- product: a clean surface that lifts; the image zooms inside its frame ---- */
+&:is([data-fx-style="product"], .fx-style-product) {
+  --_cd-bg: light-dark(#ffffff, #171922);
+  background: var(--_cd-bg);
+  color: light-dark(#141620, #eef0f5);
+  padding: 0;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 14px 32px -20px rgb(0 0 0 / .4), inset 0 0 0 1px light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .06));
+  transition: translate .5s var(--_cd-spring), box-shadow .5s ease;
+  &::before { content: none; }
+  & > :where(img, picture, video, figure) {
+    aspect-ratio: 1;
+    margin: 10px 10px 0;
+    width: calc(100% - 20px);
+    border-radius: calc(var(--_cd-r) - 10px);
+    background: color-mix(in oklab, var(--_cd-a) 16%, light-dark(#f3f0ea, #20232c));
+    filter: none;
+  }
+  & > :where(figure) > :where(img, video) { transition: scale .8s cubic-bezier(.2, .8, .2, 1); }
+  & > :where(div) { padding: 1rem 1.15rem 1.15rem; }
+  & :where(button, .fx-btn) { background: light-dark(#141620, #f2f1ee); color: light-dark(#fff, #141620); }
+  &:hover { translate: 0 -6px; box-shadow: 0 2px 4px rgb(0 0 0 / .06), 0 30px 50px -24px rgb(0 0 0 / .45), inset 0 0 0 1px light-dark(rgb(0 0 0 / .05), rgb(255 255 255 / .08)); }
+  &:hover > :where(figure) > :where(img, video) { scale: 1.07; }
+}
+
+/* ---- flip: front and back on a 3D hinge (the runtime builds the two faces) ---- */
+&:is([data-fx-style="flip"], .fx-style-flip) {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  perspective: 1400px;
+  min-height: 340px;
+  color: #fff;
+  &::before { content: none; }
+  & > .fx-card-flip {
+    position: relative;
+    display: grid;
+    flex: 1;
+    align-content: stretch;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    border-radius: inherit;
+    transform-style: preserve-3d;
+    transition: transform .85s cubic-bezier(.2, .85, .25, 1.08);
+  }
+  &:is([data-flipped], :focus-within) > .fx-card-flip { transform: rotateY(180deg); }
+  & .fx-card-face {
+    grid-area: 1 / 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: inherit;
+    overflow: clip;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    box-shadow: 0 22px 44px -26px rgb(0 0 0 / .7);
+  }
+  & .fx-card-front { background: #111; }
+  & .fx-card-front > :where(img, picture, video, figure) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  & .fx-card-front::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgb(0 0 0 / .72)); }
+  & .fx-card-front > :where(div) { position: relative; z-index: 1; flex: none; }
+  & .fx-card-back { transform: rotateY(180deg); background: var(--_cd-a); color: #18130a; justify-content: center; }
+  & .fx-card-back > :where(div) { flex: none; }
+  & .fx-card-back :where(button, .fx-btn) { background: #18130a; color: #fff; }
+  &:focus-visible { outline: 2px solid var(--_cd-a); outline-offset: 4px; }
+}
+@media (hover: hover) {
+  &:is([data-fx-style="flip"], .fx-style-flip):hover > .fx-card-flip { transform: rotateY(180deg); }
+}
+
+/* ---- cover: full-bleed image; the details slide up on hover or focus ---- */
+&:is([data-fx-style="cover"], .fx-style-cover) {
+  min-height: 400px;
+  padding: 0;
+  justify-content: flex-end;
+  overflow: clip;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 22px 44px -26px rgb(0 0 0 / .7);
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    padding: 0;
+    opacity: 1;
+    background: linear-gradient(180deg, transparent 30%, rgb(0 0 0 / .78));
+    -webkit-mask: none;
+    mask: none;
+    transition: background .5s ease;
+  }
+  & > :where(img, picture, video, figure) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    height: 100%;
+    border-radius: 0;
+    transition: scale 1.4s cubic-bezier(.2, .8, .2, 1);
+  }
+  & > :where(div) { position: relative; flex: none; padding: 1.4rem; }
+  & > :where(div) > :not(h2, h3, h4, small) {
+    max-height: 0;
+    opacity: 0;
+    translate: 0 12px;
+    overflow: clip;
+    transition: max-height .55s cubic-bezier(.2, .8, .2, 1), opacity .35s ease, translate .55s cubic-bezier(.2, .8, .2, 1);
+  }
+  & :where(button, .fx-btn) { background: #fff; color: #111; }
+  &:is(:hover, :focus-within) > :where(img, picture, video, figure) { scale: 1.07; }
+  &:is(:hover, :focus-within)::before { background: linear-gradient(180deg, rgb(0 0 0 / .1) 10%, rgb(0 0 0 / .85)); }
+  &:is(:hover, :focus-within) > :where(div) > :not(h2, h3, h4, small) { max-height: 12em; opacity: 1; translate: none; overflow: visible; }
+}
+@media (hover: none) {
+  &:is([data-fx-style="cover"], .fx-style-cover) > :where(div) > :not(h2, h3, h4, small) { max-height: none; opacity: 1; translate: none; overflow: visible; }
+}
+
+/* ---- ticket: an event ticket with a perforated stub ---- */
+&:is([data-fx-style="ticket"], .fx-style-ticket) {
+  --_tk-stub: 104px;
+  display: grid;
+  grid-template-columns: var(--_tk-stub) 1fr;
+  padding: 0;
+  background: light-dark(#fffaf0, #1d1c19);
+  color: light-dark(#1d1a14, #f3efe6);
+  box-shadow: inset 0 0 0 1px light-dark(rgb(0 0 0 / .06), rgb(255 255 255 / .06));
+  -webkit-mask: radial-gradient(circle 11px at var(--_tk-stub) 0, #0000 98%, #000) top / 100% 51% no-repeat, radial-gradient(circle 11px at var(--_tk-stub) 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+  mask: radial-gradient(circle 11px at var(--_tk-stub) 0, #0000 98%, #000) top / 100% 51% no-repeat, radial-gradient(circle 11px at var(--_tk-stub) 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+  transition: translate .5s var(--_cd-spring), rotate .5s var(--_cd-spring);
+  &::before { content: none; }
+  & > :first-child {
+    display: grid;
+    flex: none;
+    align-items: initial;
+    place-content: center;
+    gap: .15rem;
+    padding: 1rem .5rem;
+    background: var(--_cd-a);
+    color: #18130a;
+    text-align: center;
+    border-right: 2px dashed rgb(0 0 0 / .22);
+    background-clip: padding-box;
+  }
+  & > :first-child :where(b, strong) { font-size: 2.3em; line-height: .95; letter-spacing: -.04em; }
+  & > :first-child :where(span) { font-size: .72em; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+  & > :where(img) { display: none; }
+  & > :where(div):not(:first-child) { padding: 1.1rem 1.25rem 1.2rem 1.4rem; }
+  & :where(button, .fx-btn) { background: light-dark(#1d1a14, #f3efe6); color: light-dark(#fffaf0, #1d1a14); }
+  &:hover { translate: 0 -4px; rotate: -1.2deg; }
+}
+
+@fx-reduced {
+  transition: none;
+  &::before { transition: none; }
+  & > .fx-card-flip { transition-duration: .01s; }
+  &:hover { translate: none; rotate: none; }
+}

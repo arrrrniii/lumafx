@@ -214,7 +214,7 @@
 }
 
 html.fx-loading { overflow: hidden; }
-:root:has(dialog[open]:is([data-fx~="modal"], .fx-modal)) { overflow: hidden; }
+:root:has(dialog[open]:is([data-fx~="modal"], .fx-modal, [data-fx~="drawer"], .fx-drawer)) { overflow: hidden; }
 
 /* page-transition */
 .fx-pt {
@@ -430,3 +430,14 @@ html[data-fx-scrollbar]::-webkit-scrollbar { display: none; width: 0; height: 0;
   .fx-hc, .fx-sb-tip { scale: 1 !important; translate: none !important; filter: none !important; }
   .fx-caret { animation-duration: 2s; }
 }
+
+/* press: sparks for the burst style live on <body> so the button can clip its own ripples */
+@keyframes fx-press-done { from { opacity: 0; scale: .6; translate: 0 6px; } }
+.fx-spark, .fx-spark-ring {
+  position: fixed;
+  z-index: 2147483300;
+  pointer-events: none;
+  border-radius: 50%;
+}
+.fx-spark { translate: -50% -50%; }
+.fx-spark-ring { width: 64px; height: 64px; margin: -32px 0 0 -32px; border: 2px solid; }

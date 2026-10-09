@@ -144,7 +144,11 @@ const base = fs.readFileSync(path.join(root, 'src/css/base.css'), 'utf8').replac
 const bodies = EFFECT_NAMES.map((name) => {
   const file = path.join(root, 'src/css/effects', name + '.css');
   if (!fs.existsSync(file)) throw new Error('Missing CSS for effect ' + name);
-  return { name, body: expandMacros(fs.readFileSync(file, 'utf8')) };
+  // `@fx-include "other.css";` shares one body between effects (drawer reuses the modal's styles).
+  const src = fs
+    .readFileSync(file, 'utf8')
+    .replace(/@fx-include "([\w.-]+)";/g, (_, f) => fs.readFileSync(path.join(root, 'src/css/effects', f), 'utf8'));
+  return { name, body: expandMacros(src) };
 });
 
 const header = `/*! lumafx v${pkg.version} | MIT */\n`;

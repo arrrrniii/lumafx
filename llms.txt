@@ -253,9 +253,24 @@ Accessible <dialog> that pulls out of the button, dock icon or link that opened 
 Example: <button data-fx-open="#join">Join</button>
 <dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>
 Options:
-  - data-fx-style: enum (default: liquid). liquid = a gooey drop that pulls out of the trigger, glass = blurred glass sheet, scale = classic zoom. One of: liquid, glass, scale.
+  - data-fx-style: enum (default: liquid). liquid = a gooey drop that pulls out of the trigger, glass = liquid-glass sheet with a jelly overshoot, scale = the page shrinks back behind it, slide = a clean spring. One of: liquid, glass, scale, slide.
   - data-fx-from: enum (default: auto). Where the liquid comes from: the button, icon or link that opened it (auto), or always the bottom edge. One of: auto, trigger, bottom.
+  - data-fx-side: enum (default: center). Dock the panel to an edge (a drawer or sheet) instead of the centre. One of: center, right, left, bottom, top.
+  - data-fx-size: length (default: 560px). Panel width (height for top and bottom).
+  - data-fx-root: string. Page wrapper that shrinks back with style "scale" (default: [data-fx-sheet-root], #__next, #root, #app).
   - data-fx-color: color (default: #20232e). Panel color.
+
+### drawer — Drawer [js]
+A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation.
+Example: <button data-fx-open="#edit">Edit</button>
+<dialog id="edit" data-fx="drawer" data-fx-style="glass">…<button data-fx-close>Close</button></dialog>
+Options:
+  - data-fx-side: enum (default: right). Edge it comes from. One of: right, left, bottom, top.
+  - data-fx-style: enum (default: slide). Motion and material. One of: slide, glass, scale, liquid.
+  - data-fx-size: length (default: 560px). Width (height for top and bottom).
+  - data-fx-color: color (default: #20232e). Panel color.
+  - data-fx-from: enum (default: auto). For style liquid: where the liquid comes from. One of: auto, trigger, bottom.
+  - data-fx-root: string. Page wrapper that shrinks back with style "scale".
 
 ### hovercard — Hover card [js]
 A small card that springs open right next to the hovered or focused element and stays inside the viewport.
@@ -414,6 +429,22 @@ Example: <div data-fx="ring"><figure>…</figure><figure>…</figure></div>
 Options:
   - data-fx-speed: number (default: 6). Idle rotation in degrees per second (0 = still).
   - data-fx-tilt: number (default: 8). Viewing angle in degrees.
+
+### card — Cards [hybrid]
+Five ready card designs for an image, a title, text and buttons: glow (border lights up around the cursor), product (lifts, image zooms), flip (3D flip to a back side), cover (full-bleed image, details slide up), ticket (event ticket with a perforated stub).
+Example: <article data-fx="card" data-fx-style="product"><img src="…" alt="…"><div><h3>Title</h3><p>Text</p><button data-fx="press">Buy</button></div></article>
+Options:
+  - data-fx-style: enum (default: glow). Card design. One of: glow, product, flip, cover, ticket.
+  - data-fx-color: color (default: #ffb547). Accent color.
+  - data-fx-radius: length (default: 22px). Corner radius.
+
+### press — Button press [js]
+Click feedback for buttons and links: a ripple from the click point, a burst of sparks, a fill that follows the cursor in and out, or a squish. Can swap the label to a done state ("Added ✓").
+Example: <button data-fx="press" data-fx-style="burst" data-fx-done="Added ✓">Add to cart</button>
+Options:
+  - data-fx-style: enum (default: ripple). Feedback style. One of: ripple, burst, fill, squish.
+  - data-fx-color: color. Effect color (defaults to the current text color).
+  - data-fx-done: string. Label shown for a moment after a click, e.g. "Added ✓".
 
 ## JavaScript API
 - start(options?) · stop() · refresh() · mount(root) · stats() · register(effect)
