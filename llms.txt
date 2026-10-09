@@ -261,12 +261,12 @@ Options:
   - data-fx-color: color (default: #20232e). Panel color.
 
 ### drawer — Drawer [js]
-A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation.
+A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, pushing the page aside to make room, docked next to a page that stays usable, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation.
 Example: <button data-fx-open="#edit">Edit</button>
 <dialog id="edit" data-fx="drawer" data-fx-style="glass">…<button data-fx-close>Close</button></dialog>
 Options:
   - data-fx-side: enum (default: right). Edge it comes from. One of: right, left, bottom, top.
-  - data-fx-style: enum (default: slide). Motion and material. One of: slide, glass, scale, liquid.
+  - data-fx-style: enum (default: slide). slide = spring, glass = liquid glass, scale = the page shrinks back, push = the page slides over to make room, dock = the page reflows next to the panel and stays usable, liquid = pours out of the button. One of: slide, glass, scale, push, dock, liquid.
   - data-fx-size: length (default: 560px). Width (height for top and bottom).
   - data-fx-color: color (default: #20232e). Panel color.
   - data-fx-from: enum (default: auto). For style liquid: where the liquid comes from. One of: auto, trigger, bottom.

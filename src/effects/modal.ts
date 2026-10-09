@@ -326,6 +326,45 @@ function mountDialog(el: HTMLElement, ctx: Ctx, name: string, defaults: { style:
       }
     };
 
+    // push: the page slides over to make room. dock: the page reflows next to the panel and stays usable.
+    let moveAnim: Animation | null = null;
+    let moveTarget: HTMLElement | null = null;
+    const movePage = (opening: boolean, duration: number, easing: string) => {
+      if (style !== 'push' && style !== 'dock') return;
+      if (opening) {
+        const pr = p.getBoundingClientRect();
+        const dist = Math.round((horizontal ? pr.width : pr.height) + 12);
+        const root = sheetRoot(ctx.str('root'));
+        // Transforms on <body> would break position: fixed elements, so without a page wrapper
+        // the page moves with margins instead (fixed headers and widgets stay put).
+        let frames: Keyframe[];
+        if (style === 'push' && root) {
+          const sign = side === 'right' || side === 'bottom' ? -1 : 1;
+          frames = [{ translate: '0 0' }, { translate: horizontal ? `${sign * dist}px 0` : `0 ${sign * dist}px` }];
+          moveTarget = root;
+        } else {
+          const target = style === 'dock' ? root || document.body : document.body;
+          const near = { right: 'marginRight', left: 'marginLeft', bottom: 'marginBottom', top: 'marginTop', center: 'marginRight' }[side];
+          const far = { right: 'marginLeft', left: 'marginRight', bottom: 'marginTop', top: 'marginBottom', center: 'marginLeft' }[side];
+          frames =
+            style === 'dock'
+              ? [{ [near]: '0px' }, { [near]: dist + 'px' }]
+              : [
+                  { [near]: '0px', [far]: '0px' },
+                  { [near]: dist + 'px', [far]: -dist + 'px' },
+                ];
+          moveTarget = target;
+        }
+        moveAnim = moveTarget.animate(frames, { duration, easing, fill: 'forwards' });
+      } else if (moveAnim) {
+        const a = moveAnim;
+        a.updatePlaybackRate((a.effect?.getTiming().duration as number) / Math.max(1, duration));
+        a.reverse();
+        a.finished.then(() => a.cancel());
+        moveAnim = null;
+      }
+    };
+
     const playSheet = async (opening: boolean) => {
       const { rise } = geometry();
       let frames: Keyframe[];
@@ -367,6 +406,7 @@ function mountDialog(el: HTMLElement, ctx: Ctx, name: string, defaults: { style:
         if (!opening) duration = Math.round(duration * 0.7);
       }
       if (style === 'scale') scalePage(opening, duration);
+      movePage(opening, duration, opening ? easing : 'cubic-bezier(.55,0,.75,.2)');
       // On close, play the same path backwards (the panel leaves the way it came).
       const a = p.animate(frames, { duration, easing, fill: 'both', direction: opening ? 'normal' : 'reverse' });
       anims.push(a);
@@ -380,7 +420,9 @@ function mountDialog(el: HTMLElement, ctx: Ctx, name: string, defaults: { style:
         animating = true;
         clearAnims();
         stopLiquid();
-        dlg.showModal();
+        // dock keeps the page usable next to the panel, so it opens non-modally.
+        if (style === 'dock') dlg.show();
+        else dlg.showModal();
         setState(dlg, 'opening');
         try {
           await (style === 'liquid' ? playLiquid(true) : playSheet(true));
@@ -427,10 +469,17 @@ function mountDialog(el: HTMLElement, ctx: Ctx, name: string, defaults: { style:
       if (!p.contains(t)) api.close();
     };
     dlg.addEventListener('cancel', onCancel);
+    // Non-modal dialogs get no cancel event: Esc still closes a docked panel.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && dlg.open && style === 'dock') api.close();
+    };
+    document.addEventListener('keydown', onKey);
     dlg.addEventListener('click', onClick);
 
     return () => {
       dlg.removeEventListener('cancel', onCancel);
+      document.removeEventListener('keydown', onKey);
+      moveAnim?.cancel();
       dlg.removeEventListener('click', onClick);
       stopLiquid();
       clearAnims();

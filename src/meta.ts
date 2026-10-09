@@ -410,10 +410,10 @@ const defs: Meta[] = [
     name: 'drawer',
     title: 'Drawer',
     kind: 'js',
-    desc: 'A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation.',
+    desc: 'A side panel or bottom sheet on a <dialog>: slides in with a spring, as stretchy liquid glass, with the page shrinking back behind it, pushing the page aside to make room, docked next to a page that stays usable, or as liquid out of the button that opened it. Click outside, Esc or data-fx-close closes it with the reverse animation.',
     options: {
       side: choice(['right', 'left', 'bottom', 'top'], 'right', 'Edge it comes from.'),
-      style: choice(['slide', 'glass', 'scale', 'liquid'], 'slide', 'Motion and material.'),
+      style: choice(['slide', 'glass', 'scale', 'push', 'dock', 'liquid'], 'slide', 'slide = spring, glass = liquid glass, scale = the page shrinks back, push = the page slides over to make room, dock = the page reflows next to the panel and stays usable, liquid = pours out of the button.'),
       size: len('560px', 'Width (height for top and bottom).'),
       color: color('#20232e', 'Panel color.'),
       from: choice(['auto', 'trigger', 'bottom'], 'auto', 'For style liquid: where the liquid comes from.'),

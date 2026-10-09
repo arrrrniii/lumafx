@@ -214,7 +214,7 @@
 }
 
 html.fx-loading { overflow: hidden; }
-:root:has(dialog[open]:is([data-fx~="modal"], .fx-modal, [data-fx~="drawer"], .fx-drawer)) { overflow: hidden; }
+:root:has(dialog[open]:is([data-fx~="modal"], .fx-modal, [data-fx~="drawer"], .fx-drawer):not([data-fx-style-active="dock"])) { overflow: hidden; }
 
 /* page-transition */
 .fx-pt {

@@ -1095,6 +1095,8 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
         <button class="btn outline" data-fx-open="#dr-glass">Liquid glass · left</button>
         <button class="btn outline" data-fx-open="#dr-scale">Scale · bottom sheet</button>
         <button class="btn outline" data-fx-open="#dr-liquid">Liquid · from here</button>
+        <button class="btn outline" data-fx-open="#dr-push">Push the page · right</button>
+        <button class="btn outline" data-fx-open="#dr-dock">Dock · page stays usable</button>
       </div>
       <div class="codeline"><code>&lt;dialog <b>data-fx</b>=<i>"drawer"</i> data-fx-side=<i>"right"</i> data-fx-style=<i>"glass"</i>&gt;…&lt;/dialog&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
@@ -1493,6 +1495,27 @@ Elementor, Bricks, Divi: add the class
       <div class="dr-line"><img src="img/blloku.jpg" alt=""><div><b>Rooftop sessions</b><span>1 × €18</span></div></div>
     </div>
     <footer class="dr-foot"><span>Total €108</span><button class="btn primary small" data-fx="press" data-fx-style="burst" data-fx-done="Paid ✓">Checkout</button></footer>
+  </div>
+</dialog>
+
+<dialog id="dr-push" data-fx="drawer" data-fx-style="push" data-fx-size="400" aria-labelledby="dr-push-title">
+  <div class="dr">
+    <header class="dr-head"><div><h3 id="dr-push-title">Notifications</h3><p>The whole page slid over to make room.</p></div><button class="md-x" data-fx-close aria-label="Close">×</button></header>
+    <div class="dr-body">
+      <div class="dr-line"><img src="img/theth.jpg" alt=""><div><b>Theth festival</b><span>Tickets go on sale Friday</span></div></div>
+      <div class="dr-line"><img src="img/durres.jpg" alt=""><div><b>Durrës sunset set</b><span>12 friends are going</span></div></div>
+      <div class="dr-line"><img src="img/valbona.jpg" alt=""><div><b>Valbona hike</b><span>2 spots left</span></div></div>
+    </div>
+  </div>
+</dialog>
+<dialog id="dr-dock" data-fx="drawer" data-fx-side="left" data-fx-style="dock" data-fx-size="320" aria-labelledby="dr-dock-title">
+  <div class="dr">
+    <header class="dr-head"><div><h3 id="dr-dock-title">Docked panel</h3><p>The page reflowed next to it and still scrolls and clicks.</p></div><button class="md-x" data-fx-close aria-label="Close">×</button></header>
+    <div class="dr-body dr-checks">
+      <label><input type="checkbox" checked> Show prices</label>
+      <label><input type="checkbox"> Compact cards</label>
+      <label><input type="checkbox" checked> Albanian labels</label>
+    </div>
   </div>
 </dialog>
 

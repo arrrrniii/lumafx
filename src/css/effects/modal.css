@@ -101,6 +101,25 @@
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
+/* Push: the page slides aside, so the backdrop barely dims it. */
+&[data-fx-style-active="push"]::backdrop {
+  background: rgb(0 0 0 / .16);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Dock: non-modal, only as big as the panel, so the page next to it stays clickable. */
+&[data-fx-style-active="dock"] { z-index: 2147482900; }
+&[data-fx-style-active="dock"]:is([data-fx-side-active="right"], [data-fx-side-active="left"]) {
+  inset: 0 0 0 auto;
+  width: calc(min(var(--_md-size), 100vw - 24px) + 24px);
+  max-width: 100vw;
+}
+&[data-fx-style-active="dock"][data-fx-side-active="left"] { inset: 0 auto 0 0; }
+&[data-fx-style-active="dock"]:is([data-fx-side-active="bottom"], [data-fx-side-active="top"]) {
+  inset: auto 0 0 0;
+  height: calc(min(var(--_md-size), 100vh - 24px) + 24px);
+}
+&[data-fx-style-active="dock"][data-fx-side-active="top"] { inset: 0 0 auto 0; }
 /* Scale: the page itself shrinks back, so the backdrop only dims it. */
 &[data-fx-style-active="scale"]::backdrop {
   background: rgb(0 0 0 / .3);

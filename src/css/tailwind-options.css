@@ -39,7 +39,7 @@
 
 /* Enumerated options: the class sets the variable for JS and is matched by the effect CSS. */
 @utility fx-split-* { --fx-split: --value('words', 'chars', 'lines'); }
-@utility fx-style-* { --fx-style: --value('blur', 'rise', 'flip', 'fade', 'scale', 'default', 'wave', 'curtain', 'circle', 'slide', 'liquid', 'glass', 'glow', 'product', 'cover', 'ticket', 'ripple', 'burst', 'fill', 'squish'); }
+@utility fx-style-* { --fx-style: --value('blur', 'rise', 'flip', 'fade', 'scale', 'default', 'wave', 'curtain', 'circle', 'slide', 'liquid', 'glass', 'glow', 'product', 'cover', 'ticket', 'ripple', 'burst', 'fill', 'squish', 'push', 'dock'); }
 @utility fx-trigger-* { --fx-trigger: --value('view', 'load', 'hover', 'loop'); }
 @utility fx-from-* { --fx-from: --value('up', 'down', 'left', 'right', 'zoom', 'blur', 'book', 'clip', 'center', 'circle', 'diagonal', 'auto', 'trigger', 'bottom'); }
 @utility fx-mode-* { --fx-mode: --value('beam', 'full', 'liquid', 'frost', 'view', 'scroll'); }
