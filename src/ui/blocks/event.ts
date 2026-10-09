@@ -79,6 +79,9 @@ export const events: Record<string, Renderer> = {
     const start = b.start ? new Date(b.start) : null;
     const day = start && !Number.isNaN(start.getTime()) ? `<span class="fxui-datebox"><b>${fmtDate(c, b.start, 'dom')}</b><small>${fmtDate(c, b.start, 'month')}</small></span>` : '';
     const ph = phase(c, b.start, b.end);
+    const salesEnd = Date.parse(b.salesEnd);
+    const salesOver = Number.isFinite(salesEnd) && salesEnd <= c.now;
+    if (Number.isFinite(salesEnd) && !salesOver) c.expire(salesEnd);
     const recap = safeUrl(b.recap);
     const badge =
       ph === 'after' && b.status !== 'cancelled' && b.status !== 'postponed'
@@ -91,11 +94,11 @@ export const events: Record<string, Renderer> = {
         ? recap
           ? `<a class="fxui-btn" data-variant="secondary" ${linkAttrs(recap)}>${esc(b.recapLabel || c.t('recap'))}${icon('arrow')}</a>`
           : ''
-        : u && b.status !== 'sold-out' && b.status !== 'cancelled'
+        : u && !salesOver && b.status !== 'sold-out' && b.status !== 'cancelled'
           ? `<a class="fxui-btn" data-variant="primary" ${linkAttrs(u)}>${icon('ticket')}${esc(b.cta ?? c.t('buy'))}</a>`
           : '';
-    const price = ph !== 'after' && typeof b.priceFrom === 'number' ? `<span class="fxui-price"><small>${esc(c.t('from'))}</small> <strong>${money(c, b.priceFrom, b.currency)}</strong></span>` : '';
-    const seller = ph !== 'after' && b.seller ? `<small class="fxui-seller">${esc(c.t('ticketsAt'))} ${esc(b.seller)}</small>` : '';
+    const price = ph !== 'after' && !salesOver && typeof b.priceFrom === 'number' ? `<span class="fxui-price"><small>${esc(c.t('from'))}</small> <strong>${money(c, b.priceFrom, b.currency)}</strong></span>` : '';
+    const seller = ph !== 'after' && !salesOver && b.seller ? `<small class="fxui-seller">${esc(c.t('ticketsAt'))} ${esc(b.seller)}</small>` : '';
     return `<article class="fxui-eventcard${img ? '' : ' fxui-noimg'}" data-phase="${ph}">${img ? `<div class="fxui-media"><img src="${esc(img)}" alt="" loading="lazy">${day}</div>` : ''}<div class="fxui-body"><div class="fxui-row">${b.category ? `<span class="fxui-chip">${esc(b.category)}</span>` : '<span></span>'}${badge}</div><strong class="fxui-name">${esc(b.name)}</strong>${
       arr(b.artists).length ? `<span class="fxui-meta">${arr(b.artists).map(esc).join(' · ')}</span>` : ''
     }<ul class="fxui-facts">${when ? `<li>${icon('calendar')}<span>${when}</span></li>` : ''}${v.name ? `<li>${icon('pin')}<span>${esc([v.name, v.city].filter(Boolean).join(', '))}</span></li>` : ''}</ul><div class="fxui-row">${price || seller ? `<span class="fxui-pricebox">${price}${seller}</span>` : '<span></span>'}${action}</div></div></article>`;

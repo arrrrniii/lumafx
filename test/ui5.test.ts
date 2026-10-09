@@ -37,6 +37,13 @@ describe('time-aware blocks', () => {
     expect(snap).toContain('https://sphere.al/sport/matches/x');
     expect(snap).not.toContain('Lexo kronikën');
     expect(validate([{ ...ev, start: at(1), recapLabel: 'x' }]).ok).toBe(true);
+    // A match stops selling at kickoff even though it is still on.
+    const live = renderToString([{ ...ev, start: at(-1), salesEnd: at(-1) }], { now: NOW, embed: false });
+    expect(live).toContain('Happening now');
+    expect(live).not.toContain('Buy tickets');
+    const soon = renderToString([{ ...ev, start: at(3), salesEnd: at(2) }], { now: NOW, embed: false });
+    expect(soon).toContain('Buy tickets');
+    expect(soon).toContain(`data-expires="${NOW + 2 * H}"`);
   });
 
   it('the date box shows the day number and the month in the page language, whatever the locale order', () => {

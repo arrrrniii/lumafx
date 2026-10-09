@@ -334,6 +334,7 @@ export const BLOCKS: BlockDef[] = [
     url: opt(S.url()),
     cta: opt(S.str()),
     seller: opt(S.str('Where tickets are sold when it is not here, e.g. Kookooli.')),
+    salesEnd: opt(S.date('When ticket sales stop if earlier than the end, e.g. kickoff for a match.')),
     recap: opt(S.url('Shown instead of the ticket button once the event is over: the result, a recap or the event page.')),
     recapLabel: opt(S.str('Label for that link, e.g. "See the result".')),
   }, { type: 'event', name: 'Albania – San Marino', start: '2026-10-06T20:45:00+02:00', venue: { name: 'Air Albania Stadium', city: 'Tirana' }, priceFrom: 10, currency: 'EUR', status: 'on-sale' }),

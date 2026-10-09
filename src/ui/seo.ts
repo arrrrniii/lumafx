@@ -78,7 +78,7 @@ function performers(blocks: Block[]): Node[] {
     );
 }
 
-function offers(tickets: Block | undefined, fallback: { price?: number; currency?: string; url?: string; status?: string }): Node | Node[] | undefined {
+function offers(tickets: Block | undefined, fallback: { price?: number; currency?: string; url?: string; status?: string; until?: string }): Node | Node[] | undefined {
   if (tickets) {
     const cur = iso4217(tickets.currency);
     const list = arr(tickets.tiers).map((t) =>
@@ -89,13 +89,13 @@ function offers(tickets: Block | undefined, fallback: { price?: number; currency
         priceCurrency: cur,
         availability: availability(t.status, t.remaining),
         url: safeUrl(tickets.url) || fallback.url || undefined,
-        validThrough: tickets.closes,
+        validThrough: tickets.closes ?? fallback.until,
       }),
     );
     if (list.length) return list;
   }
   if (typeof fallback.price === 'number')
-    return clean({ '@type': 'Offer', price: money(fallback.price), priceCurrency: iso4217(fallback.currency), url: fallback.url, availability: availability(fallback.status) });
+    return clean({ '@type': 'Offer', price: money(fallback.price), priceCurrency: iso4217(fallback.currency), url: fallback.url, availability: availability(fallback.status), validThrough: fallback.until });
   return undefined;
 }
 
@@ -127,7 +127,7 @@ export function jsonLd(input: unknown, meta: PageMeta = {}): { '@context': strin
           location: place(b.venue, venue),
           image: safeUrl(b.image) || undefined,
           url: safeUrl(b.url) || undefined,
-          offers: offers(tickets, { price: b.priceFrom, currency: b.currency, url: safeUrl(b.url) || undefined, status: b.status }),
+          offers: offers(tickets, { price: b.priceFrom, currency: b.currency, url: safeUrl(b.url) || undefined, status: b.status, until: b.salesEnd }),
           performer: perf.length ? perf : arr<string>(b.artists).map((name) => ({ '@type': 'PerformingGroup', name })),
         });
         graph.push(node);
