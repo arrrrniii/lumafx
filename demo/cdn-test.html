@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lumafx CDN test</title>
+
+<script>
+  // Test page only: remembers any file the browser could not load.
+  window.loadFailures = [];
+  function failed(url) { window.loadFailures.push(url); }
+</script>
+
+<!-- ============ The only lines you need on your own site ============ -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx.css" onerror="failed(this.href)">
+<script src="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx.global.js" onerror="failed(this.src)"></script>
+<!-- Intelligent UI (optional) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx-ui.css" onerror="failed(this.href)">
+<script src="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx-ui.global.js" defer onerror="failed(this.src)"></script>
+<!-- ================================================================== -->
+
+<style>
+  :root {
+    --bg: #0b0c12; --card: #12141c; --card-2: #191c27; --line: #262a39; --fg: #ecebe6; --muted: #9296a7;
+    --accent: #ffb547; --good: #3ecf8e; --bad: #ff5d5d; color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #eceef3; --card: #ffffff; --card-2: #f4f5f9; --line: #d5d9e3; --fg: #141620; --muted: #596073; --accent: #b8660a; --good: #0f8a55; --bad: #c62828; color-scheme: light; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 40px 16px 80px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 44px; }
+  h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1; letter-spacing: -.03em; margin: 0; }
+  h2 { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 600; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+  code { font: 13px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+  /* Status panel */
+  .checks { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .check { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  .check i { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 13px/1 system-ui; font-style: normal; background: var(--card-2); color: var(--muted); }
+  .check[data-ok="true"] i { background: color-mix(in oklab, var(--good) 20%, transparent); color: var(--good); }
+  .check[data-ok="false"] i { background: color-mix(in oklab, var(--bad) 20%, transparent); color: var(--bad); }
+  .check b { display: block; font-size: 14px; }
+  .check span { font-size: 13px; color: var(--muted); }
+  .summary { margin-top: 12px; font-weight: 600; }
+  .snippet { margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: var(--card-2); border: 1px solid var(--line); overflow-x: auto; white-space: pre; color: var(--muted); }
+
+  /* Effect demos */
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card { padding: 22px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); min-height: 150px; display: grid; align-content: space-between; gap: 18px; }
+  .card small { font: 12px ui-monospace, Menlo, monospace; color: var(--muted); }
+  .card h3 { margin: 0; font-size: 1.15rem; }
+  .big { font-size: 2.4rem; font-weight: 800; letter-spacing: -.02em; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn { border: 0; cursor: pointer; border-radius: 999px; padding: 13px 22px; font: 600 15px/1 system-ui; text-decoration: none; display: inline-block; }
+  .btn.primary { background: var(--accent); color: #1b1204; }
+  .btn.outline { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 1px var(--line); }
+  .scene { padding: 34px 22px; border-radius: 18px; background: linear-gradient(120deg, #ff9a3c, #b2397a 45%, #2f8fff); }
+  .scene nav { display: flex; justify-content: space-between; gap: 16px; padding: 14px 22px; border-radius: 999px; color: #fff; font-weight: 600; }
+  .ticker { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; padding-block: 8px; }
+  .ticker span { padding-inline: 18px; }
+</style>
+</head>
+<body>
+<main>
+
+  <header style="display:grid;gap:14px">
+    <p class="muted"><code>@v0.5.0</code> from jsDelivr</p>
+    <h1 data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip" data-fx-trigger="load">lumafx CDN test</h1>
+    <p class="muted">This page loads lumafx from jsDelivr, exactly like the README. Every check below should turn green.</p>
+  </header>
+
+  <section>
+    <h2>Checks</h2>
+    <div class="checks">
+      <div class="check" id="c-css"><i>…</i><div><b>lumafx.css</b><span>waiting</span></div></div>
+      <div class="check" id="c-js"><i>…</i><div><b>lumafx.global.js</b><span>waiting</span></div></div>
+      <div class="check" id="c-uicss"><i>…</i><div><b>lumafx-ui.css</b><span>waiting</span></div></div>
+      <div class="check" id="c-uijs"><i>…</i><div><b>lumafx-ui.global.js</b><span>waiting</span></div></div>
+    </div>
+    <p class="summary" id="summary">Checking…</p>
+    <div class="snippet"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx.global.js"&gt;&lt;/script&gt;</code></div>
+  </section>
+
+  <section>
+    <h2>Effects</h2>
+    <div class="grid">
+      <div class="card" id="beam" data-fx="border-beam"><small>data-fx="border-beam"</small><h3>A beam circles the edge</h3></div>
+      <div class="card" data-fx="spotlight"><small>data-fx="spotlight"</small><h3>Move the mouse over me</h3></div>
+      <div class="card" data-fx="tilt"><small>data-fx="tilt"</small><h3 data-fx-depth="40">I tilt toward the cursor</h3></div>
+      <div class="card"><small>data-fx="counter"</small><strong class="big" data-fx="counter">18,420</strong></div>
+      <div class="card"><small>data-fx="scramble" (hover)</small><h3 data-fx="scramble" data-fx-trigger="hover">Hover to decode me</h3></div>
+      <div class="card" data-fx="reveal" data-fx-from="blur"><small>data-fx="reveal"</small><h3>I faded in from a blur</h3></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Buttons</h2>
+    <div class="buttons">
+      <a class="btn primary" href="#" data-fx="shine magnetic" onclick="return false">Shine + magnetic</a>
+      <button class="btn outline" data-fx="press" data-fx-style="burst" data-fx-done="Added ✓">Press me</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Glass</h2>
+    <div class="scene"><nav data-fx="glass"><span>Ksamil</span><span>Stays</span><span>Tours</span><span>Book</span></nav></div>
+  </section>
+
+  <section>
+    <h2>Marquee</h2>
+    <div class="ticker" data-fx="marquee"><span>Tirana</span><span>Theth</span><span>Ksamil</span><span>Berat</span><span>Gjirokastër</span><span>Valbona</span></div>
+  </section>
+
+  <section>
+    <h2>Intelligent UI</h2>
+    <fx-ui lang="en" time-zone="Europe/Tirane">
+      <script type="application/json">
+      {"blocks": [
+        {"type": "stats", "items": [
+          {"label": "Tickets sold", "value": 18420, "delta": 12, "period": "vs. last match"},
+          {"label": "Capacity", "value": 92, "unit": "%"},
+          {"label": "Gates open", "value": "18:00"}
+        ]},
+        {"type": "match", "home": {"name": "Shqipëria"}, "away": {"name": "San Marino"}, "kickoff": "2026-11-14T20:45:00+01:00"},
+        {"type": "table", "title": "Group table", "columns": [
+          {"label": "Team"}, {"label": "Played", "format": "number"}, {"label": "Points", "format": "number", "bar": true}
+        ], "rows": [["Shqipëria", 4, 9], ["Serbia", 4, 7], ["Latvia", 4, 4], ["Andorra", 4, 1]]},
+        {"type": "chart", "kind": "column", "title": "Goals per match", "labels": ["26 Sep", "29 Sep", "3 Oct", "6 Oct"],
+         "series": [{"name": "Goals", "values": [2, 3, 1, 4]}]}
+      ]}
+      </script>
+    </fx-ui>
+  </section>
+
+</main>
+
+<script>
+  // Test page only: each check proves its file loaded and works.
+  function mark(id, ok, text) {
+    const el = document.getElementById(id);
+    el.dataset.ok = ok;
+    el.querySelector('i').textContent = ok ? '✓' : '✕';
+    el.querySelector('span').textContent = text;
+  }
+  function runChecks() {
+    const fails = window.loadFailures;
+    const failedFile = (name) => fails.find((u) => u.endsWith('/' + name));
+
+    // lumafx.css: border-beam is pure CSS, so its animation only exists when the stylesheet loaded.
+    const beam = getComputedStyle(document.getElementById('beam'), '::before').animationName;
+    const cssOk = beam.includes('fx-spin');
+    mark('c-css', cssOk, cssOk ? 'Loaded, border-beam is animating' : failedFile('lumafx.css') ? 'Could not download the file' : 'Loaded but no styles found');
+
+    // lumafx.global.js: the global object, its version and the effects it registered.
+    const lx = window.lumafx;
+    const jsOk = !!(lx && lx.version);
+    mark('c-js', jsOk, jsOk ? `v${lx.version}, ${lx.effects.length} effects` : failedFile('lumafx.global.js') ? 'Could not download the file' : 'window.lumafx is missing');
+
+    // lumafx-ui.css: a probe element picks up the UI theme variables.
+    const probe = document.createElement('div');
+    probe.className = 'fxui';
+    probe.hidden = true;
+    document.body.append(probe);
+    const uiCssOk = getComputedStyle(probe).getPropertyValue('--fxui-card').trim() !== '';
+    probe.remove();
+    mark('c-uicss', uiCssOk, uiCssOk ? 'Loaded, UI theme found' : failedFile('lumafx-ui.css') ? 'Could not download the file' : 'Loaded but no UI styles found');
+
+    // lumafx-ui.global.js: the ui API exists and <fx-ui> rendered its blocks.
+    const rendered = document.querySelectorAll('fx-ui .fxui-b').length;
+    const uiJsOk = !!(lx && lx.ui) && rendered > 0;
+    mark('c-uijs', uiJsOk, uiJsOk ? `Rendered ${rendered} blocks` : failedFile('lumafx-ui.global.js') ? 'Could not download the file' : '<fx-ui> did not render');
+
+    const all = cssOk && jsOk && uiCssOk && uiJsOk;
+    const summary = document.getElementById('summary');
+    summary.textContent = all ? 'Everything loaded from the CDN and works.' : 'Something is missing. Open DevTools → Network to see which file failed.' + (fails.length ? ' Failed: ' + fails.join(', ') : '');
+    summary.style.color = all ? 'var(--good)' : 'var(--bad)';
+  }
+  addEventListener('load', () => setTimeout(runChecks, 600));
+</script>
+</body>
+</html>

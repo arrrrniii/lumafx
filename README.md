@@ -67,7 +67,7 @@ Plain HTML, Webflow, Framer embeds, any CMS. The files come from this repository
 <nav data-fx="glass">…</nav>
 ```
 
-Put the script in `<head>` (no `defer`) so reveal effects never flash. Several effects on one element: `data-fx="tilt spotlight"`. Prefer to host the files yourself? Download `dist/` from a release and serve it from your own domain.
+Put the script in `<head>` (no `defer`) so reveal effects never flash. Several effects on one element: `data-fx="tilt spotlight"`. Prefer to host the files yourself? Download `dist/` from a release and serve it from your own domain. To see these exact links working, open the [CDN test page](https://arrrrniii.github.io/lumafx/cdn-test.html).
 
 | File | For |
 | --- | --- |
