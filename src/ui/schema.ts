@@ -104,12 +104,14 @@ export const BLOCKS: BlockDef[] = [
   B('tabs', 'content', 'Tabs, each holding blocks.', { tabs: S.arr(S.obj({ label: S.str(), blocks: S.blocks() })) }, { type: 'tabs', tabs: [{ label: 'Preview', blocks: [] }] }),
   B('faq', 'content', 'Questions that expand to answers.', { items: S.arr(S.obj({ q: S.str(), a: S.md() })) }, { type: 'faq', items: [{ q: 'Is the lineup confirmed?', a: 'Yes, all eleven.' }] }),
   B('details', 'content', 'Label and value pairs, such as match or event facts.', { items: S.arr(S.obj({ label: S.str(), value: S.str(), icon: opt(S.str('One emoji.')), url: opt(S.url()) })) }, { type: 'details', items: [{ label: 'Stadium', value: 'Air Albania, Tirana', icon: '🏟' }] }),
-  B('table', 'data', 'A table. Rows are arrays of cells in column order.', {
-    columns: S.arr(S.obj({ label: S.str(), align: opt(S.en(['left', 'center', 'right'])), format: opt(S.en(['text', 'number', 'percent', 'money', 'date'])) })),
+  B('table', 'data', 'A table. Rows are arrays of cells in column order. Readers can sort it by any column; number columns can show bars.', {
+    columns: S.arr(S.obj({ label: S.str(), align: opt(S.en(['left', 'center', 'right'])), format: opt(S.en(['text', 'number', 'percent', 'money', 'date', 'datetime'])), bar: opt(S.bool('Draw this number column as bars too.')) })),
     rows: S.arr(S.arr(S.cell())),
     highlight: opt(S.int('Row index to highlight.')),
     currency: opt(S.str('ISO code for money columns.')),
-  }, { type: 'table', columns: [{ label: 'Team' }, { label: 'Points', align: 'right' }], rows: [['Team A', 12]] }),
+    sortable: opt(S.bool('Sort by clicking a column (default: on from 3 rows).')),
+    filter: opt(S.bool('A search box over the rows (default: on from 12 rows).')),
+  }, { type: 'table', columns: [{ label: 'Team' }, { label: 'Points', align: 'right', bar: true }], rows: [['Team A', 12]] }),
   B('stats', 'data', 'Headline numbers.', {
     items: S.arr(S.obj({ label: S.str(), value: S.cell(), unit: opt(S.str()), delta: opt(S.num('Change in % vs. the previous period.')), period: opt(S.str('What the delta compares to.')), good: opt(S.en(['up', 'down'], 'Which direction is good.')), trend: opt(S.arr(S.num())) })),
   }, { type: 'stats', items: [{ label: 'Tickets sold', value: 18420, delta: 12, period: 'vs. last match' }] }),
@@ -518,7 +520,11 @@ function check(type: T, v: unknown, path: string, errors: UIError[], o: Validate
         const p = `${path}[${i}]`;
         const before = errors.length;
         const c = of.kind === 'block' ? checkBlock(item, p, errors, o) : check(of, item, p, errors, o);
-        if (c === undefined) return;
+        if (c === undefined) {
+          // An empty table cell keeps its place, or every cell after it moves one column left.
+          if (of.kind === 'cell') out.push('');
+          return;
+        }
         if (required.some((k) => (c as Record<string, unknown>)[k] === undefined)) {
           if (o.partial) errors.length = before;
           else if (errors.length === before) errors.push({ path: p, message: 'missing required fields' });

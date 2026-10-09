@@ -30,6 +30,7 @@ function cellText(c: Ctx, v: unknown, format?: string, currency?: string) {
     return fmtNum(c, v, { maximumFractionDigits: 2 });
   }
   if (format === 'date') return fmtDate(c, v, 'date');
+  if (format === 'datetime') return fmtDate(c, v, 'datetime');
   return esc(v);
 }
 
@@ -166,10 +167,39 @@ const WIND_ICON = (s: string) => (s && icon(s)) || icon('cloud');
 export const data: Record<string, Renderer> = {
   table: (b, c) => {
     const cols = arr(b.columns);
-    const rows = arr(b.rows);
-    return `<div class="fxui-scroll"><table class="fxui-table"><thead><tr>${cols.map((col) => `<th scope="col" data-align="${esc(col.align ?? (col.format && col.format !== 'text' ? 'right' : 'left'))}">${esc(col.label)}</th>`).join('')}</tr></thead><tbody>${rows
-      .map((r, i) => `<tr data-k="r${i}"${b.highlight === i ? ' aria-current="true"' : ''}>${arr(r).map((cell, j) => `<td data-align="${esc(cols[j]?.align ?? (typeof cell === 'number' || (cols[j]?.format && cols[j]?.format !== 'text') ? 'right' : 'left'))}">${cellText(c, cell, cols[j]?.format, b.currency)}</td>`).join('')}</tr>`)
-      .join('')}</tbody></table></div>`;
+    const rows = arr(b.rows).map((r) => arr(r));
+    const sortable = b.sortable ?? rows.length >= 3;
+    const filter = b.filter ?? rows.length >= 12;
+    const align = (j: number, cell?: unknown) => cols[j]?.align ?? (typeof cell === 'number' || ['number', 'percent', 'money'].includes(cols[j]?.format) ? 'right' : 'left');
+    // Bars are drawn against the largest value in their column.
+    const max = cols.map((col, j) => (col.bar ? Math.max(0, ...rows.map((r) => (typeof r[j] === 'number' ? Math.abs(r[j] as number) : 0))) : 0));
+    const key = (v: unknown, format?: string) => (typeof v === 'number' ? String(v) : (format === 'date' || format === 'datetime') && typeof v === 'string' && Number.isFinite(Date.parse(v)) ? String(Date.parse(v)) : String(v ?? ''));
+    const head = cols
+      .map((col, j) => {
+        const label = esc(col.label);
+        return `<th scope="col" data-align="${esc(align(j, rows[0]?.[j]))}"${sortable ? ` aria-sort="none"><button type="button" class="fxui-sort" data-col="${j}" aria-label="${esc(`${c.t('sortBy')} ${col.label}`)}">${label}<i aria-hidden="true"></i></button></th>` : `>${label}</th>`}`;
+      })
+      .join('');
+    const body = rows
+      .map(
+        (r, i) =>
+          `<tr data-k="r${i}" data-i="${i}"${b.highlight === i ? ' aria-current="true"' : ''}>${r
+            .map((cell, j) => {
+              const col = cols[j] ?? {};
+              const text = cellText(c, cell, col.format, b.currency);
+              const wrap = typeof cell === 'string' && cell.length > 24 ? ' data-wrap' : '';
+              const sortKey = sortable ? ` data-v="${esc(key(cell, col.format))}"` : '';
+              if (col.bar && typeof cell === 'number' && max[j] > 0)
+                return `<td data-align="right" class="fxui-barcell"${sortKey}><span class="fxui-cellbar" style="--w:${((Math.abs(cell) / max[j]) * 100).toFixed(1)}" aria-hidden="true"></span><span>${text}</span></td>`;
+              return `<td data-align="${esc(align(j, cell))}"${wrap}${sortKey}>${text}</td>`;
+            })
+            .join('')}</tr>`,
+      )
+      .join('');
+    const search = filter ? `<label class="fxui-tfilter">${icon('search')}<input type="search" placeholder="${esc(c.t('filterRows'))}" aria-label="${esc(c.t('filterRows'))}"></label>` : '';
+    return `<div class="fxui-tablewrap"${sortable ? ' data-sortable' : ''}>${search}<div class="fxui-scroll"><table class="fxui-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>${
+      filter ? `<p class="fxui-tempty" hidden>${esc(c.t('nothing'))}</p>` : ''
+    }</div>`;
   },
 
   stats: (b, c) =>

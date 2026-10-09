@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { renderToString, jsonLd, jsonLdScript, parseVideo, toText, validate } from '../src/ui/server';
-import { render, hydrate } from '../src/ui/index';
+import { render, hydrate, update } from '../src/ui/index';
 import { tick } from './setup';
 
 const NOW = Date.parse('2026-10-09T15:00:00+02:00');
@@ -247,5 +247,76 @@ describe('structured data', () => {
     const s = jsonLdScript({ blocks: [{ type: 'faq', items: [{ q: '</script><script>alert(1)</script>', a: 'x' }] }] });
     expect(s.match(/<\/script>/g)).toHaveLength(1);
     expect(s).toContain('\\u003c/script');
+  });
+});
+
+describe('tables readers can work with', () => {
+  const doc = {
+    lang: 'sq',
+    blocks: [
+      {
+        type: 'table',
+        columns: [{ label: 'Ndeshja' }, { label: 'Data', format: 'date' }, { label: 'Gola', bar: true }],
+        rows: [
+          ['Shqipëri–Bjellorusi', '2026-09-26', 2],
+          ['San Marino–Shqipëri', '2026-09-29', 3],
+          ['Finlandë–Shqipëri', '2026-10-03', 1],
+          ['Shqipëri–San Marino', '2026-10-06', 2],
+        ],
+      },
+    ],
+  };
+
+  it('keeps empty cells in their column', () => {
+    const t = validate({ blocks: [{ type: 'table', columns: [{ label: 'a' }, { label: 'b' }, { label: 'c' }], rows: [['x', '', 'z'], ['x', null, 'z']] }] }).doc.blocks[0] as any;
+    expect(t.rows).toEqual([['x', '', 'z'], ['x', '', 'z']]);
+  });
+
+  it('draws number columns as bars against the column maximum, server side', () => {
+    const html = renderToString(doc, { embed: false });
+    expect(html).toContain('aria-sort="none"');
+    expect(html).toContain('Rendit sipas Gola');
+    expect(html).toMatch(/--w:100\.0"[\s\S]*?>3</);
+    expect(html).toMatch(/--w:33\.3"/);
+    expect(html).not.toContain('fxui-tfilter'); // short tables have no search box
+  });
+
+  it('sorts by a column (numbers largest first, then reversed) and searches the rows', () => {
+    const el = mount();
+    render(el, { ...doc, blocks: [{ ...doc.blocks[0], filter: true }] });
+    const names = () => Array.from(el.querySelectorAll('tbody tr')).map((r) => r.querySelector('td')!.textContent);
+    const btn = (i: number) => el.querySelectorAll<HTMLButtonElement>('.fxui-sort')[i];
+    btn(2).click();
+    expect(names()[0]).toBe('San Marino–Shqipëri');
+    expect(names()[3]).toBe('Finlandë–Shqipëri');
+    expect(el.querySelectorAll('thead th')[2].getAttribute('aria-sort')).toBe('descending');
+    btn(2).click();
+    expect(names()[0]).toBe('Finlandë–Shqipëri');
+    btn(1).click(); // dates: newest first
+    expect(names()).toEqual(['Shqipëri–San Marino', 'Finlandë–Shqipëri', 'San Marino–Shqipëri', 'Shqipëri–Bjellorusi']);
+    btn(0).click();
+    expect(names()[0]).toBe('Finlandë–Shqipëri');
+    const input = el.querySelector<HTMLInputElement>('.fxui-tfilter input')!;
+    input.value = 'san marino';
+    input.dispatchEvent(new Event('input'));
+    expect(Array.from(el.querySelectorAll<HTMLElement>('tbody tr')).filter((r) => !r.hidden)).toHaveLength(2);
+    input.value = 'zzz';
+    input.dispatchEvent(new Event('input'));
+    expect(el.querySelector<HTMLElement>('.fxui-tempty')!.hidden).toBe(false);
+  });
+
+  it('keeps the reader’s sort and search when a live table gets fresh rows', () => {
+    const el = mount();
+    const live = { ...doc.blocks[0], id: 'alb', filter: true };
+    render(el, { lang: 'sq', blocks: [live] });
+    el.querySelectorAll<HTMLButtonElement>('.fxui-sort')[2].click();
+    const input = el.querySelector<HTMLInputElement>('.fxui-tfilter input')!;
+    input.value = 'shqipëri';
+    input.dispatchEvent(new Event('input'));
+    update(el, 'alb', { rows: [...live.rows, ['Shqipëri–Finlandë', '2026-11-12', 4]] });
+    const first = el.querySelector('tbody tr')!.querySelector('td')!.textContent;
+    expect(first).toBe('Shqipëri–Finlandë');
+    expect(el.querySelectorAll('thead th')[2].getAttribute('aria-sort')).toBe('descending');
+    expect(el.querySelector<HTMLInputElement>('.fxui-tfilter input')!.value).toBe('shqipëri');
   });
 });

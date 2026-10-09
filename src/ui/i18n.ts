@@ -109,6 +109,8 @@ const L: Record<string, Record<string, string>> = {
     unconfirmed: 'Unconfirmed',
     analysis: 'Analysis',
     nothing: 'Nothing here right now.',
+    sortBy: 'Sort by',
+    filterRows: 'Search the table',
   },
   sq: {
     live: 'Live',
@@ -219,6 +221,8 @@ const L: Record<string, Record<string, string>> = {
     unconfirmed: 'I pakonfirmuar',
     analysis: 'Analizë',
     nothing: 'Asgjë për momentin.',
+    sortBy: 'Rendit sipas',
+    filterRows: 'Kërko në tabelë',
   },
 };
 

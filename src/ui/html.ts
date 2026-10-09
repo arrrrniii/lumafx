@@ -190,6 +190,7 @@ export const ICONS: Record<string, string> = {
   warn: svg('<path d="M12 3.5l9 16H3z"/><path d="M12 10v4.5M12 17.5v.01"/>'),
   bulb: svg('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>'),
   play: svg('<path d="M8 5.5v13l10.5-6.5z"/>'),
+  search: svg('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'),
   table: svg('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>'),
   spotify: svg('<circle cx="12" cy="12" r="8.6"/><path d="M7.6 9.6c3-.9 6.4-.6 9 .9M8.2 12.6c2.4-.7 5-.4 7.2.8M8.8 15.4c1.9-.5 3.8-.3 5.5.6"/>'),
   youtube: svg('<rect x="2.8" y="5.5" width="18.4" height="13" rx="3.6"/><path d="M10.2 9.4v5.2l4.4-2.6z" fill="currentColor"/>'),

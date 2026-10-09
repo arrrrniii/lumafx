@@ -16,7 +16,98 @@ const emit = (el: Element, name: string, detail: unknown) => el.dispatchEvent(ne
 
 /* ------------------------------------------------------------------ interactivity per block */
 
+const tableState = new Map<string, { col?: number; dir?: 'ascending' | 'descending'; q?: string }>();
+
 const MOUNTS: Record<string, Mount> = {
+  // Sort by a column (numbers largest first, text A to Z; again to reverse) and search the rows.
+  // A live table keeps the reader's sort and search when fresh rows arrive.
+  table(el, b, c) {
+    const wrap = el.querySelector<HTMLElement>('.fxui-tablewrap');
+    const tbody = el.querySelector<HTMLTableSectionElement>('tbody');
+    if (!wrap || !tbody) return;
+    const offs: Cleanup[] = [];
+    const key = (b.live as { id?: string } | undefined)?.id ?? (typeof b.id === 'string' ? b.id : undefined);
+    const saved = key ? tableState.get(key) ?? {} : {};
+    const heads = Array.from(el.querySelectorAll<HTMLTableCellElement>('thead th'));
+    const sortBy = (col: number, dir: 'ascending' | 'descending') => {
+      const th = heads[col];
+      if (!th) return;
+      const rows = Array.from(tbody.rows);
+      const vals = rows.map((r) => r.cells[col]?.dataset.v ?? '');
+      const numeric = vals.every((v) => v === '' || Number.isFinite(Number(v)));
+      const sign = dir === 'ascending' ? 1 : -1;
+      const collator = new Intl.Collator(c.locale, { numeric: true, sensitivity: 'base' });
+      const order = rows
+        .map((r, i) => ({ r, v: vals[i] }))
+        .sort((x, y) => {
+          if (x.v === '' || y.v === '') return x.v === y.v ? 0 : x.v === '' ? 1 : -1; // empty cells last
+          return sign * (numeric ? Number(x.v) - Number(y.v) : collator.compare(x.v, y.v));
+        });
+      tbody.append(...order.map((o) => o.r));
+      heads.forEach((h) => h.hasAttribute('aria-sort') && h.setAttribute('aria-sort', h === th ? dir : 'none'));
+      saved.col = col;
+      saved.dir = dir;
+    };
+    const onSort = (e: Event) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.fxui-sort');
+      if (!btn) return;
+      const col = Number(btn.dataset.col);
+      const was = heads[col]?.getAttribute('aria-sort');
+      const numeric = Array.from(tbody.rows).every((r) => {
+        const v = r.cells[col]?.dataset.v ?? '';
+        return v === '' || Number.isFinite(Number(v));
+      });
+      const dir = was === 'none' || !was ? (numeric ? 'descending' : 'ascending') : was === 'ascending' ? 'descending' : 'ascending';
+      sortBy(col, dir);
+      if (key) tableState.set(key, saved);
+      emit(el, 'fxui:sort', { block: b.id ?? b.type, column: col, direction: dir });
+    };
+    wrap.addEventListener('click', onSort);
+    offs.push(() => wrap.removeEventListener('click', onSort));
+    // A table wider than its column fades at the side that has more to scroll to.
+    const sc = wrap.querySelector<HTMLElement>('.fxui-scroll');
+    if (sc) {
+      const edges = () => {
+        const more = (sc.scrollLeft > 2 ? 'l' : '') + (sc.scrollLeft + sc.clientWidth < sc.scrollWidth - 2 ? 'r' : '');
+        if (more) wrap.dataset.more = more;
+        else delete wrap.dataset.more;
+      };
+      edges();
+      sc.addEventListener('scroll', edges, { passive: true });
+      offs.push(() => sc.removeEventListener('scroll', edges));
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(edges);
+        ro.observe(sc);
+        offs.push(() => ro.disconnect());
+      }
+    }
+    const input = wrap.querySelector<HTMLInputElement>('.fxui-tfilter input');
+    const empty = wrap.querySelector<HTMLElement>('.fxui-tempty');
+    const applyFilter = () => {
+      if (!input) return;
+      const q = input.value.trim().toLocaleLowerCase(c.locale);
+      let shown = 0;
+      for (const r of Array.from(tbody.rows)) {
+        const hit = !q || (r.textContent ?? '').toLocaleLowerCase(c.locale).includes(q);
+        r.hidden = !hit;
+        if (hit) shown++;
+      }
+      if (empty) empty.hidden = shown > 0;
+      saved.q = input.value;
+      if (key) tableState.set(key, saved);
+    };
+    if (input) {
+      input.addEventListener('input', applyFilter);
+      offs.push(() => input.removeEventListener('input', applyFilter));
+    }
+    if (saved.col !== undefined && saved.dir) sortBy(saved.col, saved.dir);
+    if (input && saved.q) {
+      input.value = saved.q;
+      applyFilter();
+    }
+    return () => offs.forEach((f) => f());
+  },
+
   tabs(el) {
     const tabs = Array.from(el.querySelectorAll<HTMLButtonElement>(':scope > .fxui-tabs > .fxui-tablist > [role=tab]'));
     const select = (i: number, focus = false) => {
