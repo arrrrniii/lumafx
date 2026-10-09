@@ -1,0 +1,14 @@
+--_sm-base: var(--fx-color, color-mix(in oklab, currentColor 55%, transparent));
+--_sm-hl: var(--fx-color-2, #fff);
+--_sm-dur: var(--fx-duration, 2.8s);
+/* color stays intact (only the fill is transparent) so currentColor keeps working. */
+background: linear-gradient(105deg, var(--_sm-base) 0 40%, var(--_sm-hl) 50%, var(--_sm-base) 60% 100%) 100% 0 / 250% 100% no-repeat;
+-webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+animation: fx-shimmer var(--_sm-dur) cubic-bezier(.45, 0, .25, 1) infinite;
+@fx-reduced {
+  animation: none;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}

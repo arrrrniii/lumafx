@@ -1,0 +1,232 @@
+# lumafx 0.1.0
+
+> Premium web effects from one HTML attribute. Framework-agnostic, zero dependencies, CSS-first, accessible by default.
+
+## Usage
+- Plain HTML: <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.css"> and <script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.global.js"></script> in <head>.
+- npm: `import "lumafx/css"; import "lumafx/auto";` (or `import { start } from "lumafx"; start();`).
+- Tailwind v4: `@import "lumafx/tailwind.css";` then classes like `fx-border-beam fx-duration-4000 fx-color-violet-500`.
+- React/Next.js: `import { BorderBeam, TextReveal } from "lumafx/react"` (Server Component safe) plus `<FxRuntime />` from "lumafx/react/runtime" once in the layout.
+- Add an effect: data-fx="name" (several: data-fx="tilt spotlight"), or class="fx-name".
+- Options: data-fx-<option>="value". Bare numbers: time = ms, length = px, percent = %.
+- Every effect respects prefers-reduced-motion. Content is never left hidden if JavaScript fails.
+- Combine freely. Pseudo-elements in use: border-beam ::before, shine ::after, aurora ::before and ::after. Avoid putting aurora on the same element as border-beam or shine.
+
+## Effects
+
+### border-beam — Border beam [css]
+A comet of light that travels around the element border. Set mode="full" for a continuous gradient circuit.
+Example: <div class="card" data-fx="border-beam" data-fx-duration="5s"></div>
+Options:
+  - data-fx-duration: time (default: 6s). Time for one lap.
+  - data-fx-delay: time (default: 0s). Start offset. Use negative values to desync several beams.
+  - data-fx-color: color (default: #a78bfa). Head color of the beam.
+  - data-fx-color-2: color (default: #22d3ee). Tail color of the beam.
+  - data-fx-length: percent (default: 22%). Beam length as a share of the full lap.
+  - data-fx-width: length (default: 1.5px). Border thickness.
+  - data-fx-count: number (default: 1). Number of beams chasing each other.
+  - data-fx-mode: enum (default: beam). beam = travelling comet, full = rotating gradient border. One of: beam, full.
+  - data-fx-glow: boolean (default: false). Adds a soft two-tone halo around the element (uses box-shadow).
+
+### shimmer — Shimmer text [css]
+A band of light sweeps across text. Keeps the real text selectable and accessible.
+Example: <h2 data-fx="shimmer">Introducing Luma</h2>
+Options:
+  - data-fx-duration: time (default: 2.8s). Time between sweeps.
+  - data-fx-color: color (default: currentColor). Base text color (defaults to the current color, dimmed).
+  - data-fx-color-2: color (default: #ffffff). Highlight color.
+
+### shine — Shine sweep [css]
+A glossy highlight sweeps across a surface such as a button or card.
+Example: <button data-fx="shine">Get started</button>
+Options:
+  - data-fx-duration: time (default: 3.2s). Time between sweeps.
+  - data-fx-intensity: number (default: 0.35). Opacity of the highlight, 0–1.
+  - data-fx-trigger: enum (default: loop). loop = repeats forever, hover = sweeps once on hover. One of: loop, hover.
+
+### aurora — Aurora background [css]
+Slow, drifting aurora light behind the content of a section.
+Example: <section data-fx="aurora">…</section>
+Options:
+  - data-fx-duration: time (default: 18s). Length of one drift cycle.
+  - data-fx-color: color (default: #7c3aed). First light.
+  - data-fx-color-2: color (default: #06b6d4). Second light.
+  - data-fx-color-3: color (default: #ec4899). Third light.
+  - data-fx-opacity: number (default: 0.55). Overall strength, 0–1.
+
+### squircle — Squircle corners [hybrid]
+Smooth, continuous iOS-style corners. Native corner-shape where supported, an SVG clip-path fallback elsewhere.
+Example: <div data-fx="squircle" data-fx-radius="32">…</div>
+Options:
+  - data-fx-radius: length (default: 28px). Corner size.
+  - data-fx-smoothing: number (default: 0.6). Fallback corner smoothing, 0–1 (0.6 matches iOS).
+  - data-fx-fallback: enum (default: auto). Where corner-shape is missing: clip = SVG clip-path, radius = plain rounded corners, auto = clip unless the element has a border or shadow. One of: auto, clip, radius.
+
+### glass — Liquid glass [hybrid]
+Glass surface with rim light and specular sheen. Adds real edge refraction and chromatic aberration in Chromium; frosted glass everywhere else.
+Example: <nav data-fx="glass">…</nav>
+Options:
+  - data-fx-blur: length (default: 14px). Backdrop blur (frost mode, and fallback browsers).
+  - data-fx-saturate: number (default: 1.6). Backdrop saturation.
+  - data-fx-tint: color (default: rgb(255 255 255 / 0.08)). Surface tint.
+  - data-fx-refraction: number (default: 1). Edge refraction strength (Chromium).
+  - data-fx-aberration: number (default: 1). Chromatic aberration strength, 0 to disable (Chromium).
+  - data-fx-mode: enum (default: liquid). liquid = refraction where supported, frost = blur only. One of: liquid, frost.
+
+### shadow — Realistic shadow [hybrid]
+Five-layer soft shadow that looks physical. Optional hover lift, or a light source that follows the cursor.
+Example: <div data-fx="shadow" data-fx-lift>…</div>
+Options:
+  - data-fx-elevation: number (default: 1). Shadow depth multiplier.
+  - data-fx-color: color (default: rgb(15 17 35)). Shadow color.
+  - data-fx-lift: boolean (default: false). Lifts the element on hover.
+  - data-fx-light: enum (default: top). top = fixed light above, cursor = shadow moves away from the cursor. One of: top, cursor.
+
+### reveal — Scroll reveal [js]
+Animates the element in when it scrolls into view. Never leaves content hidden if JavaScript fails.
+Example: <div data-fx="reveal" data-fx-from="blur">…</div>
+Options:
+  - data-fx-from: enum (default: up). Entrance style. One of: up, down, left, right, zoom, blur, book, clip.
+  - data-fx-duration: time (default: 900ms). Animation length.
+  - data-fx-delay: time (default: 0ms). Delay before it starts.
+  - data-fx-distance: length (default: 28px). Travel distance for up/down/left/right.
+  - data-fx-ease: string (default: cubic-bezier(.16,1,.3,1)). CSS easing.
+  - data-fx-once: boolean (default: true). Animate only the first time it enters the viewport.
+
+### stagger — Stagger children [js]
+Reveals each child one after another when the group scrolls into view.
+Example: <ul data-fx="stagger"><li>…</li><li>…</li></ul>
+Options:
+  - data-fx-from: enum (default: up). Entrance style of each child. One of: up, down, left, right, zoom, blur, book, clip.
+  - data-fx-stagger: time (default: 70ms). Delay between children.
+  - data-fx-duration: time (default: 800ms). Animation length per child.
+  - data-fx-delay: time (default: 0ms). Delay before the first child.
+  - data-fx-distance: length (default: 24px). Travel distance.
+  - data-fx-ease: string (default: cubic-bezier(.16,1,.3,1)). CSS easing.
+  - data-fx-once: boolean (default: true). Animate only the first time.
+
+### text-reveal — Text reveal [js]
+Splits text into words, letters or lines and animates them in. Keeps links and inline markup intact.
+Example: <h1 data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip">Hello</h1>
+Options:
+  - data-fx-split: enum (default: words). How the text is split. One of: words, chars, lines.
+  - data-fx-style: enum (default: blur). blur = focus in, rise = slides up from a mask, flip = letters unfold like pages, fade = opacity only. One of: blur, rise, flip, fade.
+  - data-fx-stagger: time. Delay between pieces (default 60ms words, 22ms letters, 120ms lines).
+  - data-fx-duration: time (default: 800ms). Animation length per piece.
+  - data-fx-delay: time (default: 0ms). Delay before it starts.
+  - data-fx-trigger: enum (default: view). Start when visible, or immediately. One of: view, load.
+  - data-fx-once: boolean (default: true). Animate only the first time.
+
+### scramble — Text scramble [js]
+Letters decode from random characters into the final text.
+Example: <span data-fx="scramble" data-fx-trigger="hover">Decode me</span>
+Options:
+  - data-fx-trigger: enum (default: view). When to play. One of: view, hover, load.
+  - data-fx-speed: time (default: 28ms). Time per letter.
+  - data-fx-chars: string (default: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=?/<>). Characters used while scrambling.
+
+### counter — Number counter [js]
+Counts up to the number in the text when it scrolls into view. Keeps prefixes, suffixes and the original number format.
+Example: <strong data-fx="counter">$12,500+</strong>
+Options:
+  - data-fx-from: number (default: 0). Start value.
+  - data-fx-duration: time (default: 1800ms). Count duration.
+
+### marquee — Marquee [hybrid]
+Seamless infinite scroll of logos or cards with soft edges. Pauses on hover.
+Example: <div data-fx="marquee"><img …><img …></div>
+Options:
+  - data-fx-speed: number (default: 60). Speed in pixels per second.
+  - data-fx-gap: length (default: 2rem). Space between items.
+  - data-fx-fade: percent (default: 8%). Edge fade width.
+  - data-fx-reverse: boolean (default: false). Scroll the other way.
+  - data-fx-vertical: boolean (default: false). Scroll vertically.
+  - data-fx-pause: boolean (default: true). Pause on hover.
+
+### spotlight — Spotlight card [js]
+A soft light and a glowing border follow the cursor across the card.
+Example: <div data-fx="spotlight">…</div>
+Options:
+  - data-fx-color: color (default: #a78bfa). Light color.
+  - data-fx-size: length (default: 360px). Light radius.
+  - data-fx-border: boolean (default: true). Light up the border too.
+
+### magnetic — Magnetic [js]
+The element is pulled toward the cursor when it gets close, then springs back.
+Example: <a data-fx="magnetic" href="#">Let's talk</a>
+Options:
+  - data-fx-strength: number (default: 0.35). Pull strength, 0–1.
+  - data-fx-area: length (default: 40px). Extra reach around the element.
+
+### tilt — 3D tilt + glare [js]
+Tilts toward the cursor in 3D with a moving light reflection. Children with data-fx-depth float above the surface.
+Example: <div data-fx="tilt"><h3 data-fx-depth="40">Floating</h3></div>
+Options:
+  - data-fx-max: number (default: 10). Maximum tilt in degrees.
+  - data-fx-scale: number (default: 1.03). Scale while hovered.
+  - data-fx-perspective: length (default: 900px). Perspective distance.
+  - data-fx-glare: boolean (default: true). Show the light reflection.
+
+### cursor-image — Cursor image / label [js]
+Hovering shows an image, icon or label that follows the cursor with a little momentum.
+Example: <a data-fx="cursor-image" data-fx-src="/work/1.jpg">Project one</a>
+Options:
+  - data-fx-src: string. Image to show.
+  - data-fx-label: string. Text or emoji to show instead of an image.
+  - data-fx-size: length (default: 280px). Image width.
+  - data-fx-cursor: enum (default: auto). none hides the native cursor while hovering. One of: auto, none.
+
+### parallax — Parallax [hybrid]
+Moves at a different speed than the page while scrolling. Runs on the compositor in modern browsers.
+Example: <img data-fx="parallax" data-fx-speed="-0.2" …>
+Options:
+  - data-fx-speed: number (default: 0.25). Positive = moves faster (closer), negative = slower (farther).
+
+### stack — Sticky stacking cards [hybrid]
+Children stick and stack on top of each other while scrolling; covered cards shrink and dim.
+Example: <div data-fx="stack"><article>…</article><article>…</article></div>
+Options:
+  - data-fx-top: length (default: 12vh). Distance from the top where cards stick.
+  - data-fx-offset: length (default: 16px). Visible edge of each covered card.
+  - data-fx-shrink: number (default: 0.05). How much each covered card shrinks.
+
+### hscroll — Horizontal scroll section [hybrid]
+Vertical scrolling moves a row of panels sideways while the section is pinned.
+Example: <section data-fx="hscroll"><div>…panels…</div></section>
+Options:
+  - data-fx-gap: length (default: 2rem). Space between panels.
+
+### carousel — Drag carousel [hybrid]
+Native scroll-snap carousel with mouse drag and momentum, keyboard support and optional controls.
+Example: <div data-fx="carousel" data-fx-controls><img …><img …></div>
+Options:
+  - data-fx-slide: length (default: 80%). Slide width.
+  - data-fx-gap: length (default: 16px). Space between slides.
+  - data-fx-style: enum (default: default). scale = slides grow toward the center (coverflow). One of: default, scale.
+  - data-fx-controls: boolean (default: false). Add previous/next buttons and dots.
+  - data-fx-autoplay: time (default: 0). Advance every N ms (0 = off). Pauses on hover and focus.
+
+### stories — Stories [js]
+Instagram-style stories: progress bars, tap left/right, hold to pause, swipe.
+Example: <div data-fx="stories"><img …><img …><img …></div>
+Options:
+  - data-fx-duration: time (default: 5000ms). Time per slide.
+  - data-fx-loop: boolean (default: true). Start over after the last slide.
+
+### ripple — Liquid image (WebGL) [webgl]
+Liquid ripples, lens magnification and RGB split follow the cursor over an image.
+Example: <div data-fx="ripple"><img src="/hero.jpg" alt=""></div>
+Options:
+  - data-fx-strength: number (default: 1). Distortion strength.
+  - data-fx-src: string. Image URL when the host has no <img> child.
+
+### morph — Shared-element morph [js]
+Names an element for View Transitions so it morphs between states or pages. Pair with lumafx.transition() or transitions.css.
+Example: <img data-fx="morph" data-fx-name="hero-1" …>
+Options:
+  - data-fx-name: string. Unique transition name.
+
+## JavaScript API
+- start(options?) · stop() · refresh() · mount(root) · stats() · register(effect)
+- transition(update, { preset }) — runs a DOM update inside a View Transition (presets: fade, slide, slide-back, zoom, wipe).
+- start({ motion: "reduce" }) forces reduced motion; start({ features: { sda: false } }) tests fallbacks.

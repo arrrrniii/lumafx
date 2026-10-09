@@ -1,0 +1,20 @@
+--_st-dur: var(--fx-duration, 5000ms);
+:where(&) { position: relative; display: grid; overflow: clip; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+& > * { grid-area: 1 / 1; min-width: 0; }
+&:has(> .fx-st-bars) > :not(.fx-st-bars) {
+  opacity: 0;
+  scale: 1.04;
+  pointer-events: none;
+  transition: opacity .5s ease, scale 1.2s cubic-bezier(.2, .8, .2, 1);
+}
+& > [data-fx-state~="active"]:not(.fx-st-bars) { opacity: 1; scale: 1; pointer-events: auto; }
+& > .fx-st-bars { align-self: start; z-index: 2; display: flex; gap: 4px; padding: 12px 12px 0; pointer-events: none; }
+& .fx-st-bar { flex: 1; height: 3px; border-radius: 3px; background: rgb(255 255 255 / .35); overflow: hidden; }
+& .fx-st-bar > i { display: block; height: 100%; background: #fff; transform-origin: 0 50%; scale: 0 1; }
+& .fx-st-bar[data-s="done"] > i { scale: 1 1; }
+& .fx-st-bar[data-s="active"] > i { animation: fx-story var(--_st-dur) linear forwards; }
+&[data-fx-state~="paused"] .fx-st-bar > i { animation-play-state: paused; }
+&[data-fx-state~="manual"] .fx-st-bar[data-s="active"] > i { animation: none; scale: 1 1; }
+@fx-reduced {
+  & > * { transition: none !important; }
+}

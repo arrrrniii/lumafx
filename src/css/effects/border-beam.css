@@ -1,0 +1,42 @@
+--_bb-c1: var(--fx-color, #a78bfa);
+--_bb-c2: var(--fx-color-2, #22d3ee);
+--_bb-len: var(--fx-length, 22%);
+--_bb-w: var(--fx-width, 1.5px);
+--_bb-n: var(--fx-count, 1);
+--_bb-p: calc(100% / var(--_bb-n));
+--_bb-dur: var(--fx-duration, 6s);
+--_bb-delay: var(--fx-delay, 0s);
+:where(&) { position: relative; }
+
+&::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--_bb-w);
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from var(--fx-angle),
+    transparent 0 calc(var(--_bb-p) - var(--_bb-len)),
+    var(--_bb-c2) calc(var(--_bb-p) - var(--_bb-len) * .45),
+    var(--_bb-c1) var(--_bb-p)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: fx-spin var(--_bb-dur) linear var(--_bb-delay) infinite;
+}
+&:is([data-fx-mode="full"], .fx-mode-full)::before {
+  background: conic-gradient(from var(--fx-angle), var(--_bb-c1), var(--_bb-c2), var(--_bb-c1));
+}
+/* Halo in both beam colours. A box-shadow can't be hidden behind an ancestor's background
+   and leaves ::after free for other effects (shine). */
+&:is([data-fx-glow], .fx-glow) {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--_bb-c1) 18%, transparent),
+    0 0 24px -4px color-mix(in oklab, var(--_bb-c1) 50%, transparent),
+    0 0 56px -10px color-mix(in oklab, var(--_bb-c2) 45%, transparent);
+}
+@fx-reduced {
+  &::before { animation: none; }
+}

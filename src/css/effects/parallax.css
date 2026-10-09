@@ -1,0 +1,9 @@
+--_px-speed: var(--fx-speed, .25);
+@fx-sda {
+  animation: fx-parallax 1ms linear both;
+  animation-timeline: view();
+}
+@fx-reduced {
+  animation: none !important;
+  translate: none !important;
+}

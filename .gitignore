@@ -1,0 +1,11 @@
+node_modules/
+dist/
+test/shots/
+test/.tw-*
+test/.tailwind-out.css
+demo/index.html
+demo/artifact.html
+demo/fallback.html
+demo/lumafx.css
+demo/lumafx.global.js
+*.tgz

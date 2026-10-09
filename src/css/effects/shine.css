@@ -1,0 +1,17 @@
+--_sn-dur: var(--fx-duration, 3.2s);
+--_sn-i: var(--fx-intensity, .35);
+:where(&) { position: relative; }
+&::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 0 40%, rgb(255 255 255 / var(--_sn-i)) 50%, transparent 60% 100%) 100% 0 / 250% 100% no-repeat;
+  animation: fx-shine var(--_sn-dur) cubic-bezier(.4, 0, .2, 1) infinite;
+}
+&:is([data-fx-trigger="hover"], .fx-trigger-hover)::after { animation: none; }
+&:is([data-fx-trigger="hover"], .fx-trigger-hover):hover::after { animation: fx-shine-once .9s cubic-bezier(.4, 0, .2, 1) both; }
+@fx-reduced {
+  &::after { animation: none; opacity: 0; }
+}

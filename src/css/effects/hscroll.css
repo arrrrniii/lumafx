@@ -1,0 +1,27 @@
+--_hs-gap: var(--fx-gap, 2rem);
+:where(&) { position: relative; }
+& > .fx-hs-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: clip;
+  display: flex;
+  align-items: center;
+}
+& [data-fx-track] { display: flex; flex-wrap: nowrap; gap: var(--_hs-gap); width: max-content; }
+& [data-fx-track] > * { flex: none; }
+@fx-sda {
+  view-timeline-name: --fx-hs;
+  view-timeline-axis: block;
+  & [data-fx-track] {
+    animation: fx-hscroll 1ms linear both;
+    animation-timeline: --fx-hs;
+    animation-range: contain 0% contain 100%;
+  }
+}
+&[data-fx-state~="native"] {
+  height: auto !important;
+  & > .fx-hs-sticky { position: static; height: auto; overflow-x: auto; }
+  & [data-fx-track] { animation: none; }
+}

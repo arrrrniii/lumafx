@@ -1,0 +1,935 @@
+<title>lumafx Specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="lumafx.css">
+<script src="lumafx.global.js"></script>
+<style>
+/* Layout: a specimen book — sticky index rail on the left, one live specimen per effect on the right,
+   each captioned by the exact attribute that produces it. Dark-first; light theme mirrors the tokens. */
+:root {
+  --bg: #0b0c12;
+  --stage: #12141c;
+  --stage-2: #191c27;
+  --line: #262a39;
+  --fg: #ecebe6;
+  --muted: #9296a7;
+  --lamp: #ffb547;
+  --ice: #7fd4ff;
+  --lamp-ink: #1b1204;
+  --code: #0e1017;
+  --paper: #eef1f6;
+  --paper-card: #ffffff;
+  --paper-ink: #151824;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Hanken Grotesk", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 18px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eceef3; --stage: #ffffff; --stage-2: #f4f5f9; --line: #d5d9e3; --fg: #141620; --muted: #596073;
+    --lamp: #b8660a; --ice: #0a78b0; --lamp-ink: #fff8ec; --code: #f2f3f7; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eceef3; --stage: #ffffff; --stage-2: #f4f5f9; --line: #d5d9e3; --fg: #141620; --muted: #596073;
+  --lamp: #b8660a; --ice: #0a78b0; --lamp-ink: #fff8ec; --code: #f2f3f7; color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+img { max-width: 100%; display: block; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+
+/* ---------- hero ---------- */
+.hero {
+  padding-block: clamp(56px, 9vw, 120px) clamp(48px, 7vw, 88px);
+  padding-inline: max(16px, 5vw);
+  border-bottom: 1px solid var(--line);
+}
+.hero-inner { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+.eyebrow {
+  font: 500 12px/1 var(--font-mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.wordmark {
+  font-size: clamp(4.2rem, 15vw, 11.5rem);
+  font-weight: 800;
+  line-height: .86;
+  letter-spacing: -.055em;
+  font-variation-settings: "opsz" 96;
+}
+.wordmark em { font-style: normal; color: var(--lamp); }
+.lede { font-size: clamp(1.15rem, 2.2vw, 1.5rem); line-height: 1.45; max-width: 34ch; color: var(--fg); }
+.hero-row { display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: end; justify-content: space-between; }
+.install {
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  --fx-width: 1px;
+}
+.install code { font: 400 13px/1.5 var(--font-mono); white-space: nowrap; overflow-x: auto; display: block; }
+.install .k { color: var(--ice); }
+.install .s { color: var(--lamp); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.facts li {
+  font: 500 12px/1.35 var(--font-mono);
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--muted);
+  background: color-mix(in oklab, var(--bg) 70%, transparent);
+}
+.facts b { color: var(--fg); font-weight: 500; }
+
+/* ---------- book layout ---------- */
+.book {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: max(16px, 4vw);
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 56px;
+}
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; padding-block: 48px; }
+.rail h4 { font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
+.rail h4:first-child { margin-top: 0; }
+.rail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rail a {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  text-decoration: none; font-size: 14px; padding: 4px 8px; margin-inline: -8px; border-radius: 8px; color: var(--muted);
+}
+.rail a:hover { color: var(--fg); background: var(--stage); }
+.rail a[aria-current="true"] { color: var(--fg); background: var(--stage-2); }
+.kind { font: 500 9.5px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; opacity: .8; }
+.kind.css { color: var(--ice); }
+.kind.js { color: var(--lamp); }
+
+.chips { display: none; }
+
+.group-title {
+  font: 500 12px/1 var(--font-mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-block: 56px 0;
+  display: flex; align-items: center; gap: 14px;
+}
+.group-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.spec { padding-block: 40px; display: grid; gap: 18px; scroll-margin-top: 24px; min-width: 0; }
+.spec + .spec { border-top: 1px solid var(--line); }
+.spec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.spec-head h3 { font-size: clamp(1.6rem, 3vw, 2.15rem); font-weight: 700; letter-spacing: -.025em; }
+.spec-head .kind { font-size: 10.5px; }
+.spec-desc { color: var(--muted); max-width: 62ch; }
+
+.stage {
+  background: var(--stage);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(20px, 4vw, 40px);
+  min-width: 0;
+  position: relative;
+}
+.stage.paper { background: var(--paper); color: var(--paper-ink); border-color: transparent; }
+.stage.bleed { padding: 0; overflow: clip; }
+
+.codeline {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--code); border: 1px solid var(--line); border-radius: 12px; padding: 6px 6px 6px 16px; min-width: 0;
+}
+.codeline code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 400 13px/1.9 var(--font-mono); color: var(--muted); scrollbar-width: thin; }
+.codeline code b { color: var(--fg); font-weight: 500; }
+.codeline code i { font-style: normal; color: var(--lamp); }
+.btn-ghost {
+  flex: none; border: 1px solid var(--line); background: var(--stage); border-radius: 8px;
+  padding: 6px 11px; font: 500 12px/1 var(--font-mono); cursor: pointer; color: var(--muted);
+}
+.btn-ghost:hover { color: var(--fg); }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- specimen contents ---------- */
+.row { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.card {
+  background: var(--stage-2);
+  border-radius: 16px;
+  padding: 22px;
+  min-height: 150px;
+  display: grid; align-content: space-between; gap: 18px;
+}
+.card small { font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.card h5 { font: 600 1.15rem/1.25 var(--font-display); margin: 0; }
+.card p { color: var(--muted); font-size: 14px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; border: 0; cursor: pointer; text-decoration: none;
+  font: 600 15px/1 var(--font-body); padding: 16px 24px; border-radius: 999px;
+}
+.btn.primary { background: var(--lamp); color: var(--lamp-ink); }
+.btn.outline { background: transparent; border: 1px solid var(--line); color: var(--fg); }
+.btn.round { width: 64px; height: 64px; padding: 0; justify-content: center; border-radius: 50%; background: var(--fg); color: var(--bg); font-size: 22px; }
+.center { display: flex; flex-wrap: wrap; gap: 22px; align-items: center; justify-content: center; }
+
+.glass-scene { position: relative; aspect-ratio: 16 / 9; max-width: 100%; overflow: clip; border-radius: var(--radius); }
+.glass-scene > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.glass-scene .orb {
+  position: absolute; width: 22%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6d8, #ffb547 45%, #e2581c 80%);
+  left: 12%; top: 18%;
+}
+.glass-scene .stripes {
+  position: absolute; right: 8%; bottom: 14%; width: 34%; height: 30%;
+  background: repeating-linear-gradient(90deg, #ffffff 0 10px, #0b0c12 10px 20px); border-radius: 10px;
+}
+.glass-nav {
+  position: absolute; left: 50%; top: 7%; translate: -50% 0; width: min(86%, 520px);
+  border-radius: 99px; padding: 12px 22px; display: flex; justify-content: space-between; align-items: center;
+  color: #fff; font: 600 14px/1 var(--font-body);
+}
+.glass-nav span:first-child { font-family: var(--font-display); font-size: 17px; }
+.glass-card {
+  position: absolute; left: 22%; top: 34%; width: min(56%, 340px); padding: 22px 24px;
+  border-radius: 28px; color: #fff; display: grid; gap: 6px;
+  animation: drift 9s ease-in-out infinite alternate paused;
+}
+/* Refraction re-renders every frame while something moves under the glass, so the drift only runs while you look. */
+.glass-scene:hover .glass-card { animation-play-state: running; }
+.glass-card strong { font: 700 1.5rem/1.1 var(--font-display); }
+.glass-card, .glass-nav { text-shadow: 0 1px 12px rgb(0 0 0 / .35); }
+@keyframes drift { from { translate: 0 0; } to { translate: 26% 12%; } }
+@media (prefers-reduced-motion: reduce) { .glass-card { animation: none; } }
+@media (max-width: 560px) { .glass-nav span:nth-child(n+3) { display: none; } .glass-card { left: 8%; width: 70%; } }
+
+.sq-compare { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; }
+.sq-compare figure { margin: 0; display: grid; gap: 12px; justify-items: center; }
+.sq-compare .tile { width: 180px; height: 180px; background: linear-gradient(140deg, var(--lamp), color-mix(in oklab, var(--lamp) 40%, #e2581c)); }
+.sq-compare .plain { border-radius: 46px; }
+.sq-compare figcaption { font: 500 12px/1 var(--font-mono); color: var(--muted); }
+
+.paper .card { background: var(--paper-card); color: var(--paper-ink); }
+.paper .card p, .paper .card small { color: #5a6072; }
+
+.aurora-panel {
+  min-height: 260px; border-radius: var(--radius); display: grid; place-content: center; text-align: center; gap: 8px;
+  background: #070a12; color: #f3f1ea; padding: 32px;
+}
+.aurora-panel h4 { font: 700 clamp(1.6rem, 4vw, 2.6rem)/1.05 var(--font-display); margin: 0; letter-spacing: -.03em; }
+
+.type-stack { display: grid; gap: 26px; }
+.t-xl { font: 800 clamp(2.4rem, 6vw, 4.4rem)/1 var(--font-display); letter-spacing: -.04em; }
+.t-lg { font: 700 clamp(1.8rem, 4vw, 2.8rem)/1.05 var(--font-display); letter-spacing: -.03em; }
+.t-md { font-size: clamp(1.1rem, 2vw, 1.3rem); line-height: 1.55; max-width: 46ch; color: var(--muted); }
+.scramble-row { display: flex; flex-wrap: wrap; gap: 12px 28px; font: 500 15px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; }
+.scramble-row a { text-decoration: none; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
+.stats div { display: grid; gap: 6px; }
+.stats strong { font: 700 clamp(2rem, 4.5vw, 3rem)/1 var(--font-display); letter-spacing: -.03em; }
+.stats span { color: var(--muted); font-size: 14px; }
+
+.spot-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.spot-grid .card { border: 1px solid var(--line); min-height: 190px; }
+.glyph { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--stage); border: 1px solid var(--line); font: 600 15px/1 var(--font-mono); color: var(--lamp); }
+
+.tilt-card {
+  width: min(100%, 340px); aspect-ratio: 4 / 5; border-radius: 22px; margin: 0 auto;
+  background: #000 url(img/dajti.jpg) center / cover; color: #fff; display: grid; align-content: end; padding: 26px; gap: 8px;
+  box-shadow: 0 30px 60px -20px rgb(0 0 0 / .6);
+}
+.tilt-card .badge { justify-self: start; font: 500 11px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; padding: 8px 10px; border-radius: 99px; background: rgb(0 0 0 / .45); }
+.tilt-card h4 { font: 800 2.3rem/.95 var(--font-display); margin: 0; letter-spacing: -.03em; }
+
+.work { list-style: none; margin: 0; padding: 0; }
+.work li + li { border-top: 1px solid var(--line); }
+.work a { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 18px 4px; text-decoration: none; }
+.work strong { font: 700 clamp(1.3rem, 3vw, 1.9rem)/1.1 var(--font-display); letter-spacing: -.02em; transition: color .3s; }
+.work a:hover strong { color: var(--lamp); }
+.work span { color: var(--muted); font-size: 14px; align-self: center; }
+
+.reveal-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.reveal-grid div {
+  aspect-ratio: 1; border-radius: 16px; display: grid; place-items: end start; padding: 14px;
+  font: 500 12px/1 var(--font-mono); background: var(--stage-2); border: 1px solid var(--line);
+}
+.reveal-grid div:nth-child(3n+1) { background: color-mix(in oklab, var(--lamp) 22%, var(--stage-2)); }
+.reveal-grid div:nth-child(3n+2) { background: color-mix(in oklab, var(--ice) 18%, var(--stage-2)); }
+
+.feature-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.feature-list li { display: flex; gap: 14px; align-items: baseline; padding: 14px 18px; border-radius: 12px; background: var(--stage-2); }
+.feature-list li b { font: 500 12px/1 var(--font-mono); color: var(--lamp); min-width: 2.5ch; }
+
+.parallax-scene { position: relative; height: 420px; overflow: clip; border-radius: var(--radius); display: grid; place-items: center; }
+.parallax-scene > img { position: absolute; inset: -18% 0; width: 100%; height: 136%; object-fit: cover; }
+.parallax-scene h4 { position: relative; font: 800 clamp(2.4rem, 7vw, 5rem)/.9 var(--font-display); color: #fff; letter-spacing: -.04em; text-align: center; margin: 0; text-shadow: 0 8px 40px rgb(0 0 0 / .4); }
+.parallax-scene .tag { position: absolute; bottom: 22px; left: 22px; font: 500 12px/1 var(--font-mono); color: #fff; background: rgb(0 0 0 / .35); padding: 8px 10px; border-radius: 99px; }
+
+.stack { display: grid; gap: 28px; padding-bottom: 12vh; --fx-top: 14vh; }
+.stack article {
+  min-height: 300px; border-radius: 22px; padding: clamp(22px, 4vw, 36px); display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px;
+  align-items: center; color: #fff; overflow: hidden; border: 1px solid rgb(255 255 255 / .08);
+}
+.stack article:nth-child(1) { background: #1e1530; }
+.stack article:nth-child(2) { background: #0f3b4a; }
+.stack article:nth-child(3) { background: #3a2a18; }
+.stack article:nth-child(4) { background: #1b2238; }
+.stack article img { border-radius: 14px; aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.stack article h4 { font: 700 clamp(1.4rem, 3vw, 2rem)/1.1 var(--font-display); margin: 0 0 8px; letter-spacing: -.02em; }
+.stack article p { color: rgb(255 255 255 / .72); }
+.stack small { font: 500 11px/1 var(--font-mono); letter-spacing: .1em; color: rgb(255 255 255 / .6); }
+@media (max-width: 620px) { .stack article { grid-template-columns: 1fr; } }
+
+.hs-intro { padding: 32px clamp(20px, 4vw, 40px) 0; color: var(--muted); }
+.hscroll [data-fx-track] { padding-inline: clamp(20px, 4vw, 40px); }
+.panel { width: min(70vw, 380px); display: grid; gap: 12px; }
+.panel img { aspect-ratio: 4 / 5; object-fit: cover; border-radius: 18px; width: 100%; }
+.panel b { font: 700 1.25rem/1.1 var(--font-display); }
+.panel span { color: var(--muted); font-size: 14px; }
+
+.wordmarks { --fx-gap: 3.5rem; padding-block: 8px; }
+.wordmarks span { font-size: 1.6rem; white-space: nowrap; color: var(--muted); }
+.wm1 { font: 800 1.5rem/1 var(--font-display) !important; letter-spacing: -.04em; }
+.wm2 { font: 500 1.35rem/1 var(--font-mono) !important; letter-spacing: .02em; }
+.wm3 { font: italic 600 1.6rem/1 Georgia, serif !important; }
+.wm4 { font: 700 1.2rem/1 var(--font-body) !important; letter-spacing: .3em; text-transform: uppercase; }
+.wm5 { font: 500 1.7rem/1 var(--font-display) !important; letter-spacing: -.02em; }
+
+.slides { --fx-slide: 62%; --fx-gap: 18px; }
+.slides figure { margin: 0; display: grid; gap: 10px; }
+.slides img { aspect-ratio: 4 / 5; object-fit: cover; border-radius: 18px; width: 100%; pointer-events: none; }
+.slides figcaption { font-size: 14px; color: var(--muted); }
+@media (max-width: 560px) { .slides { --fx-slide: 78%; } }
+
+.phone {
+  width: min(100%, 300px); aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 34px; overflow: hidden;
+  background: #000; box-shadow: 0 0 0 8px #1b1d25, 0 30px 70px -20px rgb(0 0 0 / .6); color: #fff; cursor: pointer;
+}
+.phone .slide { position: relative; }
+.phone .slide img { width: 100%; height: 100%; object-fit: cover; }
+.phone .slide div { position: absolute; inset: auto 0 0; padding: 22px 20px 26px; background: linear-gradient(transparent, rgb(0 0 0 / .65)); display: grid; gap: 4px; }
+.phone .slide b { font: 700 1.4rem/1.05 var(--font-display); }
+.phone .slide span { font-size: 13px; opacity: .85; }
+.hint { font-size: 13px; color: var(--muted); text-align: center; margin-top: 14px; }
+
+.ripple-box { border-radius: var(--radius); aspect-ratio: 16 / 9; max-width: 100%; position: relative; }
+.ripple-box img { width: 100%; height: 100%; object-fit: cover; }
+.ripple-box p { position: absolute; left: 22px; bottom: 20px; font: 500 12px/1 var(--font-mono); color: #fff; background: rgb(0 0 0 / .35); padding: 8px 10px; border-radius: 99px; pointer-events: none; }
+
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gallery button { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 14px; overflow: hidden; }
+.gallery img { aspect-ratio: 1; object-fit: cover; width: 100%; }
+.detail { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+.detail img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 18px; }
+.detail h4 { font: 700 2rem/1.05 var(--font-display); margin: 0 0 10px; letter-spacing: -.02em; }
+.detail p { color: var(--muted); margin-bottom: 18px; }
+@media (max-width: 560px) { .detail { grid-template-columns: 1fr; } }
+.pages { min-height: 180px; border-radius: 16px; display: grid; place-content: center; text-align: center; gap: 6px; padding: 24px; background: var(--stage-2); }
+.pages h4 { font: 700 1.8rem/1 var(--font-display); margin: 0; }
+.pages p { color: var(--muted); }
+.pages[data-page="2"] { background: color-mix(in oklab, var(--lamp) 22%, var(--stage-2)); }
+
+/* ---------- use it ---------- */
+.use { padding-block: 72px 40px; display: grid; gap: 28px; border-top: 1px solid var(--line); }
+.use h2 { font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -.03em; }
+.use-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.use-grid section { background: var(--stage); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.use-grid h5 { font: 600 1.05rem/1.2 var(--font-display); margin: 0; }
+.use-grid pre { margin: 0; background: var(--code); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font: 400 12.5px/1.7 var(--font-mono); color: var(--muted); }
+.use-grid pre b { color: var(--fg); font-weight: 500; }
+.promises { display: grid; gap: 14px 28px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.promises div { display: grid; gap: 4px; }
+.promises b { font: 600 1rem/1.3 var(--font-display); }
+.promises span { color: var(--muted); font-size: 14px; }
+footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(--font-mono); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 900px) {
+  .book { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .rail { display: none; }
+  .chips {
+    display: flex; gap: 8px; overflow-x: auto; padding: 14px max(16px, 4vw); border-bottom: 1px solid var(--line);
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in oklab, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px); scrollbar-width: none;
+  }
+  .chips a { flex: none; font: 500 12px/1 var(--font-mono); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--line); text-decoration: none; color: var(--muted); }
+}
+</style>
+
+<header class="hero" data-fx="aurora" data-fx-color="#ff9a3c" data-fx-color-2="#2f8fff" data-fx-color-3="#b2397a" data-fx-opacity="0.42">
+  <div class="hero-inner">
+    <p class="eyebrow">Open-source web effects · v0.1.0</p>
+    <h1 class="wordmark" data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip" data-fx-trigger="load" data-fx-stagger="45">luma<em>fx</em></h1>
+    <div class="hero-row">
+      <p class="lede" data-fx="text-reveal" data-fx-trigger="load" data-fx-delay="380">Premium effects from one HTML attribute. CSS first, works in any framework, accessible by default.</p>
+      <div class="install" data-fx="glass border-beam" data-fx-mode="frost" data-fx-color="#ffb547" data-fx-color-2="#7fd4ff" data-fx-duration="7s">
+        <code><span class="k">&lt;script</span> src=<span class="s">"lumafx.global.js"</span><span class="k">&gt;&lt;/script&gt;</span></code>
+        <code><span class="k">&lt;div</span> data-fx=<span class="s">"border-beam"</span><span class="k">&gt;</span>…<span class="k">&lt;/div&gt;</span></code>
+      </div>
+    </div>
+    <ul class="facts" data-fx="stagger" data-fx-delay="600">
+      <li><b>24</b> effects</li>
+      <li><b>__JS_GZ__</b> JS · <b>__CSS_GZ__</b> CSS gzip</li>
+      <li><b>0</b> dependencies</li>
+      <li>Tailwind v4 · React Server Components · plain HTML</li>
+      <li>Respects reduced motion</li>
+    </ul>
+  </div>
+</header>
+
+<nav class="chips" aria-label="Effects">
+  <a href="#border-beam">border-beam</a><a href="#glass">glass</a><a href="#squircle">squircle</a><a href="#text-reveal">text-reveal</a>
+  <a href="#spotlight">spotlight</a><a href="#magnetic">magnetic</a><a href="#tilt">tilt</a><a href="#cursor-image">cursor-image</a>
+  <a href="#reveal">reveal</a><a href="#stack">stack</a><a href="#hscroll">hscroll</a><a href="#carousel">carousel</a>
+  <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a><a href="#use">install</a>
+</nav>
+
+<div class="book">
+  <aside class="rail" aria-label="Effect index">
+    <h4>Surfaces</h4>
+    <ul>
+      <li><a href="#border-beam">border-beam <span class="kind css">css</span></a></li>
+      <li><a href="#shine">shine <span class="kind css">css</span></a></li>
+      <li><a href="#glass">glass <span class="kind css">css+js</span></a></li>
+      <li><a href="#squircle">squircle <span class="kind css">css+js</span></a></li>
+      <li><a href="#shadow">shadow <span class="kind css">css+js</span></a></li>
+      <li><a href="#aurora">aurora <span class="kind css">css</span></a></li>
+    </ul>
+    <h4>Type</h4>
+    <ul>
+      <li><a href="#text-reveal">text-reveal <span class="kind js">js</span></a></li>
+      <li><a href="#shimmer">shimmer <span class="kind css">css</span></a></li>
+      <li><a href="#scramble">scramble <span class="kind js">js</span></a></li>
+      <li><a href="#counter">counter <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Pointer</h4>
+    <ul>
+      <li><a href="#spotlight">spotlight <span class="kind js">js</span></a></li>
+      <li><a href="#magnetic">magnetic <span class="kind js">js</span></a></li>
+      <li><a href="#tilt">tilt <span class="kind js">js</span></a></li>
+      <li><a href="#cursor-image">cursor-image <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Scroll</h4>
+    <ul>
+      <li><a href="#reveal">reveal <span class="kind js">js</span></a></li>
+      <li><a href="#stagger">stagger <span class="kind js">js</span></a></li>
+      <li><a href="#parallax">parallax <span class="kind css">css+js</span></a></li>
+      <li><a href="#stack">stack <span class="kind css">css+js</span></a></li>
+      <li><a href="#hscroll">hscroll <span class="kind css">css+js</span></a></li>
+    </ul>
+    <h4>Media</h4>
+    <ul>
+      <li><a href="#marquee">marquee <span class="kind css">css+js</span></a></li>
+      <li><a href="#carousel">carousel <span class="kind css">css+js</span></a></li>
+      <li><a href="#stories">stories <span class="kind js">js</span></a></li>
+      <li><a href="#ripple">ripple <span class="kind js">webgl</span></a></li>
+      <li><a href="#morph">morph <span class="kind js">js</span></a></li>
+    </ul>
+  </aside>
+
+  <main>
+    <!-- ======================= SURFACES ======================= -->
+    <h2 class="group-title">Surfaces</h2>
+
+    <section class="spec" id="border-beam">
+      <div class="spec-head"><h3>border-beam</h3><span class="kind css">zero JS</span></div>
+      <p class="spec-desc">A comet of light circling the edge. Use one beam, chase several, or switch to a full gradient circuit with a soft glow.</p>
+      <div class="stage">
+        <div class="row">
+          <div class="card" data-fx="border-beam"><small>Default</small><div><h5>Beam</h5><p>One comet, six-second lap.</p></div></div>
+          <div class="card" data-fx="border-beam" data-fx-count="2" data-fx-color="#ffb547" data-fx-color-2="#ff5e3a" data-fx-duration="9s" data-fx-length="18"><small>count 2</small><div><h5>Twin beams</h5><p>Two comets chasing each other.</p></div></div>
+          <div class="card" data-fx="border-beam" data-fx-mode="full" data-fx-glow data-fx-width="1.5" data-fx-color="#7fd4ff" data-fx-color-2="#ffb547" data-fx-duration="4s"><small>mode full + glow</small><div><h5>Circuit</h5><p>A continuous gradient loop with halo.</p></div></div>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"border-beam"</i> data-fx-count=<i>"2"</i> data-fx-duration=<i>"9s"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="shine">
+      <div class="spec-head"><h3>shine</h3><span class="kind css">zero JS</span></div>
+      <p class="spec-desc">A glossy highlight sweeps across a surface, on a loop or once per hover.</p>
+      <div class="stage center">
+        <a class="btn primary" href="#use" data-fx="shine magnetic" data-fx-intensity="0.55">Start building</a>
+        <a class="btn outline" href="#use" data-fx="shine" data-fx-trigger="hover">Hover to shine</a>
+      </div>
+      <div class="codeline"><code>&lt;button <b>data-fx</b>=<i>"shine"</i> data-fx-trigger=<i>"hover"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="glass">
+      <div class="spec-head"><h3>glass</h3><span class="kind css">CSS + JS refraction</span></div>
+      <p class="spec-desc">Rim light, specular sheen and blur everywhere. In Chromium browsers the edges also bend the background like real glass, with a hint of chromatic aberration.</p>
+      <div class="stage bleed">
+        <div class="glass-scene">
+          <img src="img/ksamil-wide.jpg" alt="Sunset over a calm bay with low hills">
+          <div class="orb"></div>
+          <div class="stripes"></div>
+          <nav class="glass-nav" data-fx="glass"><span>Ksamil</span><span>Stays</span><span>Tours</span><span>Book</span></nav>
+          <div class="glass-card" data-fx="glass" data-fx-refraction="1.3" data-fx-blur="5px" data-fx-tint="rgb(8 18 36 / 0.32)"><small>Liquid glass</small><strong>Watch the edges bend the stripes</strong></div>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;nav <b>data-fx</b>=<i>"glass"</i>&gt; · data-fx-mode=<i>"frost"</i> for blur only</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="squircle">
+      <div class="spec-head"><h3>squircle</h3><span class="kind css">CSS + JS fallback</span></div>
+      <p class="spec-desc">Continuous iOS corners. Native corner-shape where the browser has it, an exact SVG clip-path everywhere else.</p>
+      <div class="stage">
+        <div class="sq-compare">
+          <figure><div class="tile plain"></div><figcaption>border-radius: 46px</figcaption></figure>
+          <figure><div class="tile" data-fx="squircle" data-fx-radius="46"></div><figcaption>data-fx="squircle"</figcaption></figure>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"squircle"</i> data-fx-radius=<i>"46"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="shadow">
+      <div class="spec-head"><h3>shadow</h3><span class="kind css">CSS + optional JS</span></div>
+      <p class="spec-desc">Five stacked shadows that read as physical depth. Lift on hover, or let the cursor act as the light source.</p>
+      <div class="stage paper">
+        <div class="row">
+          <div class="card" data-fx="shadow" data-fx-lift><small>data-fx-lift</small><div><h5>Hover me</h5><p>The card rises and its shadow deepens.</p></div></div>
+          <div class="card" data-fx="shadow" data-fx-light="cursor" data-fx-elevation="1.6"><small>data-fx-light="cursor"</small><div><h5>Move your mouse</h5><p>The shadow falls away from the cursor.</p></div></div>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"shadow"</i> data-fx-light=<i>"cursor"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="aurora">
+      <div class="spec-head"><h3>aurora</h3><span class="kind css">zero JS</span></div>
+      <p class="spec-desc">Slow drifting light behind a section. It pauses itself whenever it scrolls out of view.</p>
+      <div class="aurora-panel" data-fx="aurora" data-fx-color="#16c79a" data-fx-color-2="#2f8fff" data-fx-color-3="#7a3cff" data-fx-opacity="0.7">
+        <h4>Night shift in Theth</h4>
+        <p>Any section can glow like this.</p>
+      </div>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"aurora"</i> data-fx-color=<i>"#16c79a"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= TYPE ======================= -->
+    <h2 class="group-title">Type</h2>
+
+    <section class="spec" id="text-reveal">
+      <div class="spec-head"><h3>text-reveal</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Splits text into words, letters or lines without breaking links or inline markup, and keeps it readable for screen readers.</p>
+      <div class="stage type-stack" id="tr-demo">
+        <p class="t-lg" data-fx="text-reveal">Every word arrives in focus.</p>
+        <p class="t-xl" data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip">Pages unfold</p>
+        <p class="t-md" data-fx="text-reveal" data-fx-split="lines" data-fx-style="rise">Lines slide up from behind a mask, one after another, the way editorial sites reveal a paragraph as it scrolls into view.</p>
+      </div>
+      <div class="toolbar"><button class="btn-ghost" data-replay="#tr-demo [data-fx]">Replay</button></div>
+      <div class="codeline"><code>&lt;h1 <b>data-fx</b>=<i>"text-reveal"</i> data-fx-split=<i>"chars"</i> data-fx-style=<i>"flip"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="shimmer">
+      <div class="spec-head"><h3>shimmer</h3><span class="kind css">zero JS</span></div>
+      <p class="spec-desc">A band of light passes over real, selectable text.</p>
+      <div class="stage"><p class="t-xl" data-fx="shimmer">Doors open at nine</p></div>
+      <div class="codeline"><code>&lt;h2 <b>data-fx</b>=<i>"shimmer"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="scramble">
+      <div class="spec-head"><h3>scramble</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Letters decode into place when the text appears, or every time it is hovered.</p>
+      <div class="stage">
+        <div class="scramble-row">
+          <span data-fx="scramble">Signal locked</span>
+          <a href="#scramble" data-fx="scramble" data-fx-trigger="hover">Hover · Work</a>
+          <a href="#scramble" data-fx="scramble" data-fx-trigger="hover">Hover · Studio</a>
+          <a href="#scramble" data-fx="scramble" data-fx-trigger="hover">Hover · Contact</a>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;a <b>data-fx</b>=<i>"scramble"</i> data-fx-trigger=<i>"hover"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="counter">
+      <div class="spec-head"><h3>counter</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Counts up to whatever number the text already contains, keeping its currency, separators and suffix. Search engines and no-JS visitors see the final number.</p>
+      <div class="stage stats">
+        <div><strong data-fx="counter">12,480+</strong><span>tickets scanned at the gate</span></div>
+        <div><strong data-fx="counter">€1.2M</strong><span>processed cashless</span></div>
+        <div><strong data-fx="counter">99.98%</strong><span>scanner uptime</span></div>
+        <div><strong data-fx="counter">340 ms</strong><span>average check-in</span></div>
+      </div>
+      <div class="codeline"><code>&lt;strong <b>data-fx</b>=<i>"counter"</i>&gt;€1.2M&lt;/strong&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= POINTER ======================= -->
+    <h2 class="group-title">Pointer</h2>
+
+    <section class="spec" id="spotlight">
+      <div class="spec-head"><h3>spotlight</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">A soft light and a lit border follow the cursor across each card.</p>
+      <div class="stage spot-grid">
+        <div class="card" data-fx="spotlight" data-fx-color="#ffb547"><span class="glyph">01</span><div><h5>Offline gates</h5><p>Tickets verify without a connection.</p></div></div>
+        <div class="card" data-fx="spotlight" data-fx-color="#7fd4ff"><span class="glyph">02</span><div><h5>Cashless bars</h5><p>Wristband top-ups that sync later.</p></div></div>
+        <div class="card" data-fx="spotlight" data-fx-color="#ff7a59"><span class="glyph">03</span><div><h5>Live dashboard</h5><p>Sales by the minute, door by door.</p></div></div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"spotlight"</i> data-fx-color=<i>"#ffb547"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="magnetic">
+      <div class="spec-head"><h3>magnetic</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Pulls toward the cursor as it approaches, then springs back. An optional inner element moves half as far for depth.</p>
+      <div class="stage center" style="min-height: 200px">
+        <a class="btn primary" href="#magnetic" data-fx="magnetic">Book a call</a>
+        <button class="btn round" data-fx="magnetic" data-fx-strength="0.5" aria-label="Next"><span data-fx-inner>→</span></button>
+      </div>
+      <div class="codeline"><code>&lt;a <b>data-fx</b>=<i>"magnetic"</i> data-fx-strength=<i>"0.5"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="tilt">
+      <div class="spec-head"><h3>tilt</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Tilts in 3D toward the cursor with a moving reflection. Children marked with data-fx-depth float above the surface.</p>
+      <div class="stage">
+        <div class="tilt-card" data-fx="tilt" data-fx-max="12">
+          <span class="badge" data-fx-depth="50">Sat 14 June</span>
+          <h4 data-fx-depth="70">Dajti Sessions</h4>
+          <p data-fx-depth="30">Open-air at the summit</p>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"tilt"</i>&gt;&lt;h4 data-fx-depth=<i>"70"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="cursor-image">
+      <div class="spec-head"><h3>cursor-image</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Hover a row and a preview follows the cursor, leaning into the direction of travel. Show an image, an emoji or a label.</p>
+      <div class="stage">
+        <ul class="work">
+          <li><a href="#cursor-image" data-fx="cursor-image" data-fx-src="img/theth.jpg"><strong>Theth Valley</strong><span>Festival site · 2026</span></a></li>
+          <li><a href="#cursor-image" data-fx="cursor-image" data-fx-src="img/ksamil.jpg"><strong>Ksamil Coast</strong><span>Hotel booking</span></a></li>
+          <li><a href="#cursor-image" data-fx="cursor-image" data-fx-src="img/blloku.jpg"><strong>Blloku Nights</strong><span>Ticketing app</span></a></li>
+          <li><a href="#cursor-image" data-fx="cursor-image" data-fx-label="View case study →" data-fx-cursor="none"><strong>Valbona Trail</strong><span>Label, cursor hidden</span></a></li>
+        </ul>
+      </div>
+      <div class="codeline"><code>&lt;a <b>data-fx</b>=<i>"cursor-image"</i> data-fx-src=<i>"/work/theth.jpg"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= SCROLL ======================= -->
+    <h2 class="group-title">Scroll</h2>
+
+    <section class="spec" id="reveal">
+      <div class="spec-head"><h3>reveal</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Animate in on scroll with eight entrances. If the script never loads, nothing stays hidden.</p>
+      <div class="stage reveal-grid" id="reveal-demo">
+        <div data-fx="reveal">up</div>
+        <div data-fx="reveal" data-fx-from="down" data-fx-delay="80">down</div>
+        <div data-fx="reveal" data-fx-from="left" data-fx-delay="160">left</div>
+        <div data-fx="reveal" data-fx-from="right" data-fx-delay="240">right</div>
+        <div data-fx="reveal" data-fx-from="zoom" data-fx-delay="320">zoom</div>
+        <div data-fx="reveal" data-fx-from="blur" data-fx-delay="400">blur</div>
+        <div data-fx="reveal" data-fx-from="book" data-fx-delay="480">book</div>
+        <div data-fx="reveal" data-fx-from="clip" data-fx-delay="560">clip</div>
+      </div>
+      <div class="toolbar"><button class="btn-ghost" data-replay="#reveal-demo [data-fx]">Replay</button></div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"reveal"</i> data-fx-from=<i>"book"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="stagger">
+      <div class="spec-head"><h3>stagger</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Children enter one after another. Items added later join the sequence.</p>
+      <div class="stage">
+        <ul class="feature-list" data-fx="stagger" data-fx-from="left" id="stagger-demo">
+          <li><b>01</b>Gate scanners work offline</li>
+          <li><b>02</b>Wristbands top up at any bar</li>
+          <li><b>03</b>Refunds settle automatically</li>
+          <li><b>04</b>Door staff see live capacity</li>
+          <li><b>05</b>Organisers export everything</li>
+        </ul>
+      </div>
+      <div class="toolbar"><button class="btn-ghost" data-replay="#stagger-demo">Replay</button></div>
+      <div class="codeline"><code>&lt;ul <b>data-fx</b>=<i>"stagger"</i> data-fx-stagger=<i>"70"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="parallax">
+      <div class="spec-head"><h3>parallax</h3><span class="kind css">CSS + JS fallback</span></div>
+      <p class="spec-desc">Layers move at their own speed while you scroll. Runs on the compositor in modern browsers; a JavaScript fallback covers the rest.</p>
+      <div class="parallax-scene">
+        <img src="img/valbona.jpg" alt="Misty mountain ridges in the morning" data-fx="parallax" data-fx-speed="-0.25">
+        <h4 data-fx="parallax" data-fx-speed="0.18">Valbona<br>at dawn</h4>
+        <span class="tag">speed −0.25 / +0.18</span>
+      </div>
+      <div class="codeline"><code>&lt;img <b>data-fx</b>=<i>"parallax"</i> data-fx-speed=<i>"-0.25"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="stack">
+      <div class="spec-head"><h3>stack</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">Cards pin and pile up as you scroll. Each covered card shrinks and dims a little.</p>
+      <div class="stack" data-fx="stack">
+        <article><div><small>01 · DISCOVER</small><h4>Find the night</h4><p>Browse events across the country by date, city or venue.</p></div><img src="img/dajti.jpg" alt="Purple dusk over jagged peaks" loading="lazy"></article>
+        <article><div><small>02 · BOOK</small><h4>Tap to pay</h4><p>Checkout in seconds with saved cards or wallet.</p></div><img src="img/llogara.jpg" alt="Teal night sky over a mountain pass" loading="lazy"></article>
+        <article><div><small>03 · ARRIVE</small><h4>Scan and walk in</h4><p>Gates verify tickets even without signal.</p></div><img src="img/butrint.jpg" alt="Golden evening light over ancient hills" loading="lazy"></article>
+        <article><div><small>04 · ENJOY</small><h4>Pay with your wrist</h4><p>One band for drinks, merch and lockers.</p></div><img src="img/durres.jpg" alt="Pink sunset over the sea" loading="lazy"></article>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"stack"</i> data-fx-top=<i>"14vh"</i>&gt;&lt;article&gt;…</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="hscroll">
+      <div class="spec-head"><h3>hscroll</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">The section pins while vertical scrolling slides the row sideways. With reduced motion it becomes a normal swipeable row.</p>
+      <div class="stage bleed">
+        <section class="hscroll" data-fx="hscroll" data-fx-gap="24">
+          <div>
+            <div class="panel"><img src="img/theth.jpg" alt="" loading="lazy"><b>Theth</b><span>Valley festival · June</span></div>
+            <div class="panel"><img src="img/ksamil.jpg" alt="" loading="lazy"><b>Ksamil</b><span>Beach sessions · July</span></div>
+            <div class="panel"><img src="img/llogara.jpg" alt="" loading="lazy"><b>Llogara</b><span>Pass sunrise · August</span></div>
+            <div class="panel"><img src="img/butrint.jpg" alt="" loading="lazy"><b>Butrint</b><span>Amphitheatre · August</span></div>
+            <div class="panel"><img src="img/blloku.jpg" alt="" loading="lazy"><b>Tirana</b><span>Blloku nights · all year</span></div>
+          </div>
+        </section>
+      </div>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"hscroll"</i>&gt;&lt;div&gt;…panels…&lt;/div&gt;&lt;/section&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= MEDIA ======================= -->
+    <h2 class="group-title">Media</h2>
+
+    <section class="spec" id="marquee">
+      <div class="spec-head"><h3>marquee</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">Seamless loop with soft edges. Copies are hidden from screen readers and the keyboard; hover pauses it.</p>
+      <div class="stage" style="display:grid; gap: 18px">
+        <div class="wordmarks" data-fx="marquee" data-fx-speed="45">
+          <span class="wm1">northwind</span><span class="wm2">KESTREL/CO</span><span class="wm3">Mirelle</span><span class="wm4">Oblique</span><span class="wm5">Halcyon Labs</span><span class="wm2">parallel.studio</span>
+        </div>
+        <div class="wordmarks" data-fx="marquee" data-fx-speed="35" data-fx-reverse>
+          <span class="wm4">Vanta</span><span class="wm1">fernhouse</span><span class="wm3">Ostrava &amp; Sons</span><span class="wm5">Lumen Air</span><span class="wm2">BLOCK_09</span><span class="wm1">quarry</span>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"marquee"</i> data-fx-speed=<i>"45"</i> data-fx-reverse&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="carousel">
+      <div class="spec-head"><h3>carousel</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">Built on native scroll-snap, so touch scrolling stays native. Adds mouse drag with momentum, arrow keys, dots and a coverflow scale.</p>
+      <div class="stage">
+        <div class="slides" data-fx="carousel" data-fx-style="scale" data-fx-controls aria-label="Destinations">
+          <figure><img src="img/valbona.jpg" alt="Misty ridges"><figcaption>Valbona · hiking</figcaption></figure>
+          <figure><img src="img/ksamil.jpg" alt="Calm bay at sunset"><figcaption>Ksamil · islands</figcaption></figure>
+          <figure><img src="img/theth.jpg" alt="Peaks at sunset"><figcaption>Theth · festival</figcaption></figure>
+          <figure><img src="img/llogara.jpg" alt="Night over a mountain pass"><figcaption>Llogara · paragliding</figcaption></figure>
+          <figure><img src="img/butrint.jpg" alt="Golden hills"><figcaption>Butrint · history</figcaption></figure>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"carousel"</i> data-fx-style=<i>"scale"</i> data-fx-controls&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="stories">
+      <div class="spec-head"><h3>stories</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Progress bars, tap left or right, hold to pause, swipe, arrow keys. It pauses when off-screen and stays manual for reduced motion.</p>
+      <div class="stage">
+        <div class="phone" data-fx="stories" data-fx-duration="4500" aria-label="Weekend stories">
+          <div class="slide"><img src="img/durres.jpg" alt=""><div><b>Friday · Durrës</b><span>Sunset set on the pier</span></div></div>
+          <div class="slide"><img src="img/blloku.jpg" alt=""><div><b>Saturday · Tirana</b><span>Blloku rooftop, 22:00</span></div></div>
+          <div class="slide"><img src="img/llogara.jpg" alt=""><div><b>Sunday · Llogara</b><span>Sunrise on the pass</span></div></div>
+          <div class="slide"><img src="img/ksamil.jpg" alt=""><div><b>Monday · Ksamil</b><span>Recovery swim</span></div></div>
+        </div>
+        <p class="hint">Tap the right side to skip, the left to go back, hold to pause.</p>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"stories"</i>&gt;&lt;img…&gt;&lt;img…&gt;&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="ripple">
+      <div class="spec-head"><h3>ripple</h3><span class="kind js">WebGL</span></div>
+      <p class="spec-desc">A liquid lens, ripples and an RGB split follow the cursor over an image. Falls back to a gentle zoom without WebGL, on touch screens and in lite mode.</p>
+      <div class="ripple-box" data-fx="ripple">
+        <img src="img/theth-wide.jpg" alt="Layered mountains at sunset">
+        <p>Move across the image</p>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"ripple"</i>&gt;&lt;img src=<i>"hero.jpg"</i>&gt;&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="morph">
+      <div class="spec-head"><h3>morph</h3><span class="kind js">View Transitions</span></div>
+      <p class="spec-desc">Name an element and it morphs between states, or between pages with transitions.css. lumafx.transition() wraps any DOM change and adds page presets.</p>
+      <div class="stage" style="display:grid; gap: 22px">
+        <div id="morph-demo">
+          <div class="gallery" id="gallery">
+            <button data-pick="0"><img src="img/theth.jpg" alt="Theth" data-fx="morph" data-fx-name="pic-0"></button>
+            <button data-pick="1"><img src="img/ksamil.jpg" alt="Ksamil" data-fx="morph" data-fx-name="pic-1"></button>
+            <button data-pick="2"><img src="img/dajti.jpg" alt="Dajti" data-fx="morph" data-fx-name="pic-2"></button>
+          </div>
+          <div class="detail" id="detail" hidden>
+            <img id="detail-img" src="img/theth.jpg" alt="">
+            <div><h4 id="detail-title">Theth</h4><p>The thumbnail grows into place because both images share one transition name.</p><button class="btn-ghost" id="detail-back">← Back to gallery</button></div>
+          </div>
+        </div>
+        <div class="toolbar" role="group" aria-label="Page transition preset">
+          <button class="btn-ghost" data-page-preset="slide">slide</button>
+          <button class="btn-ghost" data-page-preset="zoom">zoom</button>
+          <button class="btn-ghost" data-page-preset="wipe">wipe</button>
+          <button class="btn-ghost" data-page-preset="fade">fade</button>
+        </div>
+        <div class="pages" id="pages" data-page="1"><h4>Page one</h4><p>Pick a preset above to change page.</p></div>
+      </div>
+      <div class="codeline"><code>lumafx.transition(() =&gt; render(), { preset: <i>"slide"</i> })</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= USE IT ======================= -->
+    <section class="use" id="use">
+      <h2>Use it anywhere</h2>
+      <div class="use-grid">
+        <section>
+          <h5>Plain HTML or WordPress</h5>
+<pre>&lt;link rel="stylesheet" href="lumafx.css"&gt;
+&lt;script src="lumafx.global.js"&gt;&lt;/script&gt;
+
+&lt;div <b>data-fx="glass border-beam"</b>&gt;…&lt;/div&gt;</pre>
+        </section>
+        <section>
+          <h5>npm</h5>
+<pre>npm i lumafx
+
+import 'lumafx/css'
+import 'lumafx/auto'   <b>// registers + starts</b></pre>
+        </section>
+        <section>
+          <h5>Tailwind CSS v4</h5>
+<pre>@import "tailwindcss";
+@import "lumafx/tailwind.css";
+
+&lt;div class="<b>fx-border-beam fx-duration-4000
+  fx-color-amber-400</b>"&gt;</pre>
+        </section>
+        <section>
+          <h5>React and Next.js</h5>
+<pre>import { TextReveal, Tilt } from 'lumafx/react'
+import { FxRuntime } from 'lumafx/react/runtime'
+
+&lt;TextReveal as="h1" <b>split="chars"</b>&gt;Hello&lt;/TextReveal&gt;
+&lt;FxRuntime /&gt;  <b>// once, in layout.tsx</b></pre>
+        </section>
+      </div>
+      <div class="promises">
+        <div><b>Never hides content</b><span>Hidden states only apply once the runtime is running, with a failsafe if it never boots.</span></div>
+        <div><b>Calm by default</b><span>prefers-reduced-motion swaps every effect for a still or opacity-only version.</span></div>
+        <div><b>Cheap when idle</b><span>Loops pause off-screen, pointer effects sleep until the mouse moves, lite mode on low-memory devices.</span></div>
+        <div><b>Readable by AI tools</b><span>Ships llms.txt and effects.json so coding agents apply effects correctly.</span></div>
+      </div>
+    </section>
+
+    <footer>
+      <span>lumafx v0.1.0 · MIT</span>
+      <span id="live-count">Effects running on this page: …</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(() => {
+  // Copy buttons: copy the code line next to the button.
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-copy]');
+    if (!btn) return;
+    const text = btn.previousElementSibling.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied';
+    } catch {
+      const r = document.createRange();
+      r.selectNodeContents(btn.previousElementSibling);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selected';
+    }
+    setTimeout(() => (btn.textContent = 'Copy'), 1400);
+  });
+
+  // Replay: remove the effect attribute, then put it back on the next frame.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-replay]');
+    if (!btn) return;
+    const els = [...document.querySelectorAll(btn.dataset.replay)];
+    const saved = els.map((el) => el.getAttribute('data-fx'));
+    els.forEach((el) => el.removeAttribute('data-fx'));
+    requestAnimationFrame(() => requestAnimationFrame(() => els.forEach((el, i) => el.setAttribute('data-fx', saved[i]))));
+  });
+
+  // Shared-element morph: gallery thumbnail ⇄ detail image.
+  const gallery = document.getElementById('gallery');
+  const detail = document.getElementById('detail');
+  const detailImg = document.getElementById('detail-img');
+  const detailTitle = document.getElementById('detail-title');
+  let current = null;
+  const settle = () => new Promise((r) => setTimeout(r, 0));
+  gallery.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pick]');
+    if (!b) return;
+    const thumb = b.querySelector('img');
+    current = thumb;
+    window.lumafx.transition(async () => {
+      thumb.removeAttribute('data-fx');
+      thumb.style.viewTransitionName = '';
+      detailImg.src = thumb.src;
+      detailImg.alt = thumb.alt;
+      detailTitle.textContent = thumb.alt;
+      detailImg.setAttribute('data-fx', 'morph');
+      detailImg.setAttribute('data-fx-name', thumb.dataset.fxName);
+      gallery.hidden = true;
+      detail.hidden = false;
+      await settle();
+    });
+  });
+  document.getElementById('detail-back').addEventListener('click', () => {
+    if (!current) return;
+    const thumb = current;
+    window.lumafx.transition(async () => {
+      detailImg.removeAttribute('data-fx');
+      detailImg.style.viewTransitionName = '';
+      thumb.setAttribute('data-fx', 'morph');
+      gallery.hidden = false;
+      detail.hidden = true;
+      await settle();
+    });
+  });
+
+  // Page presets
+  const pages = document.getElementById('pages');
+  document.querySelectorAll('[data-page-preset]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const preset = b.dataset.pagePreset;
+      window.lumafx.transition(() => {
+        const next = pages.dataset.page === '1' ? '2' : '1';
+        pages.dataset.page = next;
+        pages.innerHTML = next === '1'
+          ? '<h4>Page one</h4><p>Pick a preset above to change page.</p>'
+          : '<h4>Page two</h4><p>Arrived with the ' + preset + ' preset.</p>';
+      }, { preset });
+    }),
+  );
+
+  // Index rail: highlight the specimen in view.
+  const links = new Map([...document.querySelectorAll('.rail a')].map((a) => [a.getAttribute('href').slice(1), a]));
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) if (en.isIntersecting) {
+      links.forEach((a) => a.removeAttribute('aria-current'));
+      links.get(en.target.id)?.setAttribute('aria-current', 'true');
+    }
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('.spec').forEach((s) => io.observe(s));
+
+  // Live count of mounted effects
+  const count = document.getElementById('live-count');
+  const update = () => {
+    const s = window.lumafx.stats();
+    const total = Object.values(s).reduce((a, b) => a + b, 0);
+    count.textContent = 'Effects running on this page: ' + total + ' elements, ' + Object.keys(s).length + ' kinds';
+  };
+  setTimeout(update, 500);
+  setInterval(update, 4000);
+})();
+</script>

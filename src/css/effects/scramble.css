@@ -1,0 +1,2 @@
+--_scr: 1;
+&[data-fx-state~="scrambling"] { font-variant-ligatures: none; }

@@ -1,0 +1,165 @@
+/* ---------------------------------------------------------------
+   lumafx base: registered properties, keyframes and shared UI.
+   Effect rules are generated from src/css/effects/*.css.
+---------------------------------------------------------------- */
+
+@property --fx-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --fx-elev { syntax: "<number>"; inherits: false; initial-value: 1; }
+/* Option variables never inherit, so a parent's settings can't leak into a nested effect. */
+/*__OPTION_PROPERTIES__*/
+
+@keyframes fx-spin { to { --fx-angle: 360deg; } }
+@keyframes fx-shimmer { 0% { background-position: 100% 0; } 65%, 100% { background-position: 0% 0; } }
+@keyframes fx-shine { 0% { background-position: 100% 0; } 45%, 100% { background-position: 0% 0; } }
+@keyframes fx-shine-once { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@keyframes fx-aurora-a {
+  0% { transform: translate3d(-8%, -6%, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(6%, 5%, 0) rotate(10deg) scale(1.12); }
+  100% { transform: translate3d(-3%, 9%, 0) rotate(-6deg) scale(1.04); }
+}
+@keyframes fx-aurora-b {
+  0% { transform: translate3d(7%, 5%, 0) rotate(0deg) scale(1.08); }
+  50% { transform: translate3d(-6%, -4%, 0) rotate(-12deg) scale(.96); }
+  100% { transform: translate3d(4%, -8%, 0) rotate(8deg) scale(1.1); }
+}
+@keyframes fx-reveal {
+  from {
+    opacity: var(--_rv-o, 0);
+    translate: var(--_rv-t, none);
+    scale: var(--_rv-s, none);
+    filter: var(--_rv-f, none);
+    transform: var(--_rv-tf, none);
+    clip-path: var(--_rv-c, none);
+  }
+  to { clip-path: var(--_rv-c2, none); }
+}
+@keyframes fx-text-in {
+  from {
+    opacity: var(--_tr-o, 0);
+    translate: var(--_tr-t, none);
+    filter: var(--_tr-f, none);
+    transform: var(--_tr-tf, none);
+  }
+}
+@keyframes fx-marquee { to { translate: calc(-100% - var(--_mq-gap, 0px)) 0; } }
+@keyframes fx-marquee-y { to { translate: 0 calc(-100% - var(--_mq-gap, 0px)); } }
+@keyframes fx-parallax {
+  from { translate: 0 calc(var(--_px-speed, .25) * 40vh); }
+  to { translate: 0 calc(var(--_px-speed, .25) * -40vh); }
+}
+@keyframes fx-hscroll { to { translate: calc(var(--fx-hs-dist, 0px) * -1) 0; } }
+@keyframes fx-story { from { scale: 0 1; } to { scale: 1 1; } }
+/* If the runtime never boots, hidden content appears anyway. */
+@keyframes fx-failsafe { to { opacity: 1; translate: none; scale: none; filter: none; transform: none; clip-path: none; } }
+
+/* Infinite animations pause while off-screen (the runtime toggles data-fx-paused). */
+[data-fx-paused],
+[data-fx-paused]::before,
+[data-fx-paused]::after,
+[data-fx-paused] > * { animation-play-state: paused !important; }
+
+/* cursor-image: the floating image/label */
+.fx-float {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  translate: -9999px -9999px;
+  transform-origin: 0 0;
+}
+.fx-float-inner {
+  translate: -50% -50%;
+  scale: .3;
+  opacity: 0;
+  transition: scale .5s cubic-bezier(.2, .9, .25, 1.15), opacity .25s ease;
+}
+.fx-float[data-state="in"] .fx-float-inner { scale: 1; opacity: 1; }
+.fx-float img {
+  display: block;
+  width: var(--fx-float-size, 280px);
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / .12), 0 24px 60px -12px rgb(0 0 0 / .45);
+}
+.fx-float-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  padding: .7em 1.1em;
+  border-radius: 999px;
+  background: #fff;
+  color: #0b0b10;
+  font: 600 14px/1 system-ui, sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px -8px rgb(0 0 0 / .4);
+}
+
+/* carousel controls */
+.fx-carousel-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 16px; }
+.fx-cb {
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, currentColor 25%, transparent);
+  background: transparent;
+  color: inherit;
+  font: 500 22px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background-color .2s, border-color .2s;
+}
+.fx-cb:hover { background: color-mix(in oklab, currentColor 10%, transparent); }
+.fx-dots { display: flex; gap: 8px; }
+.fx-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 99px;
+  background: color-mix(in oklab, currentColor 30%, transparent);
+  cursor: pointer;
+  transition: inline-size .3s cubic-bezier(.2, .8, .2, 1), background-color .3s;
+}
+.fx-dot[aria-current="true"] { inline-size: 24px; background: currentColor; }
+.fx-cb:focus-visible, .fx-dot:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ripple applied directly to an <img> gets wrapped */
+.fx-ripple-wrap { position: relative; display: inline-block; overflow: clip; vertical-align: top; }
+.fx-ripple-wrap > img { display: block; }
+.fx-ripple-wrap .fx-ripple-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; opacity: 0; transition: opacity .35s ease;
+}
+.fx-ripple-wrap[data-fx-state~="gl"] .fx-ripple-canvas { opacity: 1; }
+
+/* View Transition presets: <html data-fx-transition="slide"> or lumafx.transition(fn, { preset }) */
+@keyframes fx-vt-fade-out { to { opacity: 0; } }
+@keyframes fx-vt-fade-in { from { opacity: 0; } }
+@keyframes fx-vt-slide-out { to { opacity: 0; translate: -5% 0; filter: blur(6px); } }
+@keyframes fx-vt-slide-in { from { opacity: 0; translate: 7% 0; filter: blur(6px); } }
+@keyframes fx-vt-slideback-out { to { opacity: 0; translate: 5% 0; filter: blur(6px); } }
+@keyframes fx-vt-slideback-in { from { opacity: 0; translate: -7% 0; filter: blur(6px); } }
+@keyframes fx-vt-zoom-out { to { opacity: 0; scale: .94; filter: blur(4px); } }
+@keyframes fx-vt-zoom-in { from { opacity: 0; scale: 1.05; } }
+@keyframes fx-vt-wipe-in { from { clip-path: circle(0% at var(--fx-vt-x, 50%) var(--fx-vt-y, 50%)); } to { clip-path: circle(150% at var(--fx-vt-x, 50%) var(--fx-vt-y, 50%)); } }
+
+:root[data-fx-transition]::view-transition-group(*) {
+  animation-duration: .55s;
+  animation-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+:root[data-fx-transition="fade"]::view-transition-old(root) { animation: fx-vt-fade-out .3s ease both; }
+:root[data-fx-transition="fade"]::view-transition-new(root) { animation: fx-vt-fade-in .4s ease .1s both; }
+:root[data-fx-transition="slide"]::view-transition-old(root) { animation: fx-vt-slide-out .45s cubic-bezier(.7, 0, .3, 1) both; }
+:root[data-fx-transition="slide"]::view-transition-new(root) { animation: fx-vt-slide-in .6s cubic-bezier(.2, .8, .2, 1) .05s both; }
+:root[data-fx-transition="slide-back"]::view-transition-old(root) { animation: fx-vt-slideback-out .45s cubic-bezier(.7, 0, .3, 1) both; }
+:root[data-fx-transition="slide-back"]::view-transition-new(root) { animation: fx-vt-slideback-in .6s cubic-bezier(.2, .8, .2, 1) .05s both; }
+:root[data-fx-transition="zoom"]::view-transition-old(root) { animation: fx-vt-zoom-out .4s cubic-bezier(.7, 0, .3, 1) both; }
+:root[data-fx-transition="zoom"]::view-transition-new(root) { animation: fx-vt-zoom-in .55s cubic-bezier(.2, .8, .2, 1) .1s both; }
+:root[data-fx-transition="wipe"]::view-transition-old(root) { animation: none; }
+:root[data-fx-transition="wipe"]::view-transition-new(root) { animation: fx-vt-wipe-in .7s cubic-bezier(.65, 0, .35, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-fx-transition]::view-transition-group(*),
+  :root[data-fx-transition]::view-transition-old(*),
+  :root[data-fx-transition]::view-transition-new(*) { animation: none !important; }
+}

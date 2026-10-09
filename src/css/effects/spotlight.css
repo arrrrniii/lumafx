@@ -1,0 +1,26 @@
+--_sp-c: var(--fx-color, #a78bfa);
+--_sp-size: var(--fx-size, 360px);
+:where(&) { position: relative; isolation: isolate; }
+& > .fx-spot {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .4s ease;
+  background: radial-gradient(var(--_sp-size) circle at var(--fx-mx, 50%) var(--fx-my, 50%), color-mix(in oklab, var(--_sp-c) 22%, transparent), transparent 70%);
+}
+& > .fx-spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(calc(var(--_sp-size) * .6) circle at var(--fx-mx, 50%) var(--fx-my, 50%), var(--_sp-c), transparent 75%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+&:hover > .fx-spot { opacity: 1; }
+&:is([data-fx-border="false"], .fx-no-border) > .fx-spot::after { display: none; }

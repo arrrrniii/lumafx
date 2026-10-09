@@ -1,0 +1,37 @@
+--_au-c1: var(--fx-color, #7c3aed);
+--_au-c2: var(--fx-color-2, #06b6d4);
+--_au-c3: var(--fx-color-3, #ec4899);
+--_au-dur: var(--fx-duration, 18s);
+--_au-o: var(--fx-opacity, .55);
+:where(&) { position: relative; isolation: isolate; overflow: clip; }
+&::before,
+&::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--_au-o);
+  /* Soft falloff comes from the gradients themselves: a live blur filter on layers this big
+     is costly on low-end GPUs and software renderers. */
+}
+&::before {
+  background:
+    radial-gradient(38% 46% at 22% 32%, color-mix(in oklab, var(--_au-c1) 90%, transparent), color-mix(in oklab, var(--_au-c1) 35%, transparent) 40%, transparent 72%),
+    radial-gradient(34% 40% at 76% 24%, color-mix(in oklab, var(--_au-c2) 85%, transparent), color-mix(in oklab, var(--_au-c2) 30%, transparent) 40%, transparent 72%),
+    radial-gradient(42% 44% at 58% 78%, color-mix(in oklab, var(--_au-c3) 75%, transparent), color-mix(in oklab, var(--_au-c3) 25%, transparent) 40%, transparent 72%);
+  animation: fx-aurora-a var(--_au-dur) ease-in-out infinite alternate;
+}
+&::after {
+  background:
+    radial-gradient(30% 36% at 72% 62%, color-mix(in oklab, var(--_au-c1) 65%, transparent), transparent 70%),
+    radial-gradient(36% 30% at 28% 70%, color-mix(in oklab, var(--_au-c2) 60%, transparent), transparent 70%),
+    radial-gradient(26% 30% at 45% 30%, color-mix(in oklab, var(--_au-c3) 45%, transparent), transparent 70%);
+  animation: fx-aurora-b calc(var(--_au-dur) * 1.35) ease-in-out infinite alternate;
+}
+:root[data-fx-lite] & {
+  &::before, &::after { animation: none; }
+}
+@fx-reduced {
+  &::before, &::after { animation: none; }
+}

@@ -1,0 +1,13 @@
+--_st-top: var(--fx-top, 12vh);
+--_st-off: var(--fx-offset, 16px);
+& > * {
+  position: sticky;
+  top: calc(var(--_st-top) + var(--fx-i, 0) * var(--_st-off));
+  transform-origin: 50% 0;
+  scale: var(--fx-s, 1);
+  filter: brightness(var(--fx-br, 1));
+}
+/* Indexes for the zero-JS version; the runtime sets them for any number of cards. */
+& > :nth-child(2) { --fx-i: 1; } & > :nth-child(3) { --fx-i: 2; } & > :nth-child(4) { --fx-i: 3; }
+& > :nth-child(5) { --fx-i: 4; } & > :nth-child(6) { --fx-i: 5; } & > :nth-child(7) { --fx-i: 6; }
+& > :nth-child(8) { --fx-i: 7; } & > :nth-child(9) { --fx-i: 8; } & > :nth-child(10) { --fx-i: 9; }

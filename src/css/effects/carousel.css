@@ -1,0 +1,22 @@
+--_cr-slide: var(--fx-slide, 80%);
+--_cr-gap: var(--fx-gap, 16px);
+display: flex;
+gap: var(--_cr-gap);
+overflow-x: auto;
+overscroll-behavior-x: contain;
+scroll-snap-type: x mandatory;
+scrollbar-width: none;
+&::-webkit-scrollbar { display: none; }
+& > * { flex: 0 0 var(--_cr-slide); scroll-snap-align: start; min-width: 0; }
+@media (hover: hover) and (pointer: fine) { cursor: grab; }
+&[data-fx-state~="dragging"] { cursor: grabbing; user-select: none; -webkit-user-select: none; }
+&:focus-visible { outline: 2px solid color-mix(in oklab, currentColor 60%, transparent); outline-offset: 4px; }
+&:is([data-fx-style="scale"], .fx-style-scale) {
+  /* Spacers let the first and last slides reach the centre. */
+  &::before, &::after { content: ""; flex: 0 0 calc((100% - var(--_cr-slide)) / 2 - var(--_cr-gap)); }
+  & > * {
+    scroll-snap-align: center;
+    scale: calc(.84 + .16 * var(--fx-k, 1));
+    opacity: calc(.45 + .55 * var(--fx-k, 1));
+  }
+}

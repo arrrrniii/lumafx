@@ -1,0 +1,7 @@
+--_sq-r: var(--fx-radius, 28px);
+border-radius: var(--_sq-r);
+/* corner-shape draws the curve further along each side, so the radius is scaled to match iOS proportions. */
+@fx-cs {
+  border-radius: calc(var(--_sq-r) * 1.6);
+  corner-shape: squircle;
+}

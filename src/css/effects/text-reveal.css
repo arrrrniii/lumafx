@@ -1,0 +1,37 @@
+--_tr-st: var(--fx-stagger, var(--_tr-st-def, 60ms));
+--_tr-d: var(--fx-duration, 800ms);
+--_tr-delay: var(--fx-delay, 0ms);
+--_tr-e: cubic-bezier(.2, .75, .25, 1);
+--_tr-o: 0;
+--_tr-t: 0 .32em;
+--_tr-f: blur(10px);
+--_tr-tf: none;
+&:is([data-fx-style="rise"], .fx-style-rise) {
+  --_tr-o: 1;
+  --_tr-t: 0 112%;
+  --_tr-f: none;
+  --_tr-e: cubic-bezier(.16, 1, .3, 1);
+  & .fx-u { overflow: clip; vertical-align: bottom; padding-block: .1em; margin-block: -.1em; }
+}
+&:is([data-fx-style="flip"], .fx-style-flip) {
+  --_tr-t: none;
+  --_tr-f: none;
+  --_tr-tf: perspective(420px) rotateY(-100deg);
+  --_tr-e: cubic-bezier(.22, 1, .36, 1);
+  & .fx-ui { transform-origin: 0 50%; }
+}
+&:is([data-fx-style="fade"], .fx-style-fade) { --_tr-t: none; --_tr-f: none; }
+& .fx-u, & .fx-ui { display: inline-block; }
+& .fx-word { display: inline-block; white-space: nowrap; }
+/* Hide until split (or revealed under reduced motion); the failsafe shows it if the runtime never starts. */
+.fx-ready &:not([data-fx-state~="split"]):not([data-fx-state~="in"]) { opacity: 0; }
+.fx-ready:not(.fx-booted) & { animation: fx-failsafe .01s 2.5s forwards; }
+.fx-ready &[data-fx-state~="split"]:not([data-fx-state~="in"]) .fx-ui {
+  opacity: var(--_tr-o);
+  translate: var(--_tr-t);
+  filter: var(--_tr-f);
+  transform: var(--_tr-tf);
+}
+&[data-fx-state~="in"] .fx-ui {
+  animation: fx-text-in var(--_tr-d) var(--_tr-e) calc(var(--_tr-delay) + var(--fx-i, 0) * var(--_tr-st)) backwards;
+}

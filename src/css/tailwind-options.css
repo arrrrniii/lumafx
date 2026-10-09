@@ -1,0 +1,47 @@
+/* Option utilities for Tailwind v4: fx-duration-4000, fx-color-violet-500, fx-length-[30%] … */
+@utility fx-duration-* { --fx-duration: calc(--value(integer) * 1ms); --fx-duration: --value([*]); }
+@utility fx-delay-* { --fx-delay: calc(--value(integer) * 1ms); --fx-delay: --value([*]); }
+@utility fx-stagger-* { --fx-stagger: calc(--value(integer) * 1ms); --fx-stagger: --value([*]); }
+@utility fx-ease-* { --fx-ease: --value(--ease-*, [*]); }
+
+@utility fx-color-* { --fx-color: --value(--color-*, [color], [*]); }
+@utility fx-color2-* { --fx-color-2: --value(--color-*, [color], [*]); }
+@utility fx-color3-* { --fx-color-3: --value(--color-*, [color], [*]); }
+@utility fx-tint-* { --fx-tint: --value(--color-*, [color], [*]); }
+
+@utility fx-length-* { --fx-length: calc(--value(integer) * 1%); --fx-length: --value([*]); }
+@utility fx-width-* { --fx-width: calc(--value(number) * 1px); --fx-width: --value([*]); }
+@utility fx-count-* { --fx-count: --value(integer); }
+@utility fx-radius-* { --fx-radius: calc(--value(integer) * 1px); --fx-radius: --value(--radius-*, [*]); }
+@utility fx-blur-* { --fx-blur: calc(--value(integer) * 1px); --fx-blur: --value([*]); }
+@utility fx-saturate-* { --fx-saturate: calc(--value(integer) * 1%); --fx-saturate: --value([*]); }
+@utility fx-intensity-* { --fx-intensity: calc(--value(integer) * 1%); --fx-intensity: --value([*]); }
+@utility fx-opacity-* { --fx-opacity: calc(--value(integer) * 1%); --fx-opacity: --value([*]); }
+@utility fx-elevation-* { --fx-elevation: --value(number, [*]); }
+@utility fx-distance-* { --fx-distance: calc(--value(integer) * 1px); --fx-distance: --value([*]); }
+@utility fx-size-* { --fx-size: calc(--value(integer) * 1px); --fx-size: --value([*]); }
+@utility fx-gap-* { --fx-gap: --spacing(--value(integer)); --fx-gap: --value([*]); }
+@utility fx-fade-* { --fx-fade: calc(--value(integer) * 1%); --fx-fade: --value([*]); }
+@utility fx-top-* { --fx-top: --spacing(--value(integer)); --fx-top: --value([*]); }
+@utility fx-offset-* { --fx-offset: calc(--value(integer) * 1px); --fx-offset: --value([*]); }
+@utility fx-slide-* { --fx-slide: calc(--value(integer) * 1%); --fx-slide: --value([*]); }
+
+/* Read by the JavaScript runtime, so they stay plain numbers (use arbitrary values for decimals). */
+@utility fx-speed-* { --fx-speed: --value(number, [*]); }
+@utility fx-strength-* { --fx-strength: --value(number, [*]); }
+@utility fx-max-* { --fx-max: --value(number, [*]); }
+@utility fx-scale-* { --fx-scale: --value(number, [*]); }
+@utility fx-area-* { --fx-area: --value(integer, [*]); }
+@utility fx-shrink-* { --fx-shrink: --value(number, [*]); }
+@utility fx-autoplay-* { --fx-autoplay: --value(integer, [*]); }
+@utility fx-refraction-* { --fx-refraction: --value(number, [*]); }
+@utility fx-aberration-* { --fx-aberration: --value(number, [*]); }
+
+/* Enumerated options: the class sets the variable for JS and is matched by the effect CSS. */
+@utility fx-split-* { --fx-split: --value('words', 'chars', 'lines'); }
+@utility fx-style-* { --fx-style: --value('blur', 'rise', 'flip', 'fade', 'scale', 'default'); }
+@utility fx-trigger-* { --fx-trigger: --value('view', 'load', 'hover', 'loop'); }
+@utility fx-from-* { --fx-from: --value('up', 'down', 'left', 'right', 'zoom', 'blur', 'book', 'clip'); }
+@utility fx-mode-* { --fx-mode: --value('beam', 'full', 'liquid', 'frost'); }
+@utility fx-light-* { --fx-light: --value('top', 'cursor'); }
+@utility fx-fallback-* { --fx-fallback: --value('auto', 'clip', 'radius'); }

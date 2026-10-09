@@ -1,0 +1,32 @@
+--_mq-gap: var(--fx-gap, 2rem);
+--_mq-fade: var(--fx-fade, 8%);
+display: flex;
+gap: var(--_mq-gap);
+overflow: clip;
+/* Never let the copies widen the host (grid/flex parents would otherwise grow with it). */
+min-width: 0;
+max-width: 100%;
+-webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--_mq-fade), #000 calc(100% - var(--_mq-fade)), transparent);
+mask-image: linear-gradient(90deg, transparent, #000 var(--_mq-fade), #000 calc(100% - var(--_mq-fade)), transparent);
+& > .fx-mq-track {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--_mq-gap);
+  min-width: max-content;
+  animation: fx-marquee var(--fx-mq-dur, 30s) linear infinite;
+}
+&:is([data-fx-reverse], .fx-reverse) > .fx-mq-track { animation-direction: reverse; }
+&:not([data-fx-pause="false"], .fx-no-pause):hover > .fx-mq-track { animation-play-state: paused; }
+&:is([data-fx-vertical], .fx-vertical) {
+  flex-direction: column;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 var(--_mq-fade), #000 calc(100% - var(--_mq-fade)), transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 var(--_mq-fade), #000 calc(100% - var(--_mq-fade)), transparent);
+  & > .fx-mq-track { flex-direction: column; min-width: 0; min-height: max-content; animation-name: fx-marquee-y; }
+}
+@fx-reduced {
+  overflow: auto;
+  -webkit-mask-image: none;
+  mask-image: none;
+  & > .fx-mq-track { animation: none; }
+}

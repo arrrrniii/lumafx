@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types",
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noUnusedLocals": true,
+    "paths": { "lumafx": ["./src/index.ts"] }
+  },
+  "include": ["src"]
+}

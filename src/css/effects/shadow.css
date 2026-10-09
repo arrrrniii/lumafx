@@ -1,0 +1,19 @@
+--_sh-c: var(--fx-color, rgb(15 17 35));
+--fx-elev: var(--fx-elevation, 1);
+--_sh-x: var(--fx-shx, 0);
+--_sh-y: var(--fx-shy, 1);
+box-shadow:
+  calc(var(--_sh-x) * 1px * var(--fx-elev)) calc(var(--_sh-y) * 1px * var(--fx-elev)) calc(2px * var(--fx-elev)) color-mix(in srgb, var(--_sh-c) 8%, transparent),
+  calc(var(--_sh-x) * 3px * var(--fx-elev)) calc(var(--_sh-y) * 3px * var(--fx-elev)) calc(6px * var(--fx-elev)) color-mix(in srgb, var(--_sh-c) 7%, transparent),
+  calc(var(--_sh-x) * 8px * var(--fx-elev)) calc(var(--_sh-y) * 8px * var(--fx-elev)) calc(16px * var(--fx-elev)) color-mix(in srgb, var(--_sh-c) 7%, transparent),
+  calc(var(--_sh-x) * 18px * var(--fx-elev)) calc(var(--_sh-y) * 18px * var(--fx-elev)) calc(36px * var(--fx-elev)) color-mix(in srgb, var(--_sh-c) 6%, transparent),
+  calc(var(--_sh-x) * 36px * var(--fx-elev)) calc(var(--_sh-y) * 36px * var(--fx-elev)) calc(72px * var(--fx-elev)) color-mix(in srgb, var(--_sh-c) 5%, transparent);
+transition: --fx-elev .5s cubic-bezier(.2, .8, .2, 1), translate .5s cubic-bezier(.2, .8, .2, 1);
+&:is([data-fx-lift], .fx-lift):hover {
+  --fx-elev: calc(var(--fx-elevation, 1) * 2.2);
+  translate: 0 -4px;
+}
+@fx-reduced {
+  transition: none;
+  &:is([data-fx-lift], .fx-lift):hover { translate: none; }
+}

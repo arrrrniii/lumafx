@@ -1,0 +1,12 @@
+:where(&) { position: relative; transform-style: preserve-3d; }
+&[data-fx-state~="tilting"] { will-change: transform; }
+& > .fx-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--fx-gx, 50%) var(--fx-gy, 50%), rgb(255 255 255 / .55), rgb(255 255 255 / 0) 60%);
+  opacity: var(--fx-go, 0);
+  mix-blend-mode: overlay;
+}
