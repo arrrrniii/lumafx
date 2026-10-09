@@ -5,13 +5,19 @@ import { tick } from '../core/ticker';
 import { onView } from '../core/view';
 
 /* ======================================================================
-   loader-3d · glossy slabs that fan apart over a floating plate.
+   loader-3d · glossy 3D panels over a floating plate.
 
-   The scene is ray-marched in one fragment shader: rounded tiles as signed
+   Two scenes share one shader:
+   - pages (default): upright panels hinged like the pages of a book. They
+     sit in a deck, fan open, spread into a ring, then fold back.
+   - stack: flat tiles that fan apart around a corner.
+
+   The scene is ray-marched in one fragment shader: rounded slabs as signed
    distance fields, soft shadows, ambient occlusion, a studio environment for
-   the reflections and a soft contact shadow under the plate. One WebGL
-   context is shared by every loader on the page (browsers cap contexts), and
-   each loader copies its frame into its own 2D canvas.
+   the reflections and a soft contact shadow under the plate. Each slab is
+   placed with a world-to-local matrix computed on the CPU. One WebGL context
+   is shared by every loader on the page (browsers cap contexts), and each
+   loader copies its frame into its own 2D canvas.
    ====================================================================== */
 
 const MAX = 6;
@@ -22,41 +28,39 @@ const FRAG = /* glsl */ `
 precision highp float;
 uniform vec2 uRes;
 uniform int uN;
-uniform vec4 uSlab[${MAX}];   // y, cos(a), sin(a), tilt
+uniform int uMode;            // 0 pages, 1 stack
+uniform vec4 uM[${MAX * 3}];  // world -> slab space, three rows per slab
 uniform vec3 uCol[${MAX}];    // linear colours
 uniform vec3 uBase;
-uniform float uPlateY;
-uniform float uYaw;
+uniform vec3 uSize;           // slab half extents: profile x, profile y, thickness
+uniform vec2 uRound;          // profile corner radius, edge radius
+uniform vec4 uPlate;          // half x, half z, half thickness, y
+uniform vec2 uPlateR;
+uniform vec4 uCam;            // yaw, height, distance, focal length
+uniform vec3 uTarget;
+uniform vec4 uBound;          // bounding sphere
+uniform float uGround;
 
-const vec3 HS = vec3(.5, .058, .5);
-const float RC = .17;
-const float RE = .05;
-const vec2 PIV = vec2(-.36, -.36);
-const vec3 PS = vec3(.76, .05, .76);
-const float GROUND = -.74;
-
-float tile(vec3 p, vec3 b, float rc, float re) {
-  vec2 q = abs(p.xz) - b.xz + rc;
+// A rounded rectangle in the xy plane, extruded along z, with rounded edges.
+float slab(vec3 p, vec3 b, float rc, float re) {
+  vec2 q = abs(p.xy) - b.xy + rc;
   float d2 = min(max(q.x, q.y), 0.) + length(max(q, 0.)) - rc;
-  vec2 w = vec2(d2 + re, abs(p.y) - b.y + re);
+  vec2 w = vec2(d2 + re, abs(p.z) - b.z + re);
   return min(max(w.x, w.y), 0.) + length(max(w, 0.)) - re;
 }
 
-vec3 slabLocal(vec3 p, vec4 s) {
-  vec3 q = p;
-  q.y -= s.x;
-  vec2 r = q.xz - PIV;
-  q.xz = vec2(s.y * r.x + s.z * r.y, -s.z * r.x + s.y * r.y) + PIV;
-  float ct = cos(s.w), st = sin(s.w);
-  q.yz = vec2(ct * q.y - st * q.z, st * q.y + ct * q.z);
-  return q;
+float plateD(vec3 p) {
+  vec3 q = p - vec3(0., uPlate.w, 0.);
+  return slab(vec3(q.x, q.z, q.y), uPlate.xyz, uPlateR.x, uPlateR.y);
 }
 
 vec2 map(vec3 p) {
-  vec2 res = vec2(tile(p - vec3(0., uPlateY, 0.), PS, .27, .05), 0.);
+  vec2 res = vec2(plateD(p), 0.);
+  vec4 P = vec4(p, 1.);
   for (int i = 0; i < ${MAX}; i++) {
     if (i >= uN) break;
-    float d = tile(slabLocal(p, uSlab[i]), HS, RC, RE);
+    vec3 q = vec3(dot(uM[i * 3], P), dot(uM[i * 3 + 1], P), dot(uM[i * 3 + 2], P));
+    float d = slab(q, uSize, uRound.x, uRound.y);
     if (d < res.x) res = vec2(d, float(i + 1));
   }
   return res;
@@ -101,7 +105,8 @@ float softbox(vec3 d, vec3 L, vec3 U, vec2 size, float soft) {
   return 1. - smoothstep(-soft, soft, sd);
 }
 
-vec3 env(vec3 d) {
+// Bright studio for the stack.
+vec3 envStudio(vec3 d) {
   float y = d.y;
   vec3 c = mix(vec3(.18, .2, .34), vec3(.62, .66, .86), smoothstep(-.45, .1, y));
   c = mix(c, vec3(.92, .94, 1.), smoothstep(.1, .95, y));
@@ -111,36 +116,59 @@ vec3 env(vec3 d) {
   return c;
 }
 
-vec3 albedo(float id, vec3 p) {
+// Dark stage with coloured lights for the pages: lavender key, magenta side light,
+// cyan bounce from the plate below, and soft cloudy variation for iridescent reflections.
+vec3 envStage(vec3 d) {
+  vec3 c = vec3(.006, .005, .02);
+  c += vec3(1.5, 1.4, 2.4) * softbox(d, normalize(vec3(-.45, .75, .55)), vec3(0., 1., 0.), vec2(.55, .4), .35);
+  c += vec3(2.6, .55, 1.7) * softbox(d, normalize(vec3(.95, .15, -.25)), vec3(0., 1., 0.), vec2(.35, .7), .4);
+  c += vec3(.9, .7, 2.2) * softbox(d, normalize(vec3(-.9, .1, -.4)), vec3(0., 1., 0.), vec2(.3, .8), .4);
+  c += vec3(.45, 1.1, 1.5) * smoothstep(-.15, -.85, d.y);
+  // A cloudy pink-white glow in front, behind the viewer: faces turned to the camera pick it up.
+  float cloud = sin(d.x * 9.3 + 1.7) * sin(d.y * 7.1 - d.x * 3.) * sin(d.z * 5.7 + d.y * 4.) * .5 + .5;
+  c += mix(vec3(.9, .35, 1.1), vec3(1.4, 1.3, 1.6), cloud) * softbox(d, normalize(vec3(.5, .2, .85)), vec3(0., 1., 0.), vec2(.8, .55), .6) * (.18 + .62 * cloud);
+  float n = sin(d.x * 6.1 + d.y * 2.7) * sin(d.y * 4.3 - d.z * 5.2) * .5 + .5;
+  return c * (.7 + .6 * n);
+}
+
+vec3 env(vec3 d) {
+  return uMode == 0 ? envStage(d) : envStudio(d);
+}
+
+vec3 albedo(float id, vec3 p, out vec3 q, out vec3 axis) {
+  q = p;
+  axis = vec3(0., 1., 0.);
   if (id < .5) return uBase;
   vec3 c = uCol[0];
-  vec4 s = uSlab[0];
+  vec4 P = vec4(p, 1.);
   for (int i = 0; i < ${MAX}; i++) {
     if (i >= uN) break;
-    if (abs(id - float(i + 1)) < .5) { c = uCol[i]; s = uSlab[i]; }
+    if (abs(id - float(i + 1)) < .5) {
+      c = uCol[i];
+      q = vec3(dot(uM[i * 3], P), dot(uM[i * 3 + 1], P), dot(uM[i * 3 + 2], P));
+      axis = uM[i * 3 + 2].xyz;
+    }
   }
-  // A gentle diagonal gradient across each slab.
-  vec3 q = slabLocal(p, s);
-  return c * (.86 + .3 * clamp(.5 + .55 * (q.z - q.x), 0., 1.));
+  vec2 u = q.xy / uSize.xy;
+  // Pages: lighter towards the lower left. Stack: a gentle diagonal.
+  return uMode == 0 ? c * (.4 + 1.1 * clamp(.5 - .45 * u.y - .3 * u.x, 0., 1.)) : c * (.86 + .3 * clamp(.5 + .275 * (q.y - q.x), 0., 1.));
 }
 
 void main() {
   vec2 uv = (gl_FragCoord.xy - .5 * uRes) / uRes.y;
-  float D = 5.2;
-  vec3 ro = vec3(sin(uYaw) * D, 2.7, cos(uYaw) * D);
-  vec3 ta = vec3(-.1, -.2, -.06);
-  vec3 ww = normalize(ta - ro);
+  vec3 ro = vec3(sin(uCam.x) * uCam.z, uCam.y, cos(uCam.x) * uCam.z);
+  vec3 ww = normalize(uTarget - ro);
   vec3 uu = normalize(cross(ww, vec3(0., 1., 0.)));
   vec3 vv = cross(uu, ww);
-  vec3 rd = normalize(uv.x * uu + uv.y * vv + 2.45 * ww);
+  vec3 rd = normalize(uv.x * uu + uv.y * vv + uCam.w * ww);
 
   vec3 col = vec3(0.);
   float alpha = 0.;
 
   // Bounding sphere around everything that can be hit.
-  vec3 oc = ro - vec3(0., -.15, 0.);
+  vec3 oc = ro - uBound.xyz;
   float b = dot(oc, rd);
-  float disc = b * b - (dot(oc, oc) - 2.1 * 2.1);
+  float disc = b * b - (dot(oc, oc) - uBound.w * uBound.w);
   bool hit = false;
   float t = 0.;
   vec2 h = vec2(1., 0.);
@@ -148,7 +176,7 @@ void main() {
     float sq = sqrt(disc);
     t = max(0., -b - sq);
     float tmax = -b + sq;
-    for (int i = 0; i < 110; i++) {
+    for (int i = 0; i < 120; i++) {
       h = map(ro + rd * t);
       if (h.x < .0006 * t) { hit = true; break; }
       t += h.x * .9;
@@ -156,49 +184,70 @@ void main() {
     }
   }
 
-  vec3 L = normalize(vec3(-.55, .9, .42));
+  bool stage = uMode == 0;
+  vec3 L = stage ? normalize(vec3(-.5, .8, .6)) : normalize(vec3(-.55, .9, .42));
   if (hit) {
     vec3 p = ro + rd * t;
     vec3 n = normal(p);
     vec3 v = -rd;
-    vec3 a = albedo(h.y, p);
+    vec3 q, axis;
+    vec3 a = albedo(h.y, p, q, axis);
     float occ = occlusion(p, n);
     float sha = shadow(p + n * .004, L);
     float ndl = dot(n, L);
     float wrap = clamp(ndl * .5 + .5, 0., 1.);
-    float fre = pow(1. - clamp(dot(n, v), 0., 1.), 5.);
+    float nv = clamp(dot(n, v), 0., 1.);
+    float fre = pow(1. - nv, 5.);
     vec3 r = reflect(rd, n);
     vec3 hv = normalize(L + v);
     bool plate = h.y < .5;
 
-    // Diffuse with a soft wrap, cool sky fill from above and bounce from below.
-    vec3 dif = a * (.16 + .84 * wrap * mix(.42, 1., sha)) * mix(.55, 1., occ);
-    dif += a * a * .5 * clamp(n.y * .5 + .5, 0., 1.) * occ;
-    // Light that seems to pass through the material near the edges.
-    dif += a * .55 * pow(clamp(1. - abs(dot(n, v)), 0., 1.), 2.) * occ;
-
-    // Clear coat: environment reflection + a sharp highlight.
-    float coat = plate ? .05 + .6 * fre : .045 + .9 * fre;
-    vec3 spec = env(r) * coat * mix(.35, 1., occ);
-    // Reflections of the slabs on the plate: darken where the reflected ray hits them.
-    if (plate) {
-      float rs = shadow(p + n * .01, r);
-      spec *= mix(.45, 1., rs);
-      dif += vec3(.05, .07, .12) * (1. - rs);
+    if (stage) {
+      if (plate) {
+        // Pale glass-blue plate: bright top, darker sides, nearly black underneath.
+        float top = smoothstep(.2, .9, n.y);
+        float under = smoothstep(.2, .9, -n.y);
+        vec3 dif = a * mix(.32, .9 + .25 * wrap, top) * mix(1., .08, under) * mix(.6, 1., occ);
+        float rs = shadow(p + n * .01, r);
+        vec3 spec = env(r) * (.04 + .5 * fre) * mix(.35, 1., rs) * top;
+        spec += vec3(1.) * pow(clamp(dot(n, hv), 0., 1.), 70.) * .6 * sha * top;
+        col = dif + spec;
+      } else {
+        // Deep glossy panels: low diffuse, strong coat, edges that catch the light.
+        vec3 dif = a * (.04 + .32 * clamp(ndl, 0., 1.) * mix(.3, 1., sha)) * occ;
+        dif += a * vec3(.55, .85, 1.25) * smoothstep(.1, .9, -n.y) * 1.4;   // light bouncing up from the plate
+        dif += a * vec3(.5, .45, 1.) * pow(1. - nv, 2.5) * .9 * occ;       // lavender rim
+        vec3 spec = env(r) * (.1 + .9 * fre) * mix(.4, 1., occ);
+        spec += vec3(1.) * pow(clamp(dot(n, hv), 0., 1.), 160.) * 2. * sha;
+        // Thin bright rims where the rounded edges turn away from the faces.
+        float edge = 1. - smoothstep(.35, .8, abs(dot(n, axis)));
+        spec += vec3(.62, .6, 1.25) * edge * .35;
+        col = dif + spec;
+      }
+    } else {
+      vec3 dif = a * (.16 + .84 * wrap * mix(.42, 1., sha)) * mix(.55, 1., occ);
+      dif += a * a * .5 * clamp(n.y * .5 + .5, 0., 1.) * occ;
+      dif += a * .55 * pow(clamp(1. - nv, 0., 1.), 2.) * occ;
+      float coat = plate ? .05 + .6 * fre : .045 + .9 * fre;
+      vec3 spec = env(r) * coat * mix(.35, 1., occ);
+      if (plate) {
+        float rs = shadow(p + n * .01, r);
+        spec *= mix(.45, 1., rs);
+        dif += vec3(.05, .07, .12) * (1. - rs);
+      }
+      spec += vec3(1.) * pow(clamp(dot(n, hv), 0., 1.), plate ? 60. : 140.) * (plate ? .8 : 2.2) * sha;
+      col = dif + spec;
     }
-    spec += vec3(1.) * pow(clamp(dot(n, hv), 0., 1.), plate ? 60. : 140.) * (plate ? .8 : 2.2) * sha;
-
-    col = dif + spec;
     alpha = 1.;
   }
 
   // Soft contact shadow on an invisible floor, so the plate looks like it floats.
   if (!hit && rd.y < 0.) {
-    float tg = (GROUND - ro.y) / rd.y;
+    float tg = (uGround - ro.y) / rd.y;
     vec3 g = ro + rd * tg;
-    vec2 q = abs(g.xz) - PS.xz + .27;
-    float d2 = min(max(q.x, q.y), 0.) + length(max(q, 0.)) - .27;
-    float lift = uPlateY - GROUND;
+    vec2 q = abs(g.xz) - uPlate.xy + uPlateR.x;
+    float d2 = min(max(q.x, q.y), 0.) + length(max(q, 0.)) - uPlateR.x;
+    float lift = uPlate.w - uGround;
     float s = (1. - smoothstep(-.32, .12 + lift * .25, d2)) * (.34 - lift * .18);
     alpha = clamp(s, 0., 1.);
     col = vec3(0., 0., .015);
@@ -248,7 +297,7 @@ function setup(r: Renderer) {
   gl.enableVertexAttribArray(loc);
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   r.u = {};
-  for (const n of ['uRes', 'uN', 'uSlab', 'uCol', 'uBase', 'uPlateY', 'uYaw']) r.u[n] = gl.getUniformLocation(p, n);
+  for (const n of ['uRes', 'uN', 'uMode', 'uM', 'uCol', 'uBase', 'uSize', 'uRound', 'uPlate', 'uPlateR', 'uCam', 'uTarget', 'uBound', 'uGround']) r.u[n] = gl.getUniformLocation(p, n);
   r.ok = true;
 }
 
@@ -358,23 +407,181 @@ export function poses(n: number, time: number, duration: number, still = false) 
   return out;
 }
 
+/* ---------------- slab placement (world -> slab space) ---------------- */
+
+/** A 3×4 affine matrix, row by row. */
+type Affine = number[];
+const T = (x: number, y: number, z: number): Affine => [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z];
+/** A∘B: apply B, then A. */
+function mul(A: Affine, B: Affine): Affine {
+  const o = new Array(12);
+  for (let r = 0; r < 3; r++)
+    for (let c = 0; c < 4; c++) o[r * 4 + c] = A[r * 4] * B[c] + A[r * 4 + 1] * B[4 + c] + A[r * 4 + 2] * B[8 + c] + (c === 3 ? A[r * 4 + 3] : 0);
+  return o;
+}
+
+const PIVOT = [-0.36, -0.36];
+
+/** Stack scene: the flat tiles' matrices from their poses (profile in xy, thickness along z). */
+export function stackMatrices(n: number, time: number, duration: number, still = false) {
+  const ps = poses(n, time, duration, still);
+  const out = new Float32Array(MAX * 12);
+  for (let i = 0; i < n; i++) {
+    const [y, c, s, tilt] = [ps[i * 4], ps[i * 4 + 1], ps[i * 4 + 2], ps[i * 4 + 3]];
+    const ct = Math.cos(tilt);
+    const st = Math.sin(tilt);
+    let m = T(0, -y, 0);
+    m = mul(T(-PIVOT[0], 0, -PIVOT[1]), m);
+    m = mul([c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0], m);
+    m = mul(T(PIVOT[0], 0, PIVOT[1]), m);
+    m = mul([1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0], m);
+    m = mul([1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0], m); // tiles lie flat: thickness is world y
+    out.set(m, i * 12);
+  }
+  return out;
+}
+
+const smooth01 = (t: number) => easeInOut(Math.min(1, Math.max(0, t)));
+
+export interface PageState {
+  /** Angle of each panel around the hinge, radians. */
+  angles: number[];
+  /** 0 = closed deck, 1 = open (fan or ring). */
+  open: number;
+}
+
+/**
+ * Pages scene over one cycle: a closed deck fans open like a book, spreads into a full ring
+ * that turns by one slot, then folds straight back into the deck.
+ */
+export function pageState(n: number, p: number, still = false): PageState {
+  const fan = 0.55;
+  const ring = (Math.PI * 2) / Math.max(1, n);
+  if (still) return { angles: Array.from({ length: n }, (_, i) => i * fan * 0.9), open: 1 };
+  p = ((p % 1) + 1) % 1;
+  const spin = ring * smooth01((p - 0.34) / 0.6);
+  const angles: number[] = [];
+  let open = 0;
+  for (let i = 0; i < n; i++) {
+    const fanA = i * fan;
+    const ringA = i * ring + spin;
+    let a = 0;
+    if (p < 0.08) a = 0;
+    else if (p < 0.34) {
+      // Pages leave the deck one after another.
+      const k = smooth01((p - 0.08 - i * 0.012) / 0.24);
+      a = fanA * k;
+      open = smooth01((p - 0.08) / 0.24);
+    } else if (p < 0.52) {
+      a = fanA + (ringA - fanA) * smooth01((p - 0.34) / 0.18);
+      open = 1;
+    } else if (p < 0.7) {
+      a = ringA;
+      open = 1;
+    } else if (p < 0.94) {
+      const k = smooth01((p - 0.7) / 0.24);
+      a = ringA * (1 - k);
+      open = 1 - k;
+    }
+    angles.push(a);
+  }
+  return { angles, open };
+}
+
+export const PAGE = { halfW: 0.42, halfH: 0.5, halfT: 0.032, hinge: 0.05, centerY: 0.2 };
+
+/** Pages scene: panel matrices for a moment in the loop, centred on the plate. */
+export function pageMatrices(n: number, time: number, duration: number, still = false) {
+  const { angles, open } = pageState(n, time / duration, still);
+  const bob = still ? 0 : Math.sin((time / 1000) * 1.9) * 0.03;
+  const deck = 1 - open;
+  // The hinge is the panels' right edge; pages swing back and out to the right.
+  const C = angles.map((_, i) => [
+    -(PAGE.hinge + PAGE.halfW) + 0.05 * i * deck,
+    PAGE.centerY + bob + 0.035 * i * deck,
+    -(2 * PAGE.halfT + 0.03) * i * deck,
+  ]);
+  // Centre the group so the deck, the fan and the ring all sit in the middle of the plate.
+  let gx = 0;
+  let gz = 0;
+  const turn = angles.map((a) => -a);
+  turn.forEach((a, i) => {
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    gx += C[i][0] * c + C[i][2] * s;
+    gz += -C[i][0] * s + C[i][2] * c;
+  });
+  gx /= Math.max(1, n);
+  gz /= Math.max(1, n);
+  const out = new Float32Array(MAX * 12);
+  turn.forEach((a, i) => {
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    const [cx, cy, cz] = C[i];
+    out.set([c, 0, -s, c * gx - s * gz - cx, 0, 1, 0, -cy, s, 0, c, s * gx + c * gz - cz], i * 12);
+  });
+  return out;
+}
+
+interface Scene {
+  size: [number, number, number];
+  round: [number, number];
+  plate: [number, number, number];
+  plateR: [number, number];
+  plateY: number;
+  cam: [number, number, number, number];
+  target: [number, number, number];
+  bound: [number, number, number, number];
+  ground: number;
+}
+
+const SCENES: Record<'pages' | 'stack', Scene> = {
+  pages: {
+    size: [PAGE.halfW, PAGE.halfH, PAGE.halfT],
+    round: [0.075, 0.022],
+    plate: [0.7, 0.7, 0.032],
+    plateR: [0.06, 0.018],
+    plateY: -0.58,
+    cam: [0.55, -0.38, 5.4, 2.3],
+    target: [0, 0.02, 0],
+    bound: [0, 0, 0, 1.6],
+    ground: -0.88,
+  },
+  stack: {
+    size: [0.5, 0.5, 0.058],
+    round: [0.17, 0.05],
+    plate: [0.76, 0.76, 0.05],
+    plateR: [0.27, 0.05],
+    plateY: -0.56,
+    cam: [0.66, 2.7, 5.2, 2.45],
+    target: [-0.1, -0.2, -0.06],
+    bound: [0, -0.15, 0, 2.1],
+    ground: -0.74,
+  },
+};
+
 /* ---------------- effect ---------------- */
 
 const DEFAULT_COLORS = '#3a6bff,#5560ff,#7457ff,#9a5cf6';
+const DEFAULT_PAGES = '#2b26c9,#3326c8,#3d25c5,#4925c1,#5726bd';
 
 export const loader3d: Effect = {
   name: 'loader-3d',
   meta: META['loader-3d'],
   mount(el, ctx) {
-    const listed = (ctx.str('colors', DEFAULT_COLORS) || DEFAULT_COLORS)
+    const mode: 'pages' | 'stack' = ctx.str('style', 'pages') === 'stack' ? 'stack' : 'pages';
+    const fallback = mode === 'pages' ? DEFAULT_PAGES : DEFAULT_COLORS;
+    const listed = (ctx.str('colors', fallback) || fallback)
       .split(/,(?![^(]*\))/)
       .map(parseColor)
       .filter((c): c is [number, number, number] => !!c);
-    const colors = listed.length ? listed : (DEFAULT_COLORS.split(',').map(parseColor) as [number, number, number][]);
-    const count = clamp(Math.round(ctx.num('count', listed.length > 1 ? listed.length : 4)), 1, MAX);
+    const colors = listed.length ? listed : (fallback.split(',').map(parseColor) as [number, number, number][]);
+    const count = clamp(Math.round(ctx.num('count', listed.length > 1 ? listed.length : mode === 'pages' ? 5 : 4)), 1, MAX);
     const slabs = palette(colors, count);
-    const base = parseColor(ctx.str('base', '#b2d6ff') || '#b2d6ff') || [178, 214, 255];
-    const duration = Math.max(600, ctx.time('duration', 2800));
+    const baseDefault = mode === 'pages' ? '#a6d8ea' : '#b2d6ff';
+    const base = parseColor(ctx.str('base', baseDefault) || baseDefault) || [166, 216, 234];
+    const duration = Math.max(600, ctx.time('duration', mode === 'pages' ? 3600 : 2800));
+    const scene = SCENES[mode];
     const still = ctx.env.reduced;
     const offs: (() => void)[] = [];
 
@@ -397,26 +604,27 @@ export const loader3d: Effect = {
 
     /* ---- CSS 3D version: no WebGL ---- */
     if (!r) {
-      const scene = document.createElement('div');
-      scene.className = 'fx-l3d-css';
-      scene.setAttribute('aria-hidden', 'true');
+      const box = document.createElement('div');
+      box.className = 'fx-l3d-css' + (mode === 'pages' ? ' fx-l3d-pages' : '');
+      box.setAttribute('aria-hidden', 'true');
+      box.style.setProperty('--n', String(count));
       const plate = document.createElement('i');
       plate.className = 'fx-l3d-plate';
       plate.style.setProperty('--c', `rgb(${base.join(' ')})`);
-      scene.append(plate);
+      box.append(plate);
       slabs.forEach((c, i) => {
         const s = document.createElement('i');
         s.className = 'fx-l3d-slab';
         s.style.setProperty('--i', String(i));
         s.style.setProperty('--k', String(count === 1 ? 0 : i / (count - 1) - 0.5));
         s.style.setProperty('--c', `rgb(${c.map(Math.round).join(' ')})`);
-        scene.append(s);
+        box.append(s);
       });
-      el.append(scene);
+      el.append(box);
       setState(el, 'ready css');
       return () => {
         offs.forEach((f) => f());
-        scene.remove();
+        box.remove();
         setState(el, 'ready css', false);
       };
     }
@@ -460,12 +668,22 @@ export const loader3d: Effect = {
       }
       gl.viewport(0, 0, W, H);
       gl.uniform2f(u.uRes, W, H);
+      const sc = scene;
+      const sway = still ? 0 : Math.sin((time / 1000) * 0.45) * (mode === 'pages' ? 0.14 : 0.2);
+      const float = still ? 0 : Math.sin((time / 1000) * 1.6 + 1) * 0.035;
       gl.uniform1i(u.uN, count);
-      gl.uniform4fv(u.uSlab, poses(count, time, duration, still));
+      gl.uniform1i(u.uMode, mode === 'pages' ? 0 : 1);
+      gl.uniform4fv(u.uM, mode === 'pages' ? pageMatrices(count, time, duration, still) : stackMatrices(count, time, duration, still));
       gl.uniform3fv(u.uCol, linSlabs);
       gl.uniform3f(u.uBase, linBase[0], linBase[1], linBase[2]);
-      gl.uniform1f(u.uPlateY, -0.56 + (still ? 0 : Math.sin((time / 1000) * 1.6 + 1) * 0.035));
-      gl.uniform1f(u.uYaw, 0.66 + (still ? 0 : Math.sin((time / 1000) * 0.45) * 0.2));
+      gl.uniform3f(u.uSize, sc.size[0], sc.size[1], sc.size[2]);
+      gl.uniform2f(u.uRound, sc.round[0], sc.round[1]);
+      gl.uniform4f(u.uPlate, sc.plate[0], sc.plate[1], sc.plate[2], sc.plateY + float);
+      gl.uniform2f(u.uPlateR, sc.plateR[0], sc.plateR[1]);
+      gl.uniform4f(u.uCam, sc.cam[0] + sway, sc.cam[1], sc.cam[2], sc.cam[3]);
+      gl.uniform3f(u.uTarget, sc.target[0], sc.target[1], sc.target[2]);
+      gl.uniform4f(u.uBound, sc.bound[0], sc.bound[1], sc.bound[2], sc.bound[3]);
+      gl.uniform1f(u.uGround, sc.ground);
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

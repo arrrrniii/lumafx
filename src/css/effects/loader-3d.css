@@ -47,3 +47,31 @@
   & .fx-l3d-slab, & .fx-l3d-plate { animation: none; }
   & .fx-l3d-slab { transform: translateZ(calc(16px + var(--i) * 16px)) rotateZ(calc(var(--k) * 60deg)); }
 }
+
+/* CSS version of the pages scene: upright panels hinged on the right, fanning back. */
+& > .fx-l3d-css.fx-l3d-pages {
+  inset: 10% 14% 16%;
+  transform: rotateX(-6deg) rotateY(-28deg);
+}
+& .fx-l3d-pages .fx-l3d-plate {
+  inset: auto -6% -4%;
+  height: 46%;
+  border-radius: 6%;
+  transform-origin: 50% 100%;
+  transform: rotateX(84deg);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--c), #fff 30%), var(--c));
+  box-shadow: 0 0 0 1px rgb(255 255 255 / .4) inset;
+  animation: none;
+}
+& .fx-l3d-pages .fx-l3d-slab {
+  inset: 0 18% 26% 18%;
+  border-radius: 9%;
+  transform-origin: 100% 50%;
+  background: linear-gradient(200deg, color-mix(in oklab, var(--c), #000 45%), var(--c) 70%, color-mix(in oklab, var(--c), #a9b6ff 35%));
+  box-shadow: 0 0 0 1.5px color-mix(in oklab, var(--c), #c8c0ff 60%) inset;
+  transform: translate3d(calc(var(--i) * 5%), calc(var(--i) * -3%), calc(var(--i) * -7px));
+  animation-name: fx-l3d-page;
+}
+@fx-reduced {
+  & .fx-l3d-pages .fx-l3d-slab { transform: rotateY(calc(var(--i) * 30deg)); }
+}

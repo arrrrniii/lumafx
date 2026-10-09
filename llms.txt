@@ -459,13 +459,14 @@ Options:
   - data-fx-color: color (default: #ffb547). Accent for focus, the strength meter and the sending spinner.
 
 ### loader-3d — 3D loader [webgl]
-Glossy rounded slabs fan apart and settle back over a floating glass plate, rendered live on the GPU with soft shadows and studio reflections. For page preloaders, loading blog posts and any wait. Falls back to CSS 3D without WebGL; one shared GPU context serves every loader on the page.
+Glossy 3D panels over a floating glass plate, rendered live on the GPU with soft shadows and studio reflections. pages: upright panels open like a book, spread into a ring and fold back. stack: flat tiles fan apart. For page preloaders, loading blog posts and any wait. Falls back to CSS 3D without WebGL; one shared GPU context serves every loader on the page.
 Example: <div data-fx="loader-3d"></div>
 Options:
-  - data-fx-colors: string (default: #3a6bff,#5560ff,#7457ff,#9a5cf6). Slab colors from bottom to top, comma-separated. The number of colors sets the number of slabs (up to 6).
-  - data-fx-count: number (default: 4). Number of slabs (1–6) when you give fewer colors; colors are blended to fill.
-  - data-fx-base: color (default: #b2d6ff). Color of the floating plate.
-  - data-fx-duration: time (default: 2.8s). Length of one open-and-close cycle.
+  - data-fx-style: enum (default: pages). Scene. One of: pages, stack.
+  - data-fx-colors: string. Panel colors, comma-separated. The number of colors sets the number of panels (up to 6). Default: indigo to violet for pages, blue to violet for stack.
+  - data-fx-count: number (default: 5). Number of panels (1–6) when you give fewer colors; colors are blended to fill. Default 5 for pages, 4 for stack.
+  - data-fx-base: color (default: #a6d8ea). Color of the floating plate.
+  - data-fx-duration: time (default: 3.6s). Length of one cycle (stack: 2.8s).
   - data-fx-size: length (default: 160px). Width and height of the loader.
 
 ## JavaScript API

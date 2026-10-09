@@ -456,6 +456,11 @@ html[data-fx-scrollbar]::-webkit-scrollbar { display: none; width: 0; height: 0;
   0%, 10%, 94%, 100% { transform: translateZ(calc(14px + var(--i) * 9px)) rotateZ(0deg); }
   44%, 60% { transform: translateZ(calc(18px + var(--i) * 18px)) rotateZ(calc(var(--k) * 80deg)); }
 }
+@keyframes fx-l3d-page {
+  0%, 8%, 94%, 100% { transform: translate3d(calc(var(--i) * 5%), calc(var(--i) * -3%), calc(var(--i) * -7px)) rotateY(0deg); }
+  34% { transform: rotateY(calc(var(--i) * 32deg)); }
+  52%, 70% { transform: rotateY(calc(var(--i) * 360deg / var(--n) + 30deg)); }
+}
 @keyframes fx-l3d-float {
   50% { transform: translateZ(-6px); }
 }

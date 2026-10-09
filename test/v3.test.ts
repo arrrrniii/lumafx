@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { start, loading } from '../src/index';
-import { fanAt, poses } from '../src/effects/loader3d';
+import { fanAt, poses, pageState, pageMatrices, stackMatrices } from '../src/effects/loader3d';
 import { tick } from './setup';
 
 beforeAll(() => start());
@@ -135,6 +135,40 @@ describe('loader-3d', () => {
     // At rest the slabs sit on top of each other, not inside each other.
     const rest = poses(4, 0, 2800);
     expect(rest[4] - rest[0]).toBeGreaterThanOrEqual(0.125);
+  });
+
+  it('pages go deck → fan → ring → deck, and every panel is placed with a rigid transform', () => {
+    const n = 5;
+    expect(pageState(n, 0).open).toBe(0);
+    expect(pageState(n, 0).angles.every((a) => a === 0)).toBe(true);
+    const fan = pageState(n, 0.33).angles;
+    expect(fan[1]).toBeGreaterThan(0.3);
+    expect(fan[4]).toBeGreaterThan(fan[3]);
+    const ring = pageState(n, 0.6).angles;
+    for (let i = 1; i < n; i++) expect(ring[i] - ring[i - 1]).toBeCloseTo((Math.PI * 2) / n, 5);
+    expect(pageState(n, 0.97).angles.every((a) => Math.abs(a) < 1e-9)).toBe(true);
+    for (const m of [pageMatrices(n, 1300, 3600), stackMatrices(4, 1000, 2800)]) {
+      for (let i = 0; i < 4; i++) {
+        const r = [0, 1, 2].map((k) => [m[i * 12 + k * 4], m[i * 12 + k * 4 + 1], m[i * 12 + k * 4 + 2]]);
+        for (const row of r) expect(Math.hypot(...row)).toBeCloseTo(1, 5);
+        expect(r[0][0] * r[1][0] + r[0][1] * r[1][1] + r[0][2] * r[1][2]).toBeCloseTo(0, 5);
+      }
+    }
+    // The group stays centred over the plate in every phase: panel centres average to the origin.
+    for (const t of [0, 1200, 2200]) {
+      const m = pageMatrices(n, t, 3600);
+      let x = 0;
+      let z = 0;
+      for (let i = 0; i < n; i++) {
+        // Panel centre in world = Rᵀ(-t): solve from rows (rotation about y only).
+        const [a, , c, tx] = [m[i * 12], m[i * 12 + 1], m[i * 12 + 2], m[i * 12 + 3]];
+        const [a2, , c2, tz] = [m[i * 12 + 8], m[i * 12 + 9], m[i * 12 + 10], m[i * 12 + 11]];
+        x += -(a * tx + a2 * tz);
+        z += -(c * tx + c2 * tz);
+      }
+      expect(Math.abs(x / n)).toBeLessThan(1e-6);
+      expect(Math.abs(z / n)).toBeLessThan(1e-6);
+    }
   });
 
   it('falls back to CSS 3D without WebGL, with one slab per colour', async () => {
