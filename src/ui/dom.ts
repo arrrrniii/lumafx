@@ -12,7 +12,7 @@ type Cleanup = () => void;
 type Mount = (el: HTMLElement, b: Block & Record<string, any>, c: Ctx) => Cleanup | void;
 
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-const emit = (el: Element, name: string, detail: unknown) => el.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
+const emit = (el: Element, name: string, detail: unknown) => el.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, cancelable: true }));
 
 /* ------------------------------------------------------------------ interactivity per block */
 
@@ -207,6 +207,15 @@ const MOUNTS: Record<string, Mount> = {
     return () => clearInterval(id);
   },
 
+  suggestions(el) {
+    const onClick = (e: Event) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>('button[data-ask]');
+      if (btn) emit(el, 'fxui:ask', { text: btn.dataset.ask });
+    };
+    el.addEventListener('click', onClick);
+    return () => el.removeEventListener('click', onClick);
+  },
+
   tickets(el, b) {
     const box = el.querySelector<HTMLElement>('.fxui-tickets')!;
     const cta = box.querySelector<HTMLAnchorElement>('.fxui-checkout');
@@ -214,9 +223,13 @@ const MOUNTS: Record<string, Mount> = {
       const input = e.target as HTMLInputElement;
       if (input.type !== 'radio') return;
       if (cta) {
-        const u = new URL(cta.getAttribute('href')!, location.href);
-        u.searchParams.set('tier', input.value);
-        cta.href = u.toString();
+        try {
+          const u = new URL(cta.getAttribute('href')!, location.href);
+          u.searchParams.set('tier', input.value);
+          cta.href = u.toString();
+        } catch {
+          /* relative link inside a frame without a base URL: keep it as written */
+        }
         cta.removeAttribute('aria-disabled');
       }
       emit(el, 'fxui:select', { block: b.id ?? b.type, tier: input.value });
@@ -418,13 +431,47 @@ function replaceSection(state: Live, sec: HTMLElement, b: Block, flash = false, 
   return fresh;
 }
 
+const themed = new WeakSet<HTMLElement>();
+/** <fx-ui theme="light|dark"> (or the theme option) forces a theme; without it the page decides. */
+function applyTheme(root: HTMLElement, theme: string | null | undefined) {
+  if (theme === 'light' || theme === 'dark') {
+    root.dataset.theme = theme;
+    themed.add(root);
+  } else if (themed.has(root)) {
+    delete root.dataset.theme;
+    themed.delete(root);
+  }
+}
+
+/** A picture that fails to load (blocked, moved, offline) folds away instead of leaving a hole. */
+function onImageError(e: Event) {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  img.dataset.broken = '';
+  const parent = img.parentElement;
+  const card = parent?.matches('.fxui-venue, .fxui-product') ? parent : parent?.matches('.fxui-product > .fxui-media') ? parent.parentElement : null;
+  if (card) {
+    card.classList.add('fxui-noimg');
+    (parent!.classList.contains('fxui-media') ? parent! : img).remove();
+    return;
+  }
+  const fig = img.closest<HTMLElement>('.fxui-gallery figure, figure.fxui-figure');
+  if (fig) fig.hidden = true;
+}
+const watched = new WeakSet<HTMLElement>();
+
 function setup(el: HTMLElement, opts: RenderOptions): Live {
   const prev = roots.get(el);
   if (prev) destroyState(prev);
   const root = rootFor(el);
+  if (!watched.has(root)) {
+    watched.add(root);
+    root.addEventListener('error', onImageError, true);
+  }
   const lang = opts.lang ?? el.closest('[lang]')?.getAttribute('lang')?.slice(0, 2) ?? 'en';
   const state: Live = { doc: { blocks: [] }, opts, ctx: makeCtx({ ...opts, lang }), cleanups: new Map(), live: [], sigs: [], root };
   root.lang = lang;
+  applyTheme(root, opts.theme ?? el.getAttribute('theme'));
   roots.set(el, state);
   return state;
 }
@@ -450,6 +497,10 @@ export function hydrate(el: HTMLElement, opts: RenderOptions = {}) {
   state.doc = doc;
   state.sigs = doc.blocks.map((b) => JSON.stringify(b));
   root.classList.add('fxui-seen');
+  // Pictures that already failed before the script ran.
+  root.querySelectorAll('img').forEach((img) => {
+    if (img.complete && !img.naturalWidth && img.getAttribute('src')) onImageError({ target: img } as unknown as Event);
+  });
   mountAll(state, root, doc.blocks);
 }
 
@@ -575,14 +626,29 @@ export function defineElement(tag = 'fx-ui') {
   if (typeof customElements === 'undefined' || customElements.get(tag)) return;
   class FxUI extends HTMLElement {
     static observedAttributes = ['src', 'lang', 'theme', 'time-zone'];
+    private onAsk = (e: Event) => {
+      // <fx-ui ask-url="/search?q="> turns follow-up chips into links when no chat handles them.
+      const base = this.getAttribute('ask-url');
+      const text = (e as CustomEvent<{ text?: string }>).detail?.text;
+      if (!base || !text || e.defaultPrevented) return;
+      location.href = base + encodeURIComponent(text);
+    };
     connectedCallback() {
-      this.load();
+      this.addEventListener('fxui:ask', this.onAsk);
+      // Defined before the page finished parsing (script in <head>): the children are not there yet.
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => this.isConnected && this.load(), { once: true });
+      else this.load();
     }
     disconnectedCallback() {
+      this.removeEventListener('fxui:ask', this.onAsk);
       destroy(this);
     }
     attributeChangedCallback(name: string, a: string | null, b: string | null) {
-      if (a !== b && this.isConnected && name !== 'theme') this.load();
+      if (a === b || !this.isConnected) return;
+      if (name === 'theme') {
+        const root = this.querySelector<HTMLElement>(':scope > .fxui');
+        if (root) applyTheme(root, b);
+      } else this.load();
     }
     private opts(): RenderOptions {
       return { lang: this.getAttribute('lang') ?? undefined, timeZone: this.getAttribute('time-zone') ?? undefined };

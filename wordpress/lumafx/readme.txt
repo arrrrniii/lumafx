@@ -4,7 +4,7 @@ Tags: animation, effects, page transition, scroll, glassmorphism
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -58,6 +58,9 @@ The runtime is about 30 KB and the stylesheet about 12 KB gzipped, loaded once a
 Add a Group block with your content. In Advanced, give it an HTML anchor such as "join". Add the modal effect. Link any button to "#join".
 
 == Changelog ==
+
+= 0.4.0 =
+* Intelligent UI: the [lumafx_ui] shortcode (or an <fx-ui> element in a Custom HTML block) renders match cards, lineups on a pitch, standings, live scores, charts, weather, places, tickets, seat maps, FAQs and more from JSON written by you, your AI or your API. Albanian and English labels, light and dark, and the scripts load only on pages that use it.
 
 = 0.3.0 =
 * Drawers: give a Group block an HTML anchor and the drawer effect; it opens from any link to #anchor as a side panel or bottom sheet (slide, glass, scale, push, dock or liquid).

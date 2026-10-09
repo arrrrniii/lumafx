@@ -1,0 +1,64 @@
+{
+  "name": "lumafx-mcp",
+  "version": "0.4.0",
+  "description": "MCP server that shows rich, interactive UI in Claude, ChatGPT and other MCP Apps hosts: match cards, lineups, standings, charts, weather, tickets and more from lumafx/ui. Free and open source.",
+  "license": "MIT",
+  "author": "Arnold Kajolli",
+  "type": "module",
+  "bin": {
+    "lumafx-mcp": "dist/index.js"
+  },
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    },
+    "./view.html": "./dist/view.html",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node dist/index.js",
+    "start:stdio": "node dist/index.js --stdio",
+    "test": "node test.mjs",
+    "test:view": "esbuild test/host.ts --bundle --format=esm --platform=browser --outfile=test/host.js --log-level=warning && python3 test/view_test.py"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@modelcontextprotocol/express": "^2.0.0",
+    "@modelcontextprotocol/ext-apps": "^2.0.3",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-apps",
+    "generative-ui",
+    "intelligent-ui",
+    "football",
+    "sports",
+    "lumafx",
+    "claude",
+    "chatgpt"
+  ]
+}

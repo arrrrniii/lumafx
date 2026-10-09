@@ -1,7 +1,7 @@
 {
   "name": "lumafx",
-  "version": "0.3.0",
-  "description": "Premium web effects and animated components from one HTML attribute: page transitions, liquid modal, scroll-scrubbed video, chat widget, border beams, liquid glass, text reveals and more. Framework-agnostic, CSS-first, accessible. Tailwind v4, React Server Components and WordPress. Free forever.",
+  "version": "0.4.0",
+  "description": "Premium web effects and animated components from one HTML attribute, plus intelligent UI: blocks an AI writes as JSON (match cards, lineups, standings, charts, tickets, weather…) that render while they stream, on your site or in Claude and ChatGPT through MCP. Framework-agnostic, CSS-first, accessible. Tailwind v4, React Server Components and WordPress. Free forever.",
   "license": "MIT",
   "author": "Arnold Kajolli",
   "type": "module",
@@ -10,7 +10,9 @@
     "./dist/auto.mjs",
     "./dist/lumafx.global.js",
     "./dist/editor.mjs",
-    "./dist/lumafx-editor.global.js"
+    "./dist/lumafx-editor.global.js",
+    "./dist/ui.mjs",
+    "./dist/lumafx-ui.global.js"
   ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -42,6 +44,18 @@
       "types": "./dist/types/react/index.d.ts",
       "import": "./dist/react/index.mjs"
     },
+    "./ui": {
+      "types": "./dist/types/ui/index.d.ts",
+      "import": "./dist/ui.mjs"
+    },
+    "./ui/server": {
+      "types": "./dist/types/ui/server.d.ts",
+      "import": "./dist/ui-server.mjs"
+    },
+    "./react/ui": {
+      "types": "./dist/types/react/ui.d.ts",
+      "import": "./dist/react/ui.mjs"
+    },
     "./react/runtime": {
       "types": "./dist/types/react/runtime.d.ts",
       "import": "./dist/react/runtime.mjs"
@@ -53,6 +67,8 @@
     "./effects.json": "./dist/effects.json",
     "./global": "./dist/lumafx.global.js",
     "./editor/global": "./dist/lumafx-editor.global.js",
+    "./ui.css": "./dist/lumafx-ui.css",
+    "./ui/global": "./dist/lumafx-ui.global.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -83,7 +99,16 @@
     "video-scrub",
     "wordpress",
     "components",
-    "chat-widget"
+    "chat-widget",
+    "generative-ui",
+    "intelligent-ui",
+    "ai",
+    "mcp",
+    "mcp-apps",
+    "football",
+    "sports",
+    "lineup",
+    "tickets"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",

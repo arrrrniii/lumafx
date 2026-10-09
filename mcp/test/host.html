@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{margin:0;font:15px system-ui;background:#f4f4f2;color:#171717}
+  [data-theme=dark] body{background:#262624;color:#f5f5f5}
+  .chat{max-width:760px;margin:0 auto;padding:28px 20px}
+  .bubble{background:#e8e6dc;border-radius:16px;padding:10px 14px;margin:0 0 18px auto;width:fit-content;max-width:80%}
+  [data-theme=dark] .bubble{background:#141413}
+  .said{margin:14px 0 10px;line-height:1.5}
+</style></head><body><div class="chat" id="chat"><div class="bubble" id="ask"></div><div class="said" id="said"></div></div>
+<script src="../../demo/ui-samples.js"></script>
+<script>
+  const q=new URLSearchParams(location.search), d=q.get('doc')||'orbit';
+  const ASK={orbit:'Formacioni dhe biletat për Shqipëri – San Marino?',sports:'Show me the scores and tables across sports (sample data)',answers:'Weather, places and tips for match day in Tirana',events:'What events and tickets are on this weekend?'};
+  document.getElementById('ask').textContent=ASK[d]||'';
+  document.getElementById('said').textContent=d==='orbit'?'Ja formacioni zyrtar dhe biletat:':'Here it is:';
+</script>
+<script type="module" src="host.js"></script></body></html>

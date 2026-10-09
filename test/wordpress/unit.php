@@ -39,6 +39,14 @@ ok( 'blocks without effects are untouched', '<p>Hi</p>' === $o, $o );
 $s = lumafx_sanitize_settings( array( 'pt_style' => 'evil', 'pt_color' => 'javascript:1', 'chat_whatsapp' => '+355 69-123 4567', 'header_selector' => 'header{}<script>', 'chat_greeting' => '<b>Hi</b>' ) );
 ok( 'settings: enums, colors, phone and selectors are sanitised', 'off' === $s['pt_style'] && '#0b0c12' === $s['pt_color'] && '355691234567' === $s['chat_whatsapp'] && 'header' === $s['header_selector'] && 'Hi' === $s['chat_greeting'], wp_json_encode( $s ) );
 
+$o = lumafx_ui_shortcode( array( 'lang' => 'sq' ), '<p>{“blocks”:[{“type”:“text”,“md”:“</script><img src=x onerror=alert(1)>”}]}</p>' );
+ok( 'ui shortcode: classic-editor JSON is cleaned and nothing can close the script tag', 0 === strpos( $o, '<fx-ui lang="sq"' ) && 1 === substr_count( $o, '</script>' ) && false !== strpos( $o, '</script>' ), $o );
+$o = lumafx_ui_shortcode( array( 'src' => 'javascript:alert(1)' ), null );
+ok( 'ui shortcode: unsafe src is refused', '' === $o, $o );
+$o = lumafx_ui_shortcode( array( 'src' => 'https://sphere.al/api/ui.json', 'ask-url' => '/?s=', 'lang' => '"><x' ), null );
+ok( 'ui shortcode: src, ask-url and time zone are written, bad lang is dropped', false !== strpos( $o, 'src="https://sphere.al/api/ui.json"' ) && false !== strpos( $o, 'ask-url=' ) && false !== strpos( $o, 'time-zone=' ) && false === strpos( $o, '<x' ), $o );
+ok( 'ui shortcode: enqueues the UI assets', wp_script_is( 'lumafx-ui', 'enqueued' ) && wp_style_is( 'lumafx-ui', 'enqueued' ) );
+
 $types = WP_Block_Type_Registry::get_instance()->get_all_registered();
 $missing = array();
 foreach ( $types as $name => $t ) { if ( empty( $t->attributes['lumafx'] ) ) $missing[] = $name; }

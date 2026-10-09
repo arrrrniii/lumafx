@@ -102,6 +102,24 @@ $existing2 = get_page_by_path( 'next-week', OBJECT, 'post' );
 $id2 = wp_insert_post( array( 'ID' => $existing2 ? $existing2->ID : 0, 'post_title' => 'Next week', 'post_name' => 'next-week', 'post_status' => 'publish', 'post_content' => "<!-- wp:paragraph -->\n<p>Arrived with a page transition. <a href=\"/tonight/\">Back</a></p>\n<!-- /wp:paragraph -->" ), true );
 echo 'post2 ' . $id2 . "\n";
 
+$ui = '<!-- wp:paragraph -->
+<p>Formacioni zyrtar:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:shortcode -->
+[lumafx_ui lang="sq"]{"blocks":[{"type":"match","competition":"Nations League","status":"scheduled","kickoff":"2026-10-06T20:45:00+02:00","venue":"Air Albania","home":{"name":"Shqipëria","short":"ALB","color":"#e41e2b"},"away":{"name":"San Marino","short":"SMR"}},{"type":"lineup","formation":"3-4-3","status":"confirmed","team":{"name":"Shqipëria","kit":{"shirt":"#e41e2b","sleeves":"#151515"}},"players":[{"name":"Dajsinani","number":23,"pos":"GK"},{"name":"Mitaj","number":3},{"name":"Ismajli","number":18},{"name":"Gjimshiti","number":6},{"name":"Pilo","number":22},{"name":"Asllani","number":8},{"name":"Shehu","number":16},{"name":"Hysaj","number":4},{"name":"Hoxha","number":21},{"name":"Manaj","number":7},{"name":"Muçi","number":10}]},{"type":"text","md":"Close the tag: </script><script>alert(1)</script>"}]}[/lumafx_ui]
+<!-- /wp:shortcode -->
+
+<!-- wp:html -->
+<fx-ui><script type="application/json">{"blocks":[{"type":"stats","items":[{"label":"Capacity","value":22500}]}]}</script></fx-ui>
+<!-- /wp:html -->';
+// An administrator (unfiltered_html) wrote this post: keep the <fx-ui> markup in the HTML block.
+kses_remove_filters();
+$existing3 = get_page_by_path( 'formacioni', OBJECT, 'post' );
+$id3 = wp_insert_post( array( 'ID' => $existing3 ? $existing3->ID : 0, 'post_title' => 'Shqipëri – San Marino: formacioni', 'post_name' => 'formacioni', 'post_status' => 'publish', 'post_content' => $ui ), true );
+echo 'post3 ' . ( is_wp_error( $id3 ) ? $id3->get_error_message() : $id3 ) . "\n";
+kses_init_filters();
+
 update_option( 'lumafx_settings', array(
 	'pt_style' => 'wave', 'pt_color' => '#0b0c12', 'pt_accent' => '#ffb547', 'pt_label' => 'Sphere',
 	'pl_style' => 'slide', 'pl_text' => 'Sphere', 'pl_color' => '#0b0c12',

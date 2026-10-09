@@ -12,7 +12,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "noUnusedLocals": true,
-    "paths": { "lumafx": ["./src/index.ts"] }
+    "paths": { "lumafx": ["./src/index.ts"], "lumafx/ui": ["./src/ui/index.ts"] }
   },
   "include": ["src"]
 }

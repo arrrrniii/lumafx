@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>lumafx UI</title>
+<style>/*CSS*/</style>
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+    font-size: var(--font-text-md-size, 15px);
+    color: var(--color-text-primary, inherit);
+    padding: 2px;
+  }
+  #ui:empty::before, #ui > .fxui[aria-busy="true"]:empty::before {
+    content: ""; display: block; height: 120px; border-radius: 18px;
+    background: linear-gradient(100deg, rgb(127 127 140 / .08) 30%, rgb(127 127 140 / .16) 50%, rgb(127 127 140 / .08) 70%) 0 0 / 300% 100%;
+    animation: fxv-shimmer 1.4s linear infinite;
+  }
+  #ui[data-state="empty"]::before, #ui[data-state="empty"] > .fxui::before { display: none; }
+  @keyframes fxv-shimmer { to { background-position: -150% 0; } }
+  @media (prefers-reduced-motion: reduce) { #ui::before, #ui > .fxui::before { animation: none !important; } }
+</style>
+</head>
+<body>
+<main id="ui" aria-live="polite"></main>
+<script>/*JS*/</script>
+</body>
+</html>

@@ -18,6 +18,22 @@ with sync_playwright() as p:
     page.on("pageerror", lambda e: errors.append(f"pageerror: {e}"))
     page.on("console", lambda m: m.type == "error" and errors.append(f"console: {m.text}"))
 
+    print("\nIntelligent UI in a post")
+    page.goto(BASE + "/formacioni/", wait_until="load")
+    page.wait_for_timeout(1200)
+    ui = page.evaluate("""() => ({
+      defined: !!customElements.get('fx-ui'),
+      blocks: [...document.querySelectorAll('fx-ui .fxui-b')].map(s => s.dataset.type),
+      players: document.querySelectorAll('fx-ui .fxui-b-lineup [data-k]').length,
+      scripts: document.querySelectorAll('fx-ui script:not([type="application/json"])').length,
+      text: (document.querySelector('fx-ui .fxui-b-text') || {}).textContent || '',
+      css: getComputedStyle(document.querySelector('fx-ui .fxui')).display,
+    })""")
+    check("[lumafx_ui] and <fx-ui> render blocks (match, lineup, text, stats)", ui["defined"] and ui["blocks"] == ["match", "lineup", "text", "stats"], json.dumps(ui))
+    check("the lineup shows all eleven players on the pitch", ui["players"] >= 11, json.dumps(ui))
+    check("script-closing text stays text", "</script><script>alert(1)</script>" in ui["text"] and ui["scripts"] == 0, json.dumps(ui))
+    page.screenshot(path=f"{SHOTS}/wp-ui.png", full_page=True)
+
     print("\nWordPress front end")
     page.goto(BASE + "/tonight/", wait_until="load")
     page.wait_for_timeout(300)

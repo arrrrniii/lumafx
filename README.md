@@ -1,6 +1,6 @@
 # lumafx
 
-Premium web effects and animated components from one HTML attribute. Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll-scrubbed video, a chat widget, cards, smart forms, a WebGL 3D loader, text reveals and more: 52 in total. Plus a kit for putting all of it inside your own page builder.
+Premium web effects and animated components from one HTML attribute. Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll-scrubbed video, a chat widget, cards, smart forms, a WebGL 3D loader, text reveals and more: 52 in total. Plus a kit for putting all of it inside your own page builder, and [intelligent UI](#intelligent-ui-lumafxui): blocks an AI writes as JSON (match cards, lineups, standings, charts, tickets…) that render while they stream, on your site or inside Claude and ChatGPT.
 
 **Free forever.** MIT licensed, every effect and component. No pro tier, no account, no tracking.
 
@@ -9,7 +9,7 @@ Premium web effects and animated components from one HTML attribute. Border beam
 - **Accessible by default.** `prefers-reduced-motion` is respected everywhere, text effects stay readable for screen readers, carousels and stories work from the keyboard.
 - **Never hides content.** Hidden "before" states only apply once the runtime is running, with a CSS failsafe if it never boots.
 - **Cheap when idle.** Loops pause off-screen, pointer effects sleep until the mouse moves, low-memory and Save-Data devices get a lighter version.
-- **AI-ready.** Ships `llms.txt` and `effects.json` so coding agents apply effects correctly.
+- **AI-ready.** Ships `llms.txt` and `effects.json` so coding agents apply effects correctly, and `lumafx/ui` so your own AI can answer with real interface.
 
 ## Install
 
@@ -232,6 +232,69 @@ Or drop in the ready panel: presets with live previews on the block, options gen
 
 Theme it with CSS variables (`--fxp-bg`, `--fxp-fg`, `--fxp-accent`…) or `theme="light"`. Email builders: inboxes don't run JavaScript and most strip CSS animation, so use the kit for web pages.
 
+## Intelligent UI (lumafx/ui)
+
+Let your AI answer with interface instead of walls of text. The model writes JSON blocks; lumafx renders them while it is still writing, in your chat, in a blog post, or inside Claude and ChatGPT through [MCP](#in-claude-and-chatgpt-mcp).
+
+**42 blocks.** Sport: `match` (any sport, live minute, scorers), `lineup` (formation on a pitch, kits, captain, bench), `events` (timeline of goals and cards), `match-stats`, `standings` (zones, form), `h2h`, `player`, `scoreboard` (periods), `tennis`, `race` (F1, athletics), `fight` (MMA, boxing), `bracket`. Events and tickets: `event`, `tickets`, `zones` (stadium, arena, theatre or club seat map), `venue`, `schedule`. Data: `table`, `stats`, `chart` (line, area, column, stacked, bar, donut, with a table view), `compare`, `progress`, `weather`. Answers: `text`, `callout`, `tabs`, `group`, `faq`, `details`, `steps`, `timeline`, `product`, `gallery`, `image`, `quote`, `places`, `itinerary`, `quiz`, `actions`, `suggestions` (follow-up questions), `sources`, `countdown`.
+
+```js
+// 1. Tell the model about the blocks: a tool, or a compact reference for the system prompt.
+import { anthropicTool, openaiTool, prompt, jsonSchema, validate } from 'lumafx/ui/server';
+const tools = [anthropicTool({ types: ['match', 'lineup', 'standings', 'tickets', 'text', 'suggestions'] })];
+
+// 2. Render while it streams.
+import { stream } from 'lumafx/ui';
+const s = stream(el, { lang: 'sq', timeZone: 'Europe/Tirane' });
+onDelta((json) => s.write(json));       // partial JSON is fine
+onDone(() => s.end());                   // strict validation; returns { doc, errors }
+el.addEventListener('fxui:ask', (e) => sendMessage(e.detail.text));   // follow-up chips
+el.addEventListener('fxui:select', (e) => holdSeats(e.detail));        // ticket tier or stand
+
+// 3. Keep blocks live: any block with { live: { adapter, id } } updates itself.
+import { adapter, update } from 'lumafx/ui';
+adapter.set('scores', { subscribe: (id, block, push) => feed.watch(`match:${id}`, push) }); // return an unsubscribe function
+update(el, 'alb-smr', { status: 'live', score: [2, 0], minute: "67'" }); // or by hand
+```
+
+On a page, server-render for SEO and let the browser wake it up:
+
+```js
+import { renderToString } from 'lumafx/ui/server';           // Node, Deno, Bun, workers
+const html = renderToString(doc, { timeZone: 'Europe/Tirane' });  // embeds the JSON for hydration
+// in the browser: <script src=".../lumafx-ui.global.js"> or import 'lumafx/ui'; then lumafx.ui.hydrate(el)
+```
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx-ui.css">
+<script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx-ui.global.js" defer></script>
+
+<fx-ui lang="sq" time-zone="Europe/Tirane" ask-url="/kerko?q=">
+  <script type="application/json">{"blocks":[{"type":"match", "home":{"name":"Shqipëria"}, "away":{"name":"San Marino"}, "kickoff":"2026-10-06T20:45:00+02:00"}]}</script>
+</fx-ui>
+<fx-ui src="/api/match/123/ui.json"></fx-ui>
+```
+
+React and Next.js: `<FxUI doc={post.ui} timeZone="Europe/Tirane" />` from `lumafx/react/ui` renders on the server (no client JS of its own); add `<FxUIRuntime />` from `lumafx/react/runtime` once for interactivity. In a chat, `<FxUIStream value={argsSoFar} done={finished} onAsk={send} />` streams. WordPress: `[lumafx_ui lang="sq"]{"blocks":[…]}[/lumafx_ui]`, `[lumafx_ui src="https://…/ui.json"]`, or `<fx-ui>` in a Custom HTML block.
+
+Safe by design: everything a model writes is escaped, links are limited to http(s), mailto and tel, colors and dates are checked, unknown blocks and fields are dropped, and `validate()` returns the fixes so you can send them back to the model. Labels in English and Albanian (`addLabels('it', {...})` for more), light and dark themes (`theme="dark"` or `--fxui-*` variables), keyboard and screen-reader friendly, reduced motion respected. Charts follow a colorblind-checked palette and every chart has a table view.
+
+### In Claude and ChatGPT (MCP)
+
+[`lumafx-mcp`](mcp/README.md) is an MCP server with one tool, `render_ui`, and an MCP Apps view. Hosts that support MCP Apps show the blocks inline and stream them while the model writes; follow-up chips become the next message, links open through the host, ticket picks reach the model's context. Hosts without UI get a plain-text version.
+
+```json
+{ "mcpServers": { "lumafx": { "command": "npx", "args": ["-y", "lumafx-mcp", "--stdio"] } } }
+```
+
+Or add it to your own MCP server and point your own tools at the same view:
+
+```js
+import { registerUI, uiToolMeta, uiResult } from 'lumafx-mcp';
+registerUI(server, { imageDomains: ['https://sphere.al'] });
+server.registerTool('get_event', { inputSchema, _meta: uiToolMeta }, async ({ slug }) => uiResult(toBlocks(await getEvent(slug))));
+```
+
 ## Scroll-scrubbed video and image sequences
 
 ```html
@@ -359,6 +422,7 @@ npm test               # unit tests (Vitest + jsdom)
 npm run test:tailwind  # compiles a sample project with the Tailwind v4 CLI
 npm run test:browser   # headless Chromium: every effect, fallbacks, reduced motion, phone
 npm run test:wordpress # real WordPress (SQLite, block theme): plugin internals, front end, block editor
+cd mcp && npm install && npm run build && npm test && npm run test:view   # MCP server and its view
 ```
 
 `node scripts/build.mjs` also regenerates the demo, `llms.txt`, the README effects table and the WordPress plugin zip. `python3 scripts/make_media.py` regenerates the demo video and image sequence.

@@ -78,6 +78,11 @@ window.FXUI_SAMPLES = {
         url: '#bileta',
         cta: 'Bli biletën',
       },
+      {
+        type: 'suggestions',
+        title: 'Pyet më tej',
+        items: [{ text: 'Kush janë golashënuesit e Shqipërisë në këtë kualifikim?' }, { text: 'Si të shkoj te stadiumi Air Albania?' }, { text: 'Kur është ndeshja e radhës?' }],
+      },
     ],
   },
 
@@ -389,6 +394,7 @@ window.FXUI_SAMPLES = {
       { type: 'countdown', label: 'Next match', to: '2026-11-14T20:45:00+01:00' },
       { type: 'gallery', images: [{ src: 'img/theth.jpg', alt: 'Mountains' }, { src: 'img/ksamil.jpg', alt: 'Islands' }, { src: 'img/dajti.jpg', alt: 'Sunrise' }] },
       { type: 'actions', buttons: [{ label: 'Open in Sphere', url: '#', style: 'primary' }, { label: 'Share', url: '#', style: 'secondary' }] },
+      { type: 'suggestions', title: 'Related', items: [{ text: 'What should I bring to the stadium?' }, { text: 'Compare ticket prices for the next three matches' }, { text: 'Plan a weekend in Tirana around the match' }] },
     ],
   },
 

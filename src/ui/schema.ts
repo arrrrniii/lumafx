@@ -134,6 +134,7 @@ export const BLOCKS: BlockDef[] = [
   B('itinerary', 'content', 'A plan by day.', { days: S.arr(S.obj({ label: S.str(), stops: S.arr(S.obj({ time: opt(S.str()), name: S.str(), note: opt(S.str()), url: opt(S.url()) })) })) }, { type: 'itinerary', days: [{ label: 'Saturday', stops: [{ time: '10:00', name: 'Skanderbeg Square' }] }] }),
   B('quiz', 'content', 'Multiple-choice questions with feedback.', { questions: S.arr(S.obj({ q: S.str(), options: S.arr(S.str()), answer: S.int('Index of the correct option.'), explain: opt(S.md()) })) }, { type: 'quiz', questions: [{ q: 'How long is a football match?', options: ['80 minutes', '90 minutes'], answer: 1 }] }),
   B('actions', 'content', 'Buttons that link somewhere.', { buttons: S.arr(S.obj({ label: S.str(), url: S.url(), style: opt(S.en(['primary', 'secondary', 'ghost'])) })) }, { type: 'actions', buttons: [{ label: 'Buy tickets', url: 'https://…', style: 'primary' }] }),
+  B('suggestions', 'content', 'Follow-up questions the reader can ask next (chips). Clicking one asks it in chat; with a url it is a link.', { items: S.arr(S.obj({ text: S.str(), url: opt(S.url()) })) }, { type: 'suggestions', items: [{ text: 'Who are the top scorers in qualifying?' }, { text: 'How do I get to the stadium?' }] }),
   B('sources', 'content', 'Where the facts come from.', {
     items: S.arr(S.obj({ title: S.str(), url: S.url(), publisher: opt(S.str()), date: opt(S.date()) })),
     verified: opt(S.bool()),
@@ -306,6 +307,9 @@ const ALIASES: Record<string, string> = {
   citations: 'sources',
   references: 'sources',
   buttons: 'actions',
+  related: 'suggestions',
+  followups: 'suggestions',
+  'follow-ups': 'suggestions',
   cta: 'actions',
   seatmap: 'zones',
   'seat-map': 'zones',

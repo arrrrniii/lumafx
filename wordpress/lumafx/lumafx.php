@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name:       lumafx
- * Description:       Premium web effects for any block: glass, reveals, border beams, liquid modals and drawers, cards, smart forms, a 3D loader, video that scrubs with the scroll, page transitions, a chat widget and more. Free and open source.
- * Version:           0.3.0
+ * Description:       Premium web effects for any block: glass, reveals, border beams, liquid modals and drawers, cards, smart forms, a 3D loader, video that scrubs with the scroll, page transitions, a chat widget and more. Plus intelligent UI: match cards, lineups, standings, tickets and more from JSON with [lumafx_ui]. Free and open source.
+ * Version:           0.4.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            Arnold Kajolli
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'LUMAFX_VERSION', '0.3.0' );
+define( 'LUMAFX_VERSION', '0.4.0' );
 define( 'LUMAFX_FILE', __FILE__ );
 define( 'LUMAFX_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LUMAFX_URL', plugin_dir_url( __FILE__ ) );
@@ -24,6 +24,7 @@ require_once LUMAFX_DIR . 'includes/effects.php';
 require_once LUMAFX_DIR . 'includes/blocks.php';
 require_once LUMAFX_DIR . 'includes/site.php';
 require_once LUMAFX_DIR . 'includes/settings.php';
+require_once LUMAFX_DIR . 'includes/ui.php';
 
 /**
  * Front end: the stylesheet and the runtime load in <head> so hidden starting states

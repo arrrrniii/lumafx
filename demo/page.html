@@ -5,6 +5,9 @@
 <link rel="stylesheet" href="lumafx.css">
 <script src="lumafx.global.js"></script>
 <script src="lumafx-editor.global.js"></script>
+<link rel="stylesheet" href="lumafx-ui.css">
+<script src="lumafx-ui.global.js"></script>
+<script src="ui-samples.js"></script>
 <style>
 /* Layout: a specimen book — sticky index rail on the left, one live specimen per effect on the right,
    each captioned by the exact attribute that produces it. Dark-first; light theme mirrors the tokens. */
@@ -629,6 +632,43 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
   }
   .chips a { flex: none; font: 500 12px/1 var(--font-mono); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--line); text-decoration: none; color: var(--muted); }
 }
+/* ---------- intelligent UI ---------- */
+.ui-chat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 290px); gap: 14px; padding: 14px; }
+.ui-convo { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 14px; align-content: start; height: 720px; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+.ui-ask { justify-self: end; background: var(--stage-2); border: 1px solid var(--line); padding: 10px 14px; border-radius: 18px 18px 4px 18px; max-width: 82%; font-size: 15px; }
+.ui-said { margin: 0; font-size: 15px; }
+.ui-said:empty { display: none; }
+.ui-side { display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 10px; min-width: 0; height: 720px; }
+.ui-prompts { display: grid; gap: 6px; }
+.ui-prompts button { text-align: left; font: 500 13.5px/1.35 var(--font-body); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; transition: background .2s, border-color .2s; }
+.ui-prompts button:hover { background: var(--stage-2); }
+.ui-prompts button[aria-pressed="true"] { border-color: var(--lamp); background: color-mix(in oklab, var(--lamp) 10%, transparent); }
+.ui-side h6 { margin: 6px 0 0; font: 500 11px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.ui-json { margin: 0; min-height: 0; overflow: auto; padding: 12px; border-radius: 12px; background: var(--code); border: 1px solid var(--line); font: 10.5px/1.55 var(--font-mono); color: var(--muted); white-space: pre-wrap; word-break: break-word; scrollbar-width: thin; }
+.ui-json::after { content: "▍"; color: var(--lamp); animation: ui-blink 1s steps(2) infinite; }
+.ui-json[data-done]::after { content: none; }
+@keyframes ui-blink { 50% { opacity: 0; } }
+.orbit { background: #f6f6f3; color: #14161c; border-radius: var(--radius); padding: clamp(18px, 4vw, 44px); display: grid; gap: 18px; justify-items: center; }
+.orbit > * { width: min(100%, 720px); }
+.orbit .kicker { font: 600 12px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: #c8102e; }
+.orbit h4 { margin: 0; font: 800 clamp(1.6rem, 3.6vw, 2.4rem)/1.08 var(--font-display); letter-spacing: -.03em; }
+.orbit .byline { font-size: 13px; color: #5c6070; }
+.orbit p { margin: 0; font-size: 17px; line-height: 1.6; color: #2a2d38; }
+.ui-mcp { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.ui-mcp section { background: var(--stage-2); border-radius: 14px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.ui-mcp h5 { margin: 0; font: 600 1rem/1.3 var(--font-display); }
+.ui-mcp p { margin: 0; color: var(--muted); font-size: 14px; }
+.ui-mcp pre { margin: 0; padding: 12px; border-radius: 10px; background: var(--code); border: 1px solid var(--line); overflow-x: auto; font: 11.5px/1.65 var(--font-mono); color: var(--muted); }
+.ui-mcp pre b { color: var(--fg); font-weight: 500; }
+.ui-mcp pre i { font-style: normal; color: var(--lamp); }
+@media (max-width: 900px) {
+  .ui-chat { grid-template-columns: 1fr; }
+  .ui-side { display: contents; }
+  .ui-prompts { order: -1; }
+  .ui-side .ui-json { height: 180px; }
+  .ui-convo { height: 640px; }
+  .ui-prompts { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+}
 </style>
 
 <div class="loader" id="loader" data-fx="preloader" data-fx-style="wave" data-fx-min="1300">
@@ -649,6 +689,7 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
     <a href="#components" data-fx-icon="◐">Components</a>
     <a href="#images" data-fx-icon="✦">Images</a>
     <a href="#live" data-fx-icon="⌁">Live</a>
+    <a href="#ui" data-fx-icon="✺">AI UI</a>
     <a href="#use" data-fx-icon="→">Install</a>
   </nav>
   <button class="head-cta" data-fx-open="#join">Join the beta</button>
@@ -683,7 +724,7 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
   <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a>
   <a href="#page-transition">page-transition</a><a href="#modal">modal</a><a href="#chat">chat</a><a href="#hovercard">hovercard</a>
   <a href="#lightbox">lightbox</a><a href="#video-scrub">video-scrub</a><a href="#frames">frames</a><a href="#svg-draw">svg-draw</a>
-  <a href="#ring">ring</a><a href="#drawer">drawer</a><a href="#form">forms</a><a href="#card">cards</a><a href="#loader-3d">3D loader</a><a href="#editor">builder kit</a><a href="#use">install</a>
+  <a href="#ring">ring</a><a href="#drawer">drawer</a><a href="#form">forms</a><a href="#card">cards</a><a href="#loader-3d">3D loader</a><a href="#editor">builder kit</a><a href="#ui">intelligent UI</a><a href="#use">install</a>
 </nav>
 
 <div class="book">
@@ -778,6 +819,12 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
     <h4>For builders</h4>
     <ul>
       <li><a href="#editor">editor kit <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Intelligent UI</h4>
+    <ul>
+      <li><a href="#ui">in a chat <span class="kind js">ai</span></a></li>
+      <li><a href="#ui-blog">on a blog <span class="kind css">ssr</span></a></li>
+      <li><a href="#ui-mcp">in Claude, ChatGPT <span class="kind js">mcp</span></a></li>
     </ul>
   </aside>
 
@@ -1586,6 +1633,107 @@ panel.addEventListener(<i>'fx-change'</i>, (e) => save(block.id, e.detail.fx));<
       <div class="codeline"><code>&lt;script src=<i>"lumafx-editor.global.js"</i>&gt;  ·  <b>import</b> { sortable, apply } <b>from</b> <i>'lumafx/editor'</i>  ·  &lt;fx-panel&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <!-- ======================= INTELLIGENT UI (v0.4) ======================= -->
+    <h2 class="group-title" id="intelligent">Intelligent UI</h2>
+
+    <section class="spec" id="ui">
+      <div class="spec-head"><h3>lumafx/ui</h3><span class="kind js">AI · JSON</span></div>
+      <p class="spec-desc">Your AI answers with blocks instead of walls of text: match cards, lineups on a pitch, live scores, standings, stats, charts, weather, places, tickets and seat maps, quizzes, follow-up questions and 30 more. The model writes JSON, and the blocks build themselves while it is still writing. The same JSON renders in your chat, in a blog post (server-rendered for SEO), and inside Claude or ChatGPT through MCP. Albanian and English, light and dark, and everything a model writes is escaped and checked.</p>
+      <div class="stage bleed">
+        <div class="ui-chat">
+          <div class="ui-convo" id="ui-convo" aria-live="polite">
+            <div class="ui-ask" id="ui-ask"></div>
+            <p class="ui-said" id="ui-said"></p>
+            <div id="ui-out"></div>
+          </div>
+          <aside class="ui-side">
+            <div class="ui-prompts" id="ui-prompts" role="group" aria-label="Try a question">
+              <button type="button" data-doc="orbit" data-lang="sq" aria-pressed="false">Formacioni dhe biletat për Shqipëri – San Marino</button>
+              <button type="button" data-doc="sports" aria-pressed="false">Scores and tables across sports</button>
+              <button type="button" data-doc="answers" aria-pressed="false">Match day in Tirana: weather, food, tips</button>
+              <button type="button" data-doc="events" aria-pressed="false">What's on this weekend, with tickets</button>
+            </div>
+            <h6><span>What the model writes</span><span id="ui-count">0 blocks</span></h6>
+            <pre class="ui-json" id="ui-json" aria-hidden="true"></pre>
+          </aside>
+        </div>
+      </div>
+      <p class="note">Sample data except the Albania lineup, which is the published one. Click a follow-up question, pick a ticket or a stand: in a real chat those go back to the model.</p>
+<pre class="form-code"><i>// 1. Give the model the blocks: a tool definition (or prompt() for a system prompt).</i>
+<b>import</b> { anthropicTool, openaiTool, validate } <b>from</b> <i>'lumafx/ui/server'</i>;
+tools: [anthropicTool()]  <i>// render_ui({ blocks: [...] })</i>
+
+<i>// 2. Render while it streams, in your chat.</i>
+<b>import</b> { stream } <b>from</b> <i>'lumafx/ui'</i>;
+<b>const</b> s = stream(el, { lang: <i>'sq'</i>, timeZone: <i>'Europe/Tirane'</i> });
+on(<i>'input_json_delta'</i>, (d) => s.write(d.partial_json));
+on(<i>'stop'</i>, () => s.end());
+el.addEventListener(<i>'fxui:ask'</i>, (e) => send(e.detail.text));  <i>// follow-up chips</i>
+
+<i>// 3. Live scores: blocks with { live: { adapter, id } } update themselves.</i>
+lumafx.ui.adapter.set(<i>'scores'</i>, { subscribe: (id, block, push) => feed.watch(id, push) });</pre>
+      <div class="codeline"><code>&lt;<b>fx-ui</b> lang=<i>"sq"</i>&gt;&lt;script type=<i>"application/json"</i>&gt;{"blocks":[…]}&lt;/script&gt;&lt;/<b>fx-ui</b>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="ui-blog">
+      <div class="spec-head"><h3>On a blog</h3><span class="kind css">SSR + hydrate</span></div>
+      <p class="spec-desc">Render the blocks on the server with renderToString (or the React &lt;FxUI&gt;, or the WordPress [lumafx_ui] shortcode), so search engines and readers get real HTML instantly; the browser then wakes up the tabs, tickets and live scores. This is the Orbit article from Sphere, built from one JSON document.</p>
+      <article class="orbit">
+        <span class="kicker">Orbit · Futboll</span>
+        <h4>Shqipëri – San Marino, 6 tetor 2026: formacioni, taktika, biletat</h4>
+        <span class="byline">Sphere · Përditësuar 7 tetor 2026</span>
+        <p>Shqipëria pret San Marinon në Air Albania për fazën e grupeve të Nations League. Më poshtë: formacioni zyrtar, detajet e ndeshjes dhe ku të blini biletat.</p>
+        <fx-ui id="orbit-ui" lang="sq" theme="light" time-zone="Europe/Tirane"><!--ORBIT_SSR--></fx-ui>
+      </article>
+<pre class="form-code"><i>// Next.js (Server Component): HTML on the server, interactive in the browser.</i>
+<b>import</b> { FxUI } <b>from</b> <i>'lumafx/react/ui'</i>;
+<b>import</b> { FxUIRuntime } <b>from</b> <i>'lumafx/react/runtime'</i>;
+&lt;FxUI doc={post.ui} timeZone=<i>"Europe/Tirane"</i> askUrl=<i>"/kerko?q="</i> /&gt;   &lt;FxUIRuntime /&gt;
+
+<i>// Any server: Node, Deno, Bun, workers.</i>
+<b>import</b> { renderToString } <b>from</b> <i>'lumafx/ui/server'</i>;
+html += renderToString(doc, { timeZone: <i>'Europe/Tirane'</i> });  <i>// then lumafx.ui.hydrate(el) or &lt;fx-ui&gt;</i></pre>
+    </section>
+
+    <section class="spec" id="ui-mcp">
+      <div class="spec-head"><h3>In Claude and ChatGPT</h3><span class="kind js">MCP Apps</span></div>
+      <p class="spec-desc">lumafx-mcp is a small MCP server with one tool, render_ui. Hosts that support MCP Apps show the blocks inline and stream them in while the model writes; follow-up chips become the next message, links open through the host, and ticket picks reach the model. Hosts without UI get a clean text version. Add the tool to your own MCP server, or point your own tools at the same view.</p>
+      <div class="ui-mcp">
+        <section>
+          <h5>Run it</h5>
+<pre><i>// claude_desktop_config.json</i>
+{ <b>"mcpServers"</b>: { <b>"lumafx"</b>: {
+  "command": <i>"npx"</i>,
+  "args": [<i>"-y"</i>, <i>"lumafx-mcp"</i>, <i>"--stdio"</i>]
+} } }
+
+<i># or over HTTP</i>
+npx lumafx-mcp --port 3001  <i># /mcp</i></pre>
+        </section>
+        <section>
+          <h5>Add it to your server</h5>
+<pre><b>import</b> { registerUI, uiToolMeta, uiResult }
+  <b>from</b> <i>'lumafx-mcp'</i>;
+
+registerUI(server);  <i>// adds render_ui</i>
+
+server.registerTool(<i>'get_event'</i>,
+  { inputSchema, _meta: uiToolMeta },
+  <b>async</b> ({ slug }) =>
+    uiResult(toBlocks(<b>await</b> getEvent(slug))));</pre>
+        </section>
+        <section>
+          <h5>Options</h5>
+<pre>--types match,lineup,standings
+  <i>only offer some blocks</i>
+--images https://sphere.al
+  <i>where pictures may load from</i>
+--full-schema
+  <i>full JSON Schema in the tool</i></pre>
+        </section>
+      </div>
+    </section>
+
     <!-- ======================= USE IT ======================= -->
     <section class="use" id="use">
       <h2>Use it anywhere</h2>
@@ -2034,6 +2182,93 @@ apply(block, <b>'fade-up'</b>)
     }
     return realFetch(url, init);
   };
+
+  // Intelligent UI: a model "writes" a sample document and the blocks build themselves as it streams.
+  (() => {
+    const UI = window.lumafx && window.lumafx.ui;
+    const S = window.FXUI_SAMPLES;
+    if (!UI || !S) return;
+    const $ = (id) => document.getElementById(id);
+    const out = $('ui-out'), json = $('ui-json'), ask = $('ui-ask'), said = $('ui-said'), count = $('ui-count'), convo = $('ui-convo'), prompts = $('ui-prompts');
+    const extra = document.createElement('div');
+    extra.style.cssText = 'display:grid;gap:10px';
+    convo.append(extra);
+    const SAID = {
+      orbit: 'Ja formacioni zyrtar, detajet e ndeshjes dhe biletat:',
+      sports: 'Here are the latest scores and tables (sample data):',
+      answers: 'Here is your match-day guide (sample data):',
+      events: 'This weekend, with tickets (sample data):',
+    };
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const follow = () => {
+      if (convo.scrollHeight - convo.scrollTop - convo.clientHeight < 140) convo.scrollTop = convo.scrollHeight;
+    };
+    const blocks = () => out.querySelectorAll(':scope > .fxui > .fxui-b').length;
+    let run = 0;
+    async function play(btn) {
+      const id = ++run;
+      const name = btn.dataset.doc;
+      prompts.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      ask.textContent = btn.textContent;
+      said.textContent = '';
+      json.textContent = '';
+      json.removeAttribute('data-done');
+      extra.replaceChildren();
+      count.textContent = '0 blocks';
+      convo.scrollTop = 0;
+      const text = JSON.stringify(S[name], null, 1);
+      const s = UI.stream(out, { lang: btn.dataset.lang || 'en', timeZone: 'Europe/Tirane' });
+      await wait(reduce ? 0 : 350);
+      if (id !== run) return;
+      said.textContent = SAID[name];
+      for (let i = 0; i < text.length; ) {
+        const n = reduce ? text.length : 12 + Math.floor(Math.random() * 30);
+        const chunk = text.slice(i, i + n);
+        i += n;
+        s.write(chunk);
+        json.append(chunk);
+        json.scrollTop = json.scrollHeight;
+        count.textContent = blocks() + ' blocks';
+        follow();
+        await wait(reduce ? 0 : 18);
+        if (id !== run) return;
+      }
+      const r = s.end();
+      json.dataset.done = '';
+      count.textContent = r.doc.blocks.length + ' blocks';
+    }
+    const tell = (question, note) => {
+      const q = document.createElement('div');
+      q.className = 'ui-ask';
+      q.textContent = question;
+      const p = document.createElement('p');
+      p.className = 'note';
+      p.textContent = note;
+      extra.append(q, p);
+      convo.scrollTop = convo.scrollHeight;
+    };
+    out.addEventListener('fxui:ask', (e) => {
+      e.preventDefault();
+      tell(e.detail.text, 'In your chat this goes to the model as the next message.');
+    });
+    out.addEventListener('fxui:select', (e) => {
+      const d = e.detail;
+      tell((d.tier ? 'Ticket: ' + d.tier : 'Stand: ' + d.zone), 'The choice goes back to the model, which can hold the seats or open checkout.');
+    });
+    prompts.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-doc]');
+      if (btn) play(btn);
+    });
+    // Start once the chat scrolls into view.
+    const first = prompts.querySelector('[data-doc="sports"]');
+    new IntersectionObserver((entries, io) => {
+      if (entries.some((x) => x.isIntersecting)) {
+        io.disconnect();
+        play(first);
+      }
+    }, { rootMargin: '0px 0px -20% 0px' }).observe(convo);
+  })();
 
   // Live count of mounted effects
   const count = document.getElementById('live-count');

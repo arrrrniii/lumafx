@@ -120,6 +120,15 @@ export const content: Record<string, Renderer> = {
       })
       .join('')}</div>`,
 
+  suggestions: (b) =>
+    `<ul class="fxui-suggest" role="list">${arr(b.items)
+      .map((x, i) => {
+        const u = x.url ? safeUrl(x.url) : '';
+        const inner = `${icon('arrow')}<span>${esc(x.text)}</span>`;
+        return `<li data-k="q${i}">${u ? `<a class="fxui-chip" ${linkAttrs(u)}>${inner}</a>` : `<button type="button" class="fxui-chip" data-ask="${esc(x.text)}">${inner}</button>`}</li>`;
+      })
+      .join('')}</ul>`,
+
   sources: (b, c) =>
     `<div class="fxui-sources"><div class="fxui-srchead"><strong>${esc(c.t('sources'))} (${arr(b.items).length})</strong>${b.verified ? `<span class="fxui-badge" data-tone="good">${icon('shield')}${esc(c.t('verified'))}</span>` : ''}${b.checked ? `<small>${esc(c.t('checked'))} ${fmtDate(c, b.checked)}</small>` : ''}</div><ol>${arr(b.items)
       .map((s, i) => {

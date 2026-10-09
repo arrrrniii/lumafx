@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { validate, jsonSchema, prompt, anthropicTool, openaiTool, renderToString, parsePartial, placePlayers, formationLines, BLOCKS } from '../src/ui/server';
+import { validate, jsonSchema, prompt, anthropicTool, openaiTool, renderToString, parsePartial, placePlayers, formationLines, BLOCKS, toText } from '../src/ui/server';
+import { fmtDate } from '../src/ui/html';
 import { render, stream, update, adapter, hydrate } from '../src/ui/index';
 import { tick } from './setup';
 
@@ -198,6 +199,63 @@ describe('rendering', () => {
     expect(el.querySelector('.fxui-faq')).toBe(before);
     el.querySelectorAll<HTMLButtonElement>('[role=tab]')[1].click();
     expect(el.querySelectorAll<HTMLElement>('.fxui-tabpanel')[1].hidden).toBe(false);
+  });
+});
+
+describe('follow-ups, text and dates', () => {
+  it('turns suggestions into chips that ask in chat, or links with a url', () => {
+    const el = document.createElement('div');
+    document.body.append(el);
+    render(el, { blocks: [{ type: 'related', items: [{ text: 'Who scored?' }, { text: 'Tickets', url: 'https://sphere.al' }, { url: 'https://x.y' }] }] });
+    const chips = el.querySelectorAll('.fxui-chip');
+    expect(chips).toHaveLength(2);
+    expect(chips[1].tagName).toBe('A');
+    let asked = '';
+    el.addEventListener('fxui:ask', (e) => (asked = (e as CustomEvent).detail.text));
+    (chips[0] as HTMLButtonElement).click();
+    expect(asked).toBe('Who scored?');
+  });
+
+  it('<fx-ui ask-url> sends follow-ups to a search page when no chat handles them', async () => {
+    const { defineElement } = await import('../src/ui/index');
+    defineElement();
+    const fx = document.createElement('fx-ui');
+    fx.setAttribute('ask-url', '#q=');
+    fx.innerHTML = '<script type="application/json">{"blocks":[{"type":"suggestions","items":[{"text":"Next match?"}]}]}</script>';
+    document.body.append(fx);
+    await tick();
+    fx.querySelector<HTMLButtonElement>('.fxui-chip')!.click();
+    expect(decodeURIComponent(location.hash)).toBe('#q=Next match?');
+  });
+
+  it('folds away pictures that fail to load', () => {
+    const el = document.createElement('div');
+    document.body.append(el);
+    render(el, { blocks: [{ type: 'venue', name: 'Air Albania', image: 'https://blocked.example/a.jpg' }, { type: 'gallery', images: [{ src: 'https://blocked.example/b.jpg', alt: 'b' }] }] });
+    el.querySelectorAll('img').forEach((img) => img.dispatchEvent(new Event('error')));
+    expect(el.querySelector('.fxui-venue')!.classList.contains('fxui-noimg')).toBe(true);
+    expect(el.querySelector('.fxui-venue img')).toBeNull();
+    expect(el.querySelector<HTMLElement>('.fxui-gallery figure')!.hidden).toBe(true);
+  });
+
+  it('writes a plain-text version of any document', () => {
+    const t = toText(validate({ blocks: [{ type: 'match', home: { name: 'Shqipëria' }, away: { name: 'San Marino' }, score: [3, 0], status: 'finished' }, lineup, { type: 'suggestions', items: [{ text: 'Next?' }] }] }).doc);
+    expect(t).toContain('Shqipëria 3–0 San Marino');
+    expect(t).toContain('Hysaj (4)');
+    expect(t).toContain('→ Next?');
+  });
+
+  it('formats Albanian dates even where the runtime has no Albanian locale data', () => {
+    const real = Intl.DateTimeFormat.supportedLocalesOf;
+    (Intl.DateTimeFormat as any).supportedLocalesOf = () => [];
+    try {
+      const f = { locale: 'sq-XK', timeZone: 'Europe/Tirane' };
+      expect(fmtDate(f, '2026-10-06T20:45:00+02:00')).toBe('mar, 6 tet, 20:45');
+      expect(fmtDate(f, '2026-10-06T20:45:00+02:00', 'date')).toBe('6 tet 2026');
+      expect(fmtDate(f, '2026-10-06T20:45:00+02:00', 'time')).toBe('20:45');
+    } finally {
+      Intl.DateTimeFormat.supportedLocalesOf = real;
+    }
   });
 });
 

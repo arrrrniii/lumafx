@@ -4,6 +4,8 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
+import vm from 'node:vm';
+import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const dist = path.join(root, 'dist');
@@ -158,6 +160,18 @@ await build({
   logLevel: 'warning',
 });
 await build({
+  entryPoints: { 'react/ui': 'src/react/ui.ts' },
+  absWorkingDir: root,
+  outdir: dist,
+  bundle: true,
+  format: 'esm',
+  target: 'es2020',
+  outExtension: { '.js': '.mjs' },
+  external: ['react', 'react/*', 'lumafx', 'lumafx/*'],
+  define,
+  logLevel: 'warning',
+});
+await build({
   entryPoints: { 'react/runtime': 'src/react/runtime.ts' },
   absWorkingDir: root,
   outdir: dist,
@@ -165,7 +179,7 @@ await build({
   format: 'esm',
   target: 'es2020',
   outExtension: { '.js': '.mjs' },
-  external: ['react', 'react/*', 'lumafx'],
+  external: ['react', 'react/*', 'lumafx', 'lumafx/*'],
   banner: { js: "'use client';" },
   logLevel: 'warning',
 });
@@ -250,6 +264,8 @@ const optLine = (k, o) => {
   const vals = o.values ? ` One of: ${o.values.join(', ')}.` : '';
   return `  - data-fx-${k}: ${o.type}${def}. ${o.desc}${vals}`;
 };
+const { BLOCKS: UI_BLOCKS } = await import(pathToFileURL(path.join(dist, 'ui-server.mjs')).href + '?b=' + Date.now());
+const uiBlocks = UI_BLOCKS.map((b) => b.type);
 const llms = [
   `# lumafx ${pkg.version}`,
   '',
@@ -298,6 +314,15 @@ const llms = [
   '- <fx-panel>: set panel.target = element; listen for fx-change (detail.fx, detail.attributes, detail.html). Attributes: theme="light|dark|auto", groups="entrance,hover", all.',
   '- start({ motion: "reduce" }) forces reduced motion; start({ features: { sda: false } }) tests fallbacks.',
   '',
+  '## Intelligent UI (lumafx/ui, isomorphic)',
+  '- An AI answers with JSON blocks { blocks: [{ type, ...props }], lang? } that render as interface, also while streaming. Block reference for prompts: prompt(types?) from "lumafx/ui/server"; tool definitions: anthropicTool({ types }) / openaiTool({ types }); JSON Schema: jsonSchema(types?).',
+  '- Blocks: ' + uiBlocks.join(', ') + '.',
+  '- Server: validate(input) → { ok, doc, errors } (accepts a doc, a list, one block or JSON text, even fenced); renderToString(doc, { lang, timeZone, theme }) → HTML with the JSON embedded; toText(doc) → plain text.',
+  '- Browser: render(el, doc) · stream(el, opts) → { write(chunk), set(textOrDoc), end() } · hydrate(el) · update(el, id, props) · adapter.set(name, { fetch(id, block) → props | subscribe(id, block, push) → unsubscribe }) for blocks with live: { adapter, id, every }.',
+  '- <fx-ui lang="sq" time-zone="Europe/Tirane" theme="light|dark" ask-url="/search?q=" src="/ui.json"> with a <script type="application/json"> child. Events: fxui:ask (follow-up chip), fxui:select (ticket tier or zone), fxui:answer (quiz), fxui:done.',
+  '- React: <FxUI doc /> from "lumafx/react/ui" (server-rendered), <FxUIRuntime /> and <FxUIStream value done onAsk /> from "lumafx/react/runtime". WordPress: [lumafx_ui]{json}[/lumafx_ui] or [lumafx_ui src="…"].',
+  '- MCP: the lumafx-mcp package (npx lumafx-mcp --stdio) adds a render_ui tool with an MCP Apps view; registerUI(server), uiToolMeta and uiResult(blocks) for your own servers.',
+  '',
 ].join('\n');
 fs.writeFileSync(path.join(root, 'llms.txt'), llms);
 
@@ -305,7 +330,7 @@ fs.writeFileSync(path.join(root, 'llms.txt'), llms);
 execSync('npx tsc -p tsconfig.json', { cwd: root, stdio: 'inherit' });
 
 // ---------- size report ----------
-const sizes = ['lumafx.global.js', 'lumafx.css', 'index.mjs', 'editor.mjs', 'lumafx-editor.global.js', 'lumafx-ui.global.js', 'lumafx-ui.css', 'ui-server.mjs', 'react/index.mjs', 'react/runtime.mjs'].map((f) => {
+const sizes = ['lumafx.global.js', 'lumafx.css', 'index.mjs', 'editor.mjs', 'lumafx-editor.global.js', 'lumafx-ui.global.js', 'lumafx-ui.css', 'ui-server.mjs', 'react/index.mjs', 'react/ui.mjs', 'react/runtime.mjs'].map((f) => {
   const buf = fs.readFileSync(path.join(dist, f));
   return `${f.padEnd(20)} ${(buf.length / 1024).toFixed(1).padStart(6)} KB  ${(gzipSync(buf, { level: 9 }).length / 1024).toFixed(1).padStart(5)} KB gzip`;
 });
@@ -321,10 +346,16 @@ if (fs.existsSync(path.join(demoDir, 'page.html'))) {
   fs.copyFileSync(path.join(dist, 'lumafx-editor.global.js'), path.join(demoDir, 'lumafx-editor.global.js'));
   fs.copyFileSync(path.join(dist, 'lumafx-ui.global.js'), path.join(demoDir, 'lumafx-ui.global.js'));
   fs.copyFileSync(path.join(dist, 'lumafx-ui.css'), path.join(demoDir, 'lumafx-ui.css'));
+  // The Orbit article is rendered here, like a server would: real HTML that the page then hydrates.
+  const sandbox = { window: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(demoDir, 'ui-samples.js'), 'utf8'), sandbox);
+  const { renderToString } = await import(pathToFileURL(path.join(dist, 'ui-server.mjs')).href + '?v=' + Date.now());
+  const orbitHtml = renderToString(sandbox.window.FXUI_SAMPLES.orbit, { timeZone: 'Europe/Tirane', theme: 'light' });
   const page = fs
     .readFileSync(path.join(demoDir, 'page.html'), 'utf8')
     .replace('__JS_GZ__', gz('lumafx.global.js'))
-    .replace('__CSS_GZ__', gz('lumafx.css'));
+    .replace('__CSS_GZ__', gz('lumafx.css'))
+    .replace('<!--ORBIT_SSR-->', () => orbitHtml);
   fs.writeFileSync(path.join(demoDir, 'artifact.html'), page);
   fs.writeFileSync(
     path.join(demoDir, 'index.html'),
@@ -338,7 +369,7 @@ const wpDir = path.join(root, 'wordpress', 'lumafx');
 if (fs.existsSync(wpDir)) {
   const assets = path.join(wpDir, 'assets');
   fs.mkdirSync(assets, { recursive: true });
-  for (const f of ['lumafx.css', 'lumafx.global.js', 'effects.json']) fs.copyFileSync(path.join(dist, f), path.join(assets, f));
+  for (const f of ['lumafx.css', 'lumafx.global.js', 'effects.json', 'lumafx-ui.css', 'lumafx-ui.global.js']) fs.copyFileSync(path.join(dist, f), path.join(assets, f));
   const zip = path.join(dist, 'lumafx-wordpress.zip');
   try {
     execSync(`zip -qr ${JSON.stringify(zip)} lumafx -x '*.DS_Store'`, { cwd: path.join(root, 'wordpress') });

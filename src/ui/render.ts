@@ -24,6 +24,8 @@ export interface RenderOptions {
   now?: number;
   /** Validate while the JSON is still streaming in. */
   partial?: boolean;
+  /** Force a theme. Default: follows the page ([data-theme], .dark) or the system. */
+  theme?: 'light' | 'dark';
 }
 
 export interface Ctx extends Fmt {
@@ -96,7 +98,8 @@ export function renderToString(input: unknown, o: RenderOptions = {}): string {
   const lang = o.lang ?? doc.lang ?? 'en';
   const c = makeCtx({ ...o, lang });
   const embed = o.embed !== false ? `<script type="application/json" class="fxui-data">${JSON.stringify(doc).replace(/</g, '\\u003c')}</script>` : '';
-  return `<div class="fxui" lang="${esc(lang)}">${doc.blocks.map((b) => renderBlock(b, c)).join('')}${embed}</div>`;
+  const theme = o.theme === 'light' || o.theme === 'dark' ? ` data-theme="${o.theme}"` : '';
+  return `<div class="fxui" lang="${esc(lang)}"${theme}>${doc.blocks.map((b) => renderBlock(b, c)).join('')}${embed}</div>`;
 }
 
 export type { Block, Doc };

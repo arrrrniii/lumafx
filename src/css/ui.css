@@ -1,4 +1,5 @@
 /* lumafx/ui: intelligent UI blocks. Theme with the --fxui-* variables on .fxui or any ancestor. */
+fx-ui { display: block; }
 .fxui {
   --fxui-card: #ffffff;
   --fxui-card-2: #f3f4f7;
@@ -39,6 +40,7 @@
 }
 .fxui *, .fxui *::before, .fxui *::after { box-sizing: border-box; }
 .fxui [hidden] { display: none !important; }
+.fxui img[data-broken] { visibility: hidden; }
 .fxui i, .fxui em.fxui-plain { font-style: normal; }
 .fxui-dark-tokens, .fxui[data-theme="dark"], :where([data-theme="dark"], .dark) .fxui:not([data-theme="light"]) {
   --fxui-card: #16181f;
@@ -222,6 +224,13 @@
 .fxui-quizscore { margin: 0; font-weight: 650; }
 .fxui-quizscore:empty { display: none; }
 .fxui-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.fxui-suggest { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.fxui-suggest li + li { border-top: 1px solid var(--fxui-line); }
+.fxui-chip { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 4px; border: 0; background: none; font: inherit; color: var(--fxui-fg) !important; text-align: left; text-decoration: none !important; cursor: pointer; border-radius: 10px; transition: background .2s, padding .25s cubic-bezier(.2, .9, .3, 1); }
+.fxui-chip .fxui-i { width: 1em; height: 1em; flex: none; color: var(--fxui-accent); transition: transform .25s cubic-bezier(.2, .9, .3, 1.3); }
+.fxui-chip:hover, .fxui-chip:focus-visible { background: var(--fxui-card-2); padding-left: 10px; }
+.fxui-chip:hover .fxui-i { transform: translateX(2px); }
+.fxui-chip:active { transform: scale(.99); }
 .fxui-sources { padding: 14px 16px; display: grid; gap: 10px; }
 .fxui-srchead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .fxui-srchead small { color: var(--fxui-muted); }

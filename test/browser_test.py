@@ -88,7 +88,8 @@ def main():
         errors = []
         page = new_page(browser, base + "/index.html", errors, viewport={"width": 1440, "height": 900}, color_scheme="dark")
         info = page.evaluate("({ v: lumafx.version, env: {...lumafx.env}, stats: lumafx.stats(), names: lumafx.effects })")
-        check("runtime boots with version", info["v"] == "0.3.0", info["v"])
+        version = json.load(open(os.path.join(ROOT, "package.json")))["version"]
+        check("runtime boots with version", info["v"] == version, info["v"])
         missing = [n for n in info["names"] if n not in info["stats"]]
         check(f"all {len(info['names'])} effects mounted on the page", not missing, f"missing {missing}")
         check("feature detection: scroll-driven, corner-shape, Chromium", info["env"]["sda"] and info["env"]["cornerShape"] and info["env"]["chromium"], json.dumps(info["env"]))
@@ -674,6 +675,24 @@ def main():
         check("builder exports clean HTML with the effects as attributes", 'data-fx="reveal"' in ex and 'data-fx-from="zoom"' in ex and "bk-selected" not in ex and "fx-u" not in ex, ex[:160])
         page.locator("#editor .builder").screenshot(path=os.path.join(SHOTS, "45-builder.png"))
 
+        # ---------------- v0.4: intelligent UI
+        orb = page.evaluate("() => { const r = document.querySelector('#orbit-ui > .fxui'); return [!!r && r.classList.contains('fxui-seen'), r && r.dataset.theme, document.querySelectorAll('#orbit-ui .fxui-b').length, document.querySelectorAll('#orbit-ui .fxui-b-lineup [data-k]').length] }")
+        check("Orbit article: server-rendered blocks hydrate in place (light theme, 11 players)", orb[0] and orb[1] == "light" and orb[2] >= 6 and orb[3] >= 11, str(orb))
+        scroll_to(page, "#ui .ui-chat", "start")
+        page.wait_for_function("() => document.getElementById('ui-json').hasAttribute('data-done')", timeout=60000)
+        chat = page.evaluate("() => [document.querySelectorAll('#ui-out .fxui-b').length, document.querySelector('#ui-count').textContent, !!document.querySelector('#ui-out .fxui[aria-busy]')]")
+        check("chat demo streams a document into blocks and settles", chat[0] >= 8 and chat[1].endswith("blocks") and not chat[2], str(chat))
+        page.click("#ui-prompts [data-doc=events]")
+        page.wait_for_timeout(600)
+        mid = page.evaluate("() => [document.querySelectorAll('#ui-out .fxui-b').length, document.querySelector('#ui-out .fxui').getAttribute('aria-busy')]")
+        page.wait_for_function("() => document.getElementById('ui-json').hasAttribute('data-done')", timeout=60000)
+        page.locator("#ui-out .fxui-b-tickets input[type=radio]:not([disabled])").first.check(force=True)
+        page.wait_for_timeout(200)
+        picked = page.evaluate("() => document.querySelectorAll('#ui-convo .ui-ask').length")
+        check("switching questions re-streams (busy while writing) and selections reach the chat", mid[1] == "true" and picked == 2, f"{mid} {picked}")
+        page.locator("#ui .ui-chat").screenshot(path=os.path.join(SHOTS, "50-ui-chat.png"))
+        page.locator("#ui-blog .orbit").screenshot(path=os.path.join(SHOTS, "51-ui-orbit.png"))
+
         # A real page-to-page transition: cover, navigate, arrive covered, reveal.
         nav_err = []
         np_ = new_page(browser, base + "/index.html", nav_err, viewport={"width": 1280, "height": 800}, color_scheme="dark")
@@ -796,6 +815,11 @@ def main():
         bkm = mp.evaluate("() => { const c = document.querySelector('#bk-canvas').getBoundingClientRect(); const p = document.querySelector('#bk-panel').getBoundingClientRect(); return [p.top >= c.bottom - 1, c.width > 300, document.scrollingElement.scrollWidth - innerWidth] }")
         check("builder stacks into one column on a phone without overflow", bkm[0] and bkm[1] and bkm[2] <= 0, str(bkm))
         mp.screenshot(path=os.path.join(SHOTS, "36-phone-builder.png"))
+        scroll_to(mp, "#ui-blog .orbit", "start")
+        mp.wait_for_timeout(300)
+        uim = mp.evaluate("() => document.scrollingElement.scrollWidth - innerWidth")
+        check("intelligent UI sections fit a phone without overflow", uim <= 0, str(uim))
+        mp.screenshot(path=os.path.join(SHOTS, "37-phone-orbit.png"))
         mp.screenshot(path=os.path.join(SHOTS, "20-phone-hero.png"))
         scroll_to(mp, "#glass .glass-scene")
         mp.screenshot(path=os.path.join(SHOTS, "21-phone-glass.png"))

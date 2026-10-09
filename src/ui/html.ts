@@ -62,10 +62,48 @@ export function parseDate(v: unknown): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+/* Some browsers and runtimes ship without Albanian date data (trimmed ICU): format it ourselves. */
+const NAMES: Record<string, { days: string[]; months: string[] }> = {
+  sq: { days: ['die', 'hën', 'mar', 'mër', 'enj', 'pre', 'sht'], months: ['jan', 'shk', 'mar', 'pri', 'maj', 'qer', 'korr', 'gush', 'sht', 'tet', 'nën', 'dhj'] },
+};
+const supported = new Map<string, boolean>();
+function hasLocale(locale: string) {
+  if (!supported.has(locale)) {
+    let ok = true;
+    try {
+      ok = Intl.DateTimeFormat.supportedLocalesOf([locale]).length > 0;
+    } catch {
+      ok = false;
+    }
+    supported.set(locale, ok);
+  }
+  return supported.get(locale)!;
+}
+const EN_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function ownFormat(names: { days: string[]; months: string[] }, f: Fmt, d: Date, kind: string, hasTime: boolean) {
+  const parts: Record<string, string> = {};
+  try {
+    for (const p of new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: f.timeZone }).formatToParts(d)) parts[p.type] = p.value;
+  } catch {
+    return d.toISOString().slice(0, 16).replace('T', ' ');
+  }
+  const day = names.days[EN_DAYS.indexOf(parts.weekday)] ?? '';
+  const month = names.months[Number(parts.month) - 1] ?? '';
+  parts.day = String(Number(parts.day));
+  const time = `${parts.hour}:${parts.minute}`;
+  if (kind === 'time') return time;
+  if (kind === 'date') return `${parts.day} ${month} ${parts.year}`;
+  if (kind === 'day') return `${day}, ${parts.day} ${month}`;
+  if (kind === 'short') return `${parts.day} ${month}`;
+  return hasTime ? `${day}, ${parts.day} ${month}, ${time}` : `${day}, ${parts.day} ${month} ${parts.year}`;
+}
+
 export function fmtDate(f: Fmt, v: unknown, kind: 'date' | 'time' | 'datetime' | 'day' | 'short' = 'datetime') {
   const d = parseDate(v);
   if (!d) return esc(v);
   const hasTime = typeof v === 'string' && /T\d\d:\d\d/.test(v);
+  const own = NAMES[f.locale.slice(0, 2).toLowerCase()];
+  if (own && !hasLocale(f.locale)) return esc(ownFormat(own, f, d, kind, hasTime));
   const o: Intl.DateTimeFormatOptions =
     kind === 'time'
       ? { hour: '2-digit', minute: '2-digit', hour12: false }

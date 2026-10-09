@@ -9,5 +9,6 @@ export type { Block, Doc, BlockDef, T, UIError, Validated, ValidateOptions, Tool
 export { renderToString, renderBlock, RENDERERS } from './render';
 export type { RenderOptions, Renderer, Ctx } from './render';
 export { parsePartial } from './partial';
+export { toText, blockToText } from './text';
 export { addLabels, labels } from './i18n';
 export { placePlayers, formationLines } from './blocks/sport';
