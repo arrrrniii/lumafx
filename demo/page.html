@@ -506,6 +506,19 @@ button { font: inherit; color: inherit; }
 .cards-grid [data-fx~="card"] { font-family: var(--font-body); }
 .cards-grid [data-fx~="card"] h3 { font-family: var(--font-display); }
 .press-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+/* loader-3d */
+.loaders { display: flex; flex-wrap: wrap; gap: 8px 28px; justify-content: center; padding-block: 18px; }
+.loaders figure { margin: 0; display: grid; justify-items: center; gap: 4px; }
+.loaders figcaption { font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.posts { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.post { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: color-mix(in oklab, currentColor 4%, transparent); }
+.post img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.post div { padding: 14px 16px 16px; display: grid; gap: 6px; }
+.post small { font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.post h4 { margin: 0; font: 650 17px/1.25 var(--font-display); letter-spacing: -.01em; }
+.blog-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px; }
+.loader-3d-pre { gap: 6px; }
+.loader-3d-pre [data-fx-count] { font-size: 13px; letter-spacing: .3em; color: #8a8ea0; }
 .press-row button { font: 600 15px/1 var(--font-body); padding: 15px 24px; border-radius: 999px; border: 0; cursor: pointer; }
 .press-row .p1 { background: var(--lamp); color: var(--lamp-ink); }
 .press-row .p2 { background: var(--fg); color: var(--bg); }
@@ -718,6 +731,10 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
     <ul>
       <li><a href="#card">card <span class="kind css">css+js</span></a></li>
       <li><a href="#press">press <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Loading</h4>
+    <ul>
+      <li><a href="#loader-3d">loader-3d <span class="kind js">webgl</span></a></li>
     </ul>
   </aside>
 
@@ -1461,6 +1478,31 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
       <div class="codeline"><code>&lt;button <b>data-fx</b>=<i>"press"</i> data-fx-style=<i>"burst"</i> data-fx-done=<i>"Added ✓"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <!-- ======================= LOADING (v0.3) ======================= -->
+    <h2 class="group-title" id="loading">Loading</h2>
+
+    <section class="spec" id="loader-3d">
+      <div class="spec-head"><h3>loader-3d</h3><span class="kind js">WebGL</span></div>
+      <p class="spec-desc">Glossy slabs fan apart and settle back over a floating glass plate, rendered live on the GPU with soft shadows and studio reflections. Any colours, up to six slabs. Use it on its own, as the page preloader, or while a blog loads more posts. Every loader on the page shares one GPU context, and browsers without WebGL get a CSS 3D version.</p>
+      <div class="stage loaders">
+        <figure><div data-fx="loader-3d"></div><figcaption>Default</figcaption></figure>
+        <figure><div data-fx="loader-3d" data-fx-colors="#ffc15e,#ff8a4c,#ff4f7b" data-fx-base="#ffe6cc"></div><figcaption>Sunset</figcaption></figure>
+        <figure><div data-fx="loader-3d" data-fx-colors="#21d4a0,#1593ff" data-fx-count="5" data-fx-base="#d2f4ea"></div><figcaption>Mint · 5 slabs</figcaption></figure>
+      </div>
+      <div class="stage blog-demo">
+        <div class="posts" id="posts">
+          <article class="post"><img src="img/theth.jpg" alt=""><div><small>Hike · 7 min read</small><h4>Theth before the road was paved</h4></div></article>
+          <article class="post"><img src="img/butrint.jpg" alt=""><div><small>History · 5 min read</small><h4>Butrint after the crowds leave</h4></div></article>
+          <article class="post"><img src="img/durres.jpg" alt=""><div><small>City · 4 min read</small><h4>A slow Sunday in Durrës</h4></div></article>
+        </div>
+        <div class="blog-actions">
+          <button class="btn primary small" id="more-posts">Load more stories</button>
+          <button class="btn outline small" id="blog-preloader">Show it as the page loader</button>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"loader-3d"</i>&gt;&lt;/div&gt;  ·  <b>await</b> lumafx.loading(<i>'#posts'</i>, fetchPosts())</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
     <!-- ======================= USE IT ======================= -->
     <section class="use" id="use">
       <h2>Use it anywhere</h2>
@@ -1744,6 +1786,38 @@ Elementor, Bricks, Divi: add the class
   });
 
   document.getElementById('to-top').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // Blog: "Load more" shows the 3D loader while a (fake) request runs.
+  const postsEl = document.getElementById('posts');
+  const blogPages = [
+    [['img/valbona.jpg', 'Hike · 9 min read', 'Valbona to Theth in one long day'], ['img/llogara.jpg', 'Road trip · 6 min read', 'Over the Llogara pass at dawn'], ['img/ksamil.jpg', 'Sea · 3 min read', 'Ksamil in October, nearly empty']],
+    [['img/dajti.jpg', 'Tirana · 4 min read', 'Dajti by cable car, down on foot'], ['img/blloku.jpg', 'Nights · 5 min read', 'Blloku after midnight'], ['img/theth-wide.jpg', 'Photo essay', 'The Accursed Mountains in fog']],
+  ];
+  let blogPage = 0;
+  document.getElementById('more-posts').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    const batch = await window.lumafx.loading(postsEl, new Promise((r) => setTimeout(() => r(blogPages[blogPage++ % blogPages.length]), 1700)), { size: '150px' });
+    batch.forEach(([img, tag, title], i) => {
+      const a = document.createElement('article');
+      a.className = 'post';
+      a.setAttribute('data-fx', 'reveal');
+      a.setAttribute('data-fx-delay', String(i * 90));
+      a.innerHTML = `<img src="${img}" alt=""><div><small>${tag}</small><h4>${title}</h4></div>`;
+      postsEl.append(a);
+    });
+    btn.disabled = false;
+  });
+  document.getElementById('blog-preloader').addEventListener('click', () => {
+    const pre = document.createElement('div');
+    pre.className = 'loader loader-3d-pre';
+    pre.setAttribute('data-fx', 'preloader');
+    pre.setAttribute('data-fx-style', 'fade');
+    pre.setAttribute('data-fx-min', '2800');
+    pre.innerHTML = '<div data-fx="loader-3d" style="--fx-size:min(280px,62vw)"></div><span class="loader-note">Loading stories</span><span data-fx-count>000</span>';
+    document.body.append(pre);
+    document.addEventListener('fx:loaded', () => pre.remove(), { once: true });
+  });
 
   // Chat: a tiny demo bot answering through the fx:chat-send event.
   const chat = document.getElementById('chat-widget');

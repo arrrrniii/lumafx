@@ -142,3 +142,5 @@ export const Press = named('press', 'button');
 export const Drawer = named('drawer', 'dialog', (children) => createElement('div', { className: 'fx-md-panel' }, children));
 /** Smart form: validation rules from attributes or data-rules, AJAX submit with server errors. */
 export const Form = named('form', 'form');
+/** Glossy 3D slabs fanning over a floating plate (WebGL, CSS 3D fallback). */
+export const Loader3D = named('loader-3d', 'div');

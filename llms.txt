@@ -458,6 +458,16 @@ Options:
   - data-fx-success: string. Selector of a message to reveal after a successful AJAX submit (or put data-fx-success on an element inside the form).
   - data-fx-color: color (default: #ffb547). Accent for focus, the strength meter and the sending spinner.
 
+### loader-3d — 3D loader [webgl]
+Glossy rounded slabs fan apart and settle back over a floating glass plate, rendered live on the GPU with soft shadows and studio reflections. For page preloaders, loading blog posts and any wait. Falls back to CSS 3D without WebGL; one shared GPU context serves every loader on the page.
+Example: <div data-fx="loader-3d"></div>
+Options:
+  - data-fx-colors: string (default: #3a6bff,#5560ff,#7457ff,#9a5cf6). Slab colors from bottom to top, comma-separated. The number of colors sets the number of slabs (up to 6).
+  - data-fx-count: number (default: 4). Number of slabs (1–6) when you give fewer colors; colors are blended to fill.
+  - data-fx-base: color (default: #b2d6ff). Color of the floating plate.
+  - data-fx-duration: time (default: 2.8s). Length of one open-and-close cycle.
+  - data-fx-size: length (default: 160px). Width and height of the loader.
+
 ## JavaScript API
 - start(options?) · stop() · refresh() · mount(root) · stats() · register(effect)
 - transition(update, { preset }) — runs a DOM update inside a View Transition (presets: fade, slide, slide-back, zoom, wipe).

@@ -706,6 +706,20 @@ const defs: Meta[] = [
     },
     example: '<form data-fx="form" data-fx-ajax action="/api/contact" method="post"><input name="email" type="email" required>…</form>',
   },
+  {
+    name: 'loader-3d',
+    title: '3D loader',
+    kind: 'webgl',
+    desc: 'Glossy rounded slabs fan apart and settle back over a floating glass plate, rendered live on the GPU with soft shadows and studio reflections. For page preloaders, loading blog posts and any wait. Falls back to CSS 3D without WebGL; one shared GPU context serves every loader on the page.',
+    options: {
+      colors: { type: 'string', default: '#3a6bff,#5560ff,#7457ff,#9a5cf6', desc: 'Slab colors from bottom to top, comma-separated. The number of colors sets the number of slabs (up to 6).' },
+      count: num(4, 'Number of slabs (1–6) when you give fewer colors; colors are blended to fill.'),
+      base: color('#b2d6ff', 'Color of the floating plate.'),
+      duration: time('2.8s', 'Length of one open-and-close cycle.'),
+      size: len('160px', 'Width and height of the loader.'),
+    },
+    example: '<div data-fx="loader-3d"></div>',
+  },
 ];
 
 export const META: Record<string, Meta> = Object.fromEntries(defs.map((d) => [d.name, d as Meta]));

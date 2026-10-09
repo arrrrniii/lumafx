@@ -18,6 +18,7 @@ import { imageReveal, expand, imageTrail, videoScrub, frames } from './media';
 import { svgDraw, dotField, typewriter, rotateWords, clock, ring } from './live';
 import { card, press } from './cards';
 import { form } from './form';
+import { loader3d } from './loader3d';
 
 /** Pure-CSS effects: the runtime only maps options to CSS variables and pauses them off-screen. */
 const css = (name: string): Effect => ({ name, meta: META[name] });
@@ -75,6 +76,7 @@ export {
   card,
   press,
   form,
+  loader3d,
 };
 
 export const allEffects: Effect[] = [
@@ -131,4 +133,5 @@ export const allEffects: Effect[] = [
   card,
   press,
   form,
+  loader3d,
 ];

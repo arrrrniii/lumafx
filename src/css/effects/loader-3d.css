@@ -1,0 +1,49 @@
+--_l3d-d: var(--fx-duration, 2.8s);
+:where(&) {
+  position: relative;
+  display: block;
+  inline-size: var(--fx-size, 160px);
+  aspect-ratio: 1;
+  flex: none;
+}
+& > .fx-l3d-canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+@fx-reduced {
+  & > .fx-l3d-canvas { animation: fx-l3d-breathe 2.4s ease-in-out infinite; }
+}
+
+/* Without WebGL: the same idea in CSS 3D. */
+& > .fx-l3d-css {
+  position: absolute;
+  inset: 12% 10% 22%;
+  transform-style: preserve-3d;
+  transform: rotateX(58deg) rotateZ(-40deg);
+}
+& .fx-l3d-plate,
+& .fx-l3d-slab {
+  position: absolute;
+  border-radius: 24%;
+}
+& .fx-l3d-plate {
+  inset: -2%;
+  background: linear-gradient(135deg, #fff, var(--c) 45%, color-mix(in oklab, var(--c), #6d8bd6 30%));
+  box-shadow: 0 0 0 1px rgb(255 255 255 / .5) inset, 0 34px 40px -16px rgb(10 14 40 / .45);
+  animation: fx-l3d-float 3.2s ease-in-out infinite;
+}
+& .fx-l3d-slab {
+  inset: 18%;
+  transform-origin: 18% 82%;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--c), #fff 38%), var(--c) 55%, color-mix(in oklab, var(--c), #000 22%));
+  box-shadow: 0 0 0 1px rgb(255 255 255 / .35) inset, 0 1px 0 rgb(255 255 255 / .55) inset, 0 10px 16px -6px rgb(20 10 70 / .5);
+  transform: translateZ(calc(14px + var(--i) * 9px));
+  animation: fx-l3d-fan var(--_l3d-d) cubic-bezier(.5, 0, .3, 1.2) infinite;
+}
+@fx-reduced {
+  & .fx-l3d-slab, & .fx-l3d-plate { animation: none; }
+  & .fx-l3d-slab { transform: translateZ(calc(16px + var(--i) * 16px)) rotateZ(calc(var(--k) * 60deg)); }
+}

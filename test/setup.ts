@@ -15,7 +15,7 @@ export const tick = (ms = 0) => new Promise((r) => setTimeout(r, ms));
 // jsdom has no Web Animations or modal dialogs: minimal stand-ins that finish immediately.
 if (!Element.prototype.animate) {
   Element.prototype.animate = function () {
-    return { finished: Promise.resolve(), cancel() {}, finish() {}, play() {}, pause() {} } as unknown as Animation;
+    return { finished: Promise.resolve(), cancel() {}, finish() {}, play() {}, pause() {}, reverse() {}, updatePlaybackRate() {}, effect: null } as unknown as Animation;
   };
 }
 if (!Element.prototype.getAnimations) Element.prototype.getAnimations = () => [];
