@@ -108,29 +108,75 @@ button { font: inherit; color: inherit; }
 .facts b { color: var(--fg); font-weight: 500; }
 
 /* ---------- book layout ---------- */
+:root { --head-h: 64px; --ease-out: cubic-bezier(.2, .8, .2, 1); }
 .book {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding-inline: max(16px, 4vw);
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
-  gap: 56px;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: clamp(36px, 4.5vw, 64px);
 }
-.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); align-self: start; padding-block: 48px; }
-.rail h4 { font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
-.rail h4:first-child { margin-top: 0; }
-.rail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+/* The index rail: sticky under the header (and up to the top when the header hides), scrolls on its own. */
+.rail {
+  --rail-top: calc(env(safe-area-inset-top, 0px) + var(--head-h) + 16px);
+  position: sticky; top: var(--rail-top); align-self: start;
+  max-height: calc(100dvh - var(--rail-top) - 12px);
+  margin-top: 44px;
+  display: flex; flex-direction: column; min-height: 0;
+  transition: top .5s var(--ease-out), max-height .5s var(--ease-out);
+}
+html:has(.site-head[data-fx-state~="hidden"]) .rail { --rail-top: calc(env(safe-area-inset-top, 0px) + 16px); }
+.rail-head { display: none; }
+.rail-find {
+  flex: none; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 7px 0 11px; margin-bottom: 10px;
+  border: 1px solid var(--line); border-radius: 11px; background: var(--stage); color: var(--muted); cursor: text;
+  transition: border-color .2s, box-shadow .2s;
+}
+.rail-find:focus-within { border-color: color-mix(in oklab, var(--lamp) 55%, var(--line)); box-shadow: 0 0 0 3px color-mix(in oklab, var(--lamp) 16%, transparent); }
+.rail-find svg { flex: none; width: 15px; height: 15px; }
+.rail-find input { flex: 1; min-width: 0; height: 100%; border: 0; padding: 0; background: none; outline: none; color: var(--fg); font: 400 14px/1 var(--font-body); }
+.rail-find input::placeholder { color: var(--muted); opacity: 1; }
+.rail-find input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.rail-find kbd { font: 500 11px/1 var(--font-mono); color: var(--muted); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 3px 6px; background: var(--stage-2); }
+.rail-find:focus-within kbd { visibility: hidden; }
+.rail-scroll {
+  --ft: 0px; --fb: 0px;
+  position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 2px 4px 28px 0; scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+  -webkit-mask-image: linear-gradient(#0000, #000 var(--ft), #000 calc(100% - var(--fb)), #0000);
+  mask-image: linear-gradient(#0000, #000 var(--ft), #000 calc(100% - var(--fb)), #0000);
+}
+.rail-scroll[data-more~="up"] { --ft: 26px; }
+.rail-scroll[data-more~="down"] { --fb: 40px; }
+.rail h4 {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+  margin: 20px 0 6px; padding-inline: 10px; transition: color .2s;
+}
+.rail h4 small { font-size: 10.5px; letter-spacing: 0; opacity: .55; }
+.rail h4:first-child { margin-top: 4px; }
+.rail h4:has(+ ul [aria-current="true"]) { color: var(--fg); }
+.rail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .rail a {
-  display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  text-decoration: none; font-size: 14px; padding: 4px 8px; margin-inline: -8px; border-radius: 8px; color: var(--muted);
+  position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  text-decoration: none; font-size: 14px; line-height: 1.25; padding: 6px 10px; border-radius: 8px; color: var(--muted);
+  transition: color .15s, background-color .15s;
 }
-.rail a:hover { color: var(--fg); background: var(--stage); }
-.rail a[aria-current="true"] { color: var(--fg); background: var(--stage-2); }
+.rail a:hover { color: var(--fg); background: color-mix(in oklab, var(--stage-2) 70%, transparent); }
+.rail a[aria-current="true"] { color: var(--fg); background: var(--stage-2); font-weight: 500; }
+.rail a[aria-current="true"]::before { content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 2px; border-radius: 2px; background: var(--lamp); }
+.rail .kind { opacity: .65; transition: opacity .15s; }
+.rail a:hover .kind, .rail a[aria-current="true"] .kind { opacity: 1; }
+.rail [hidden] { display: none !important; }
+.rail-none { color: var(--muted); font-size: 14px; padding: 8px 10px; }
+:root[data-theme="light"] .rail a[aria-current="true"] { background: var(--stage); box-shadow: 0 0 0 1px var(--line); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .rail a[aria-current="true"] { background: var(--stage); box-shadow: 0 0 0 1px var(--line); } }
 .kind { font: 500 9.5px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; opacity: .8; }
 .kind.css { color: var(--ice); }
 .kind.js { color: var(--lamp); }
 
-.chips { display: none; }
+.index-bar, .rail-scrim { display: none; }
 
 .group-title {
   font: 500 12px/1 var(--font-mono);
@@ -622,15 +668,61 @@ button { font: inherit; color: inherit; }
 .promises span { color: var(--muted); font-size: 14px; }
 main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(--font-mono); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
 
-/* ---------- narrow screens ---------- */
-@media (max-width: 900px) {
+/* ---------- narrower screens: the index moves into a drawer, opened from a bar under the header ---------- */
+@media (max-width: 1079px) {
   .book { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .rail { display: none; }
-  .chips {
-    display: flex; gap: 8px; overflow-x: auto; padding: 14px max(16px, 4vw); border-bottom: 1px solid var(--line);
-    scrollbar-width: none;
+  .spec { scroll-margin-top: calc(var(--head-h) + 72px); }
+  .index-bar {
+    display: flex; align-items: center; gap: 6px;
+    position: sticky; top: var(--head-h); z-index: 50;
+    padding: 8px max(16px, 4vw);
+    background: color-mix(in oklab, var(--bg) 84%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
+    border-bottom: 1px solid var(--line);
+    transition: top .5s var(--ease-out);
   }
-  .chips a { flex: none; font: 500 12px/1 var(--font-mono); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--line); text-decoration: none; color: var(--muted); }
+  html:has(.site-head[data-fx-state~="hidden"]) .index-bar { top: 0; }
+  .index-toggle {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px 0 10px;
+    border: 1px solid var(--line); border-radius: 11px; background: var(--stage); cursor: pointer; text-align: left;
+  }
+  .index-toggle:hover { border-color: color-mix(in oklab, var(--fg) 22%, var(--line)); }
+  .index-toggle svg { flex: none; width: 18px; height: 18px; color: var(--muted); }
+  .index-now { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; overflow: hidden; white-space: nowrap; }
+  .index-group { font: 500 10.5px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .index-name { font: 600 15px/1.2 var(--font-body); overflow: hidden; text-overflow: ellipsis; }
+  .index-count { flex: none; font: 500 11px/1 var(--font-mono); color: var(--muted); }
+  .index-step {
+    flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px;
+    border: 1px solid var(--line); background: var(--stage); color: var(--fg); text-decoration: none;
+  }
+  .index-step svg { width: 16px; height: 16px; }
+  .index-step[aria-disabled="true"] { opacity: .35; pointer-events: none; }
+
+  .rail {
+    position: fixed; inset: 0 auto 0 0; top: 0; z-index: 2147482900; margin: 0; /* above the chat launcher */
+    width: min(360px, 88vw); height: 100dvh; max-height: none;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 0 max(14px, env(safe-area-inset-left, 0px));
+    background: var(--bg); border-right: 1px solid var(--line); box-shadow: 30px 0 80px -40px rgb(0 0 0 / .7);
+    translate: -102% 0; visibility: hidden;
+    transition: translate .42s var(--ease-out), visibility 0s linear .42s;
+  }
+  html[data-index="open"] .rail { translate: 0 0; visibility: visible; transition: translate .42s var(--ease-out), visibility 0s; }
+  .rail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0 12px 4px; }
+  .rail-head b { font: 700 20px/1 var(--font-display); letter-spacing: -.02em; }
+  .rail-head b span { font: 500 12px/1 var(--font-mono); letter-spacing: 0; color: var(--muted); margin-left: 6px; }
+  .rail-close { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--stage); cursor: pointer; }
+  .rail-close svg { width: 16px; height: 16px; }
+  .rail-find kbd { display: none; }
+  .rail a { padding-block: 9px; font-size: 15px; }
+  .rail-scrim {
+    display: block; position: fixed; inset: 0; z-index: 2147482850; background: rgb(4 5 9 / .55);
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  html[data-index="open"] .rail-scrim { opacity: 1; pointer-events: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail, html[data-index="open"] .rail, .index-bar { transition-duration: 0s; transition-delay: 0s; }
 }
 /* ---------- intelligent UI ---------- */
 .ui-chat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 290px); gap: 14px; padding: 14px; }
@@ -717,18 +809,29 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
   </div>
 </header>
 
-<nav class="chips" aria-label="Effects">
-  <a href="#border-beam">border-beam</a><a href="#glass">glass</a><a href="#squircle">squircle</a><a href="#text-reveal">text-reveal</a>
-  <a href="#spotlight">spotlight</a><a href="#magnetic">magnetic</a><a href="#tilt">tilt</a><a href="#cursor-image">cursor-image</a>
-  <a href="#reveal">reveal</a><a href="#stack">stack</a><a href="#hscroll">hscroll</a><a href="#carousel">carousel</a>
-  <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a>
-  <a href="#page-transition">page-transition</a><a href="#modal">modal</a><a href="#chat">chat</a><a href="#hovercard">hovercard</a>
-  <a href="#lightbox">lightbox</a><a href="#video-scrub">video-scrub</a><a href="#frames">frames</a><a href="#svg-draw">svg-draw</a>
-  <a href="#ring">ring</a><a href="#drawer">drawer</a><a href="#form">forms</a><a href="#card">cards</a><a href="#loader-3d">3D loader</a><a href="#editor">builder kit</a><a href="#ui">intelligent UI</a><a href="#use">install</a>
-</nav>
+<div class="index-bar">
+  <button class="index-toggle" type="button" aria-expanded="false" aria-controls="rail">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    <span class="index-now"><span class="index-group">Index</span><span class="index-name">All effects</span></span>
+    <span class="index-count"></span>
+  </button>
+  <a class="index-step" href="#border-beam" data-step="-1" aria-label="Previous effect" aria-disabled="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
+  <a class="index-step" href="#border-beam" data-step="1" aria-label="Next effect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+</div>
+<div class="rail-scrim" aria-hidden="true"></div>
 
 <div class="book">
-  <aside class="rail" aria-label="Effect index">
+  <aside class="rail" id="rail" aria-label="Effect index">
+    <div class="rail-head">
+      <b>Index<span></span></b>
+      <button class="rail-close" type="button" aria-label="Close the index"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <label class="rail-find">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" placeholder="Find an effect" aria-label="Find an effect" autocomplete="off" spellcheck="false">
+      <kbd aria-hidden="true">/</kbd>
+    </label>
+    <div class="rail-scroll">
     <h4>Surfaces</h4>
     <ul>
       <li><a href="#border-beam">border-beam <span class="kind css">css</span></a></li>
@@ -826,6 +929,8 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
       <li><a href="#ui-blog">on a blog <span class="kind css">ssr</span></a></li>
       <li><a href="#ui-mcp">in Claude, ChatGPT <span class="kind js">mcp</span></a></li>
     </ul>
+    <p class="rail-none" hidden>No effect by that name.</p>
+    </div>
   </aside>
 
   <main>
@@ -1981,15 +2086,136 @@ apply(block, <b>'fade-up'</b>)
     }),
   );
 
-  // Index rail: highlight the specimen in view.
-  const links = new Map([...document.querySelectorAll('.rail a')].map((a) => [a.getAttribute('href').slice(1), a]));
-  const io = new IntersectionObserver((entries) => {
-    for (const en of entries) if (en.isIntersecting) {
-      links.forEach((a) => a.removeAttribute('aria-current'));
-      links.get(en.target.id)?.setAttribute('aria-current', 'true');
+  // Index: a sticky rail on wide screens, a drawer opened from the bar under the header on narrower ones.
+  const rail = document.getElementById('rail');
+  const railScroll = rail.querySelector('.rail-scroll');
+  const find = rail.querySelector('.rail-find input');
+  const railNone = rail.querySelector('.rail-none');
+  const railLinks = [...railScroll.querySelectorAll('a[href^="#"]')];
+  const links = new Map(railLinks.map((a) => [a.getAttribute('href').slice(1), a]));
+  const toggle = document.querySelector('.index-toggle');
+  const [stepPrev, stepNext] = document.querySelectorAll('.index-step');
+  const narrow = matchMedia('(max-width: 1079px)');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const root = document.documentElement;
+  rail.querySelectorAll('.rail-scroll h4').forEach((h) => h.insertAdjacentHTML('beforeend', `<small>${h.nextElementSibling.children.length}</small>`));
+  rail.querySelector('.rail-head b span').textContent = railLinks.length;
+  document.querySelector('.index-count').textContent = railLinks.length + ' effects';
+
+  const railEdges = () => {
+    const s = railScroll, more = [];
+    if (s.scrollTop > 2) more.push('up');
+    if (s.scrollTop + s.clientHeight < s.scrollHeight - 2) more.push('down');
+    s.dataset.more = more.join(' ');
+  };
+  railScroll.addEventListener('scroll', railEdges, { passive: true });
+  new ResizeObserver(railEdges).observe(railScroll);
+
+  // Keep the current item in view inside the rail, unless the reader is using the rail.
+  let inRail = false;
+  rail.addEventListener('pointerenter', () => (inRail = true));
+  rail.addEventListener('pointerleave', () => (inRail = false));
+  const showCurrent = (smooth) => {
+    const a = railScroll.querySelector('[aria-current="true"]');
+    if (!a || a.closest('[hidden]')) return;
+    const s = railScroll, top = a.offsetTop, pad = 36;
+    if (top < s.scrollTop + pad || top + a.offsetHeight > s.scrollTop + s.clientHeight - pad)
+      s.scrollTo({ top: top - (s.clientHeight - a.offsetHeight) / 2, behavior: smooth && !reducedMotion.matches ? 'smooth' : 'auto' });
+  };
+
+  const isOpen = () => root.dataset.index === 'open';
+  const openIndex = () => {
+    root.dataset.index = 'open';
+    toggle.setAttribute('aria-expanded', 'true');
+    rail.setAttribute('role', 'dialog');
+    rail.setAttribute('aria-modal', 'true');
+    showCurrent(false);
+    // Focus the search with a mouse or keyboard; on touch that would pop the keyboard over the list.
+    if (matchMedia('(pointer: fine)').matches) find.focus({ preventScroll: true });
+    else rail.querySelector('.rail-close').focus({ preventScroll: true });
+  };
+  const closeIndex = (refocus) => {
+    if (!isOpen()) return;
+    delete root.dataset.index;
+    toggle.setAttribute('aria-expanded', 'false');
+    rail.removeAttribute('role');
+    rail.removeAttribute('aria-modal');
+    if (refocus) toggle.focus({ preventScroll: true });
+  };
+  toggle.addEventListener('click', () => (isOpen() ? closeIndex(true) : openIndex()));
+  document.querySelector('.rail-scrim').addEventListener('click', () => closeIndex(true));
+  rail.querySelector('.rail-close').addEventListener('click', () => closeIndex(true));
+  railScroll.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"]')) closeIndex(false); });
+  narrow.addEventListener('change', () => closeIndex(false));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen()) return closeIndex(true);
+    if (e.key === 'Tab' && isOpen()) {
+      // Keep focus inside the open drawer.
+      const f = [...rail.querySelectorAll('button, input, a[href]')].filter((el) => el.offsetParent);
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      return;
     }
+    if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.target.closest?.('input, textarea, select, [contenteditable]')) {
+      e.preventDefault();
+      if (narrow.matches) openIndex();
+      find.focus({ preventScroll: true });
+    }
+  });
+
+  // Find: matches names, kinds and group names; Enter jumps to the first match.
+  const filterRail = () => {
+    const q = find.value.trim().toLowerCase();
+    let any = false;
+    railScroll.querySelectorAll('ul').forEach((ul) => {
+      const group = ul.previousElementSibling.firstChild.textContent.toLowerCase();
+      let shown = 0;
+      for (const li of ul.children) {
+        const hit = !q || group.includes(q) || li.textContent.toLowerCase().includes(q);
+        li.hidden = !hit;
+        shown += hit;
+      }
+      ul.hidden = ul.previousElementSibling.hidden = !shown;
+      any ||= shown > 0;
+    });
+    railNone.hidden = any;
+    if (q) railScroll.scrollTop = 0;
+    else showCurrent(false);
+    railEdges();
+  };
+  find.addEventListener('input', filterRail);
+  find.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const a = railLinks.find((l) => !l.closest('[hidden]'));
+      if (a) { e.preventDefault(); find.blur(); a.click(); }
+    } else if (e.key === 'Escape' && find.value) {
+      e.stopPropagation();
+      find.value = '';
+      filterRail();
+    } else if (e.key === 'Escape' && !narrow.matches) find.blur();
+  });
+
+  // The specimen in view: highlighted in the rail, named in the bar, with previous and next.
+  const setCurrent = (a) => {
+    if (a.getAttribute('aria-current') === 'true') return;
+    links.forEach((l) => l.removeAttribute('aria-current'));
+    a.setAttribute('aria-current', 'true');
+    const i = railLinks.indexOf(a);
+    document.querySelector('.index-group').textContent = a.closest('ul').previousElementSibling.firstChild.textContent;
+    document.querySelector('.index-name').textContent = a.firstChild.textContent.trim();
+    document.querySelector('.index-count').textContent = `${i + 1} / ${railLinks.length}`;
+    [[stepPrev, railLinks[i - 1]], [stepNext, railLinks[i + 1]]].forEach(([step, to]) => {
+      if (to) { step.href = to.getAttribute('href'); step.removeAttribute('aria-disabled'); step.removeAttribute('tabindex'); }
+      else { step.setAttribute('aria-disabled', 'true'); step.setAttribute('tabindex', '-1'); }
+    });
+    if (!inRail && !rail.contains(document.activeElement) && !find.value) showCurrent(true);
+  };
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) if (en.isIntersecting && links.has(en.target.id)) setCurrent(links.get(en.target.id));
   }, { rootMargin: '-45% 0px -50% 0px' });
   document.querySelectorAll('.spec').forEach((s) => io.observe(s));
+  railEdges();
 
   // ---------- v0.2 ----------
   // Docking wordmark: reserve exactly the room the big logo needs under the header.
