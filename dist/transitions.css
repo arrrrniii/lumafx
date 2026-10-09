@@ -1,0 +1,3 @@
+/*! lumafx page transitions: animate between pages of a multi-page site.
+   Pick a preset with <html data-fx-transition="slide | slide-back | zoom | wipe | fade">. */
+@view-transition { navigation: auto; }

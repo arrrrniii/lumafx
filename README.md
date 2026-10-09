@@ -1,32 +1,67 @@
-# lumafx
+<h1 align="center">lumafx</h1>
 
-Premium web effects and animated components from one HTML attribute. Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll-scrubbed video, a chat widget, cards, smart forms, a WebGL 3D loader, text reveals and more: 52 in total. Plus a kit for putting all of it inside your own page builder, and [intelligent UI](#intelligent-ui-lumafxui): blocks an AI writes as JSON (match cards, lineups, standings, charts, tickets…) that render while they stream, on your site or inside Claude and ChatGPT.
+<p align="center">
+  <strong>Premium web effects, animated components and intelligent UI.<br>One HTML attribute. Any stack. Free forever.</strong>
+</p>
 
-**Free forever.** MIT licensed, every effect and component. No pro tier, no account, no tracking.
+<p align="center">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2f55e4"></a>
+  <a href="https://github.com/arrrrniii/lumafx/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/arrrrniii/lumafx?color=2f55e4"></a>
+  <a href="https://github.com/arrrrniii/lumafx/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/arrrrniii/lumafx/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="No dependencies" src="https://img.shields.io/badge/runtime%20dependencies-0-2f55e4">
+</p>
 
-- **Any stack.** Plain HTML, Webflow, Tailwind v4, React and Next.js (Server Components included), and a [WordPress plugin](#wordpress) with an Effects panel on every block.
-- **CSS first.** Six effects are pure CSS and twelve more run in CSS with a JavaScript upgrade or fallback; the rest use a ~46 KB gzip runtime with no dependencies (or register only the ones you use).
-- **Accessible by default.** `prefers-reduced-motion` is respected everywhere, text effects stay readable for screen readers, carousels and stories work from the keyboard.
-- **Never hides content.** Hidden "before" states only apply once the runtime is running, with a CSS failsafe if it never boots.
-- **Cheap when idle.** Loops pause off-screen, pointer effects sleep until the mouse moves, low-memory and Save-Data devices get a lighter version.
-- **AI-ready.** Ships `llms.txt` and `effects.json` so coding agents apply effects correctly, and `lumafx/ui` so your own AI can answer with real interface.
+Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll-scrubbed video, a chat widget, cards, smart forms, a WebGL 3D loader, text reveals and more: **52 effects and components**. A kit for putting them inside your own page builder. And **[intelligent UI](#intelligent-ui-lumafxui)**: blocks an AI writes as JSON (match cards, lineups, standings, tables, charts, tickets…) that render while they stream, on your site or inside Claude and ChatGPT.
+
+- **Any stack.** Plain HTML, Webflow, Tailwind v4, React and Next.js (Server Components included), a [WordPress plugin](#wordpress) and an [MCP server](#in-claude-and-chatgpt-mcp).
+- **CSS first.** Six effects are pure CSS and twelve more run in CSS with a JavaScript upgrade; the rest use a ~46 KB gzip runtime with no dependencies (or register only the ones you use).
+- **Accessible by default.** `prefers-reduced-motion` everywhere, text effects stay readable for screen readers, everything works from the keyboard.
+- **Never hides content.** Hidden "before" states only apply once the runtime runs, with a CSS failsafe if it never boots.
+- **Cheap when idle.** Loops pause off-screen, pointer effects sleep until the mouse moves, Save-Data devices get a lighter version.
+- **AI-ready.** Ships `llms.txt` and `effects.json` so coding agents apply effects correctly, and `lumafx/ui` so your own AI answers with real interface.
+
+## What's in this repository
+
+| Package | What it is | Get it |
+| --- | --- | --- |
+| **`lumafx`** | The effects, components, Tailwind plugin, React bindings, form rules, builder kit and `lumafx/ui` | [Script tag](#script-tag-any-website) · [npm from GitHub](#npm-from-github) |
+| **`lumafx-mcp`** ([`mcp/`](mcp)) | MCP server and MCP Apps view: lumafx/ui inside Claude, ChatGPT and other MCP hosts | [Release tarball](#in-claude-and-chatgpt-mcp) |
+| **WordPress plugin** ([`wordpress/`](wordpress)) | An Effects panel on every block, site-wide components, the `[lumafx_ui]` shortcode | [`lumafx-wordpress.zip`](https://github.com/arrrrniii/lumafx/releases/latest/download/lumafx-wordpress.zip) |
+
+Every release on the [Releases page](https://github.com/arrrrniii/lumafx/releases) carries the three as files: `lumafx-<version>.tgz`, `lumafx-mcp-<version>.tgz` and `lumafx-wordpress.zip`. The built `dist/` folder is committed, so installs straight from GitHub need no build step.
 
 ## Install
 
-### Plain HTML, Webflow, any CMS
+### Script tag (any website)
+
+Plain HTML, Webflow, Framer embeds, any CMS. The files come from this repository through the jsDelivr CDN; pin the version you tested with.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.css">
-<script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.global.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx.css">
+<script src="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx.global.js"></script>
 
 <div data-fx="border-beam">…</div>
 <h1 data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip">Hello</h1>
 <nav data-fx="glass">…</nav>
 ```
 
-Put the script in `<head>` (no `defer`) so reveal effects never flash. Several effects on one element: `data-fx="tilt spotlight"`.
+Put the script in `<head>` (no `defer`) so reveal effects never flash. Several effects on one element: `data-fx="tilt spotlight"`. Prefer to host the files yourself? Download `dist/` from a release and serve it from your own domain.
 
-### npm
+| File | For |
+| --- | --- |
+| `dist/lumafx.css` + `dist/lumafx.global.js` | Effects and components |
+| `dist/lumafx-ui.css` + `dist/lumafx-ui.global.js` | Intelligent UI (`<fx-ui>`, `lumafx.ui`) |
+| `dist/lumafx-editor.global.js` | Builder kit (effects panel for your own editor) |
+| `dist/transitions.css` | Native cross-document View Transitions only |
+
+### npm (from GitHub)
+
+```bash
+npm install github:arrrrniii/lumafx#v0.5.0
+# or: pnpm add github:arrrrniii/lumafx#v0.5.0 · yarn add lumafx@github:arrrrniii/lumafx#v0.5.0
+```
+
+It installs as `lumafx`, so every import below works as written. In `package.json` it reads `"lumafx": "github:arrrrniii/lumafx#v0.5.0"`; change the tag to upgrade.
 
 ```js
 import 'lumafx/css';
@@ -42,6 +77,16 @@ import { tilt, magnetic, textReveal } from 'lumafx';
 register(tilt, magnetic, textReveal);
 start();
 ```
+
+| Import | What |
+| --- | --- |
+| `lumafx/css`, `lumafx/auto`, `lumafx/core`, `lumafx` | Effects: styles, everything at once, the runtime, single effects |
+| `lumafx/tailwind.css` | Tailwind v4 utilities |
+| `lumafx/react`, `lumafx/react/runtime` | React components (Server Components) and the client runtime |
+| `lumafx/forms` | Form rules shared by browser and server |
+| `lumafx/editor` | Builder kit |
+| `lumafx/ui`, `lumafx/ui/server`, `lumafx/ui.css` | Intelligent UI: browser renderer, server renderer and schemas, styles |
+| `lumafx/react/ui` | `<FxUI>` server component and `<FxUIStream>` |
 
 ### Tailwind CSS v4
 
@@ -81,14 +126,21 @@ The components render plain elements with `data-fx` attributes: no hooks, no `"u
 
 ### WordPress
 
-Download `lumafx-wordpress.zip` from the releases (or build it with `npm run build`, it lands in `dist/`), then Plugins → Add New → Upload.
+1. Download [`lumafx-wordpress.zip`](https://github.com/arrrrniii/lumafx/releases/latest/download/lumafx-wordpress.zip) from the latest release.
+2. In WordPress: **Plugins → Add New → Upload Plugin**, choose the zip, **Install Now**, **Activate**.
+3. Open any page in the block editor: every block now has an **Effects** panel in the sidebar.
 
-- **Every block gets an Effects panel** in the sidebar. Pick effects, set options, publish. Nothing is written into your post markup: the attributes are added while the page renders, so deactivating the plugin leaves every post valid.
+- **Every block gets an Effects panel.** Pick effects, set options, publish. Nothing is written into your post markup: the attributes are added while the page renders, so deactivating the plugin leaves every post valid.
 - **Settings → lumafx** turns on site-wide pieces: page transitions, the preloader, the animated scrollbar, reading progress, the chat widget (it can hand conversations to WhatsApp), a smart header and menu hover icons for any theme, by CSS selector.
 - **Liquid modal without code:** give a Group block an HTML anchor such as `join`, add the `modal` effect, link any button to `#join`.
+- **Intelligent UI:** `[lumafx_ui lang="sq"]{"blocks":[…]}[/lumafx_ui]`, `[lumafx_ui src="https://…/ui.json"]`, or `<fx-ui>` in a Custom HTML block.
 - **Elementor, Bricks, Divi:** add effects as CSS classes (`fx-reveal`, `fx-glass`…) and options as attributes (`data-fx-duration="4s"`).
 
-Tested on WordPress 7.1 with a block theme (`npm run test:wordpress`).
+To update, upload the newer zip; WordPress offers to replace the installed version. Tested on WordPress 7.1 with a block theme (`npm run test:wordpress`).
+
+### Claude, ChatGPT and other MCP hosts
+
+See [In Claude and ChatGPT (MCP)](#in-claude-and-chatgpt-mcp) below: one line in your MCP config.
 
 ## Page transitions
 
@@ -103,7 +155,7 @@ Styles: `wave` (SVG curves), `curtain`, `circle` (grows from the click), `slide`
 For browser-native cross-document View Transitions instead:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/transitions.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/transitions.css">
 <html data-fx-transition="slide">
 ```
 
@@ -221,7 +273,7 @@ discard(block);                    // it shrinks away and the gap closes
 Or drop in the ready panel: presets with live previews on the block, options generated from the metadata, replay, and a copyable attribute string.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx-editor.global.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx-editor.global.js"></script>
 <fx-panel></fx-panel>
 <script>
   const panel = document.querySelector('fx-panel');
@@ -272,8 +324,8 @@ const html = renderToString(doc, { timeZone: 'Europe/Tirane' });  // embeds the 
 ```
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx-ui.css">
-<script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx-ui.global.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx-ui.css">
+<script src="https://cdn.jsdelivr.net/gh/arrrrniii/lumafx@v0.5.0/dist/lumafx-ui.global.js" defer></script>
 
 <fx-ui lang="sq" time-zone="Europe/Tirane" ask-url="/kerko?q=">
   <script type="application/json">{"blocks":[{"type":"match", "home":{"name":"Shqipëria"}, "away":{"name":"San Marino"}, "kickoff":"2026-10-06T20:45:00+02:00"}]}</script>
@@ -287,19 +339,41 @@ Safe by design: everything a model writes is escaped, links are limited to http(
 
 ### In Claude and ChatGPT (MCP)
 
-[`lumafx-mcp`](mcp/README.md) is an MCP server with one tool, `render_ui`, and an MCP Apps view. Hosts that support MCP Apps show the blocks inline and stream them while the model writes; follow-up chips become the next message, links open through the host, ticket picks reach the model's context. Hosts without UI get a plain-text version.
+[`lumafx-mcp`](mcp/README.md) is an MCP server with one tool, `render_ui`, and an MCP Apps view. Hosts that support MCP Apps show the blocks inline and stream them while the model writes; follow-up chips become the next message, links open through the host, ticket picks reach the model's context. Hosts without UI get a plain-text version. It needs Node 20 or newer.
+
+**Claude Desktop, Cursor, VS Code and other local hosts** (stdio). Add to the host's MCP config, e.g. `claude_desktop_config.json`:
 
 ```json
-{ "mcpServers": { "lumafx": { "command": "npx", "args": ["-y", "lumafx-mcp", "--stdio"] } } }
+{
+  "mcpServers": {
+    "lumafx": {
+      "command": "npx",
+      "args": ["-y", "https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz", "--stdio"]
+    }
+  }
+}
 ```
 
-Or add it to your own MCP server and point your own tools at the same view:
+**Claude.ai, ChatGPT and other remote hosts** (Streamable HTTP). Run it on a server and add `https://your-host/mcp` as a custom connector:
+
+```bash
+npx -y https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz --host 0.0.0.0 --port 3001
+# serves http://<server>:3001/mcp; put it behind HTTPS (Caddy, nginx, Cloudflare Tunnel)
+```
+
+**Inside your own MCP server**, so your own tools answer with the same view:
+
+```bash
+npm install https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz
+```
 
 ```js
 import { registerUI, uiToolMeta, uiResult } from 'lumafx-mcp';
 registerUI(server, { imageDomains: ['https://sphere.al'] });
 server.registerTool('get_event', { inputSchema, _meta: uiToolMeta }, async ({ slug }) => uiResult(toBlocks(await getEvent(slug))));
 ```
+
+Options, the view's events and the protocol details are in [`mcp/README.md`](mcp/README.md).
 
 ## Scroll-scrubbed video and image sequences
 
@@ -422,17 +496,39 @@ Everything works in current Chrome, Edge, Safari and Firefox. Some effects upgra
 ## Development
 
 ```bash
+git clone https://github.com/arrrrniii/lumafx.git && cd lumafx
 npm install
-npm run build          # dist/, llms.txt, demo/
+npm run build          # dist/, llms.txt, demo/ and the WordPress zip
 npm test               # unit tests (Vitest + jsdom)
 npm run test:tailwind  # compiles a sample project with the Tailwind v4 CLI
-npm run test:browser   # headless Chromium: every effect, fallbacks, reduced motion, phone
+npm run test:browser   # headless Chromium: every effect, fallbacks, reduced motion, phone (Python + Playwright)
 npm run test:wordpress # real WordPress (SQLite, block theme): plugin internals, front end, block editor
 cd mcp && npm install && npm run build && npm test && npm run test:view   # MCP server and its view
 ```
 
-`node scripts/build.mjs` also regenerates the demo, `llms.txt`, the README effects table and the WordPress plugin zip. `python3 scripts/make_media.py` regenerates the demo video and image sequence.
+`node scripts/build.mjs` also regenerates the demo (`demo/index.html`), `llms.txt`, the README effects table and the WordPress plugin zip. `python3 scripts/make_media.py` regenerates the demo video and image sequence.
+
+| Folder | Contents |
+| --- | --- |
+| `src/` | Effects (`effects/`), runtime, CSS, React bindings, forms, editor kit and `ui/` (intelligent UI) |
+| `dist/` | Built files, committed so GitHub installs and the CDN work without a build |
+| `mcp/` | `lumafx-mcp`, the MCP server and its view |
+| `wordpress/lumafx/` | The WordPress plugin |
+| `demo/` | The demo page and its media |
+| `test/` | Unit, Tailwind, browser and WordPress tests |
+
+## Releasing
+
+1. Bump `version` in `package.json`, `mcp/package.json` and `wordpress/lumafx/lumafx.php`, add the notes to [`CHANGELOG.md`](CHANGELOG.md).
+2. `npm run build && npm test`, then commit (with `dist/`).
+3. `git tag v0.5.1 && git push --follow-tags`.
+
+The [Release workflow](.github/workflows/release.yml) builds, tests and attaches `lumafx-<version>.tgz`, `lumafx-mcp-<version>.tgz` and `lumafx-wordpress.zip` to the GitHub release. To publish on npm as well: `npm publish` in the root and in `mcp/` (both names are free); the CDN links then also work as `cdn.jsdelivr.net/npm/lumafx@<version>/dist/…`.
+
+## Contributing
+
+Issues and pull requests are welcome. Keep effects CSS-first where possible, respect `prefers-reduced-motion`, never hide content before the runtime runs, and add a test next to the code you change (`npm test` must pass; `npm run test:browser` for anything visual).
 
 ## License
 
-MIT © Arnold Kajolli. Free forever: use it in personal and commercial work, fork it, ship it.
+[MIT](LICENSE) © Arnold Kajolli. Free forever: use it in personal and commercial work, fork it, ship it.

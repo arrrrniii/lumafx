@@ -1,5 +1,6 @@
 node_modules/
-dist/
+mcp/dist/
+dist/lumafx-wordpress.zip
 test/shots/
 test/.tw-*
 test/.tailwind-out.css

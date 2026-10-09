@@ -1704,11 +1704,11 @@ html += renderToString(doc, { timeZone: <i>'Europe/Tirane'</i> });  <i>// then l
 <pre><i>// claude_desktop_config.json</i>
 { <b>"mcpServers"</b>: { <b>"lumafx"</b>: {
   "command": <i>"npx"</i>,
-  "args": [<i>"-y"</i>, <i>"lumafx-mcp"</i>, <i>"--stdio"</i>]
+  "args": [<i>"-y"</i>, <i>"https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz"</i>, <i>"--stdio"</i>]
 } } }
 
 <i># or over HTTP</i>
-npx lumafx-mcp --port 3001  <i># /mcp</i></pre>
+npx -y https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz --port 3001  <i># /mcp</i></pre>
         </section>
         <section>
           <h5>Add it to your server</h5>
@@ -1747,7 +1747,7 @@ server.registerTool(<i>'get_event'</i>,
         </section>
         <section>
           <h5>npm</h5>
-<pre>npm i lumafx
+<pre>npm i github:arrrrniii/lumafx#v0.5.0
 
 import 'lumafx/css'
 import 'lumafx/auto'   <b>// registers + starts</b></pre>
@@ -2145,7 +2145,7 @@ apply(block, <b>'fade-up'</b>)
   const chat = document.getElementById('chat-widget');
   document.getElementById('open-chat').addEventListener('click', () => chat.fxChat && chat.fxChat.open());
   const answers = [
-    [/install|npm|script|start|use/i, 'Add one script tag, or npm i lumafx and import "lumafx/auto". Then put data-fx="reveal" on anything.'],
+    [/install|npm|script|start|use/i, 'Add one script tag, or npm i github:arrrrniii/lumafx and import "lumafx/auto". Then put data-fx="reveal" on anything.'],
     [/wordpress|wp|elementor|gutenberg|bricks|divi/i, 'Yes. Install the plugin and every block gets an Effects panel. In Elementor or Bricks, add fx-reveal or fx-glass as a CSS class.'],
     [/free|price|cost|licen|pay/i, 'Completely free and MIT licensed, forever. No pro tier, no account.'],
     [/react|next/i, 'Use the components from lumafx/react and add <FxRuntime /> once in your layout.'],

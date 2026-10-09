@@ -1,8 +1,9 @@
 /**
  * lumafx-mcp command line.
  *
- *   npx lumafx-mcp --stdio                     # Claude Desktop, Claude Code, any stdio client
- *   npx lumafx-mcp                             # Streamable HTTP on http://localhost:3001/mcp
+ *   lumafx-mcp --stdio                         # Claude Desktop, Claude Code, any stdio client
+ *   lumafx-mcp                                 # Streamable HTTP on http://localhost:3001/mcp
+ *   (without installing: npx -y https://github.com/arrrrniii/lumafx/releases/download/v<version>/lumafx-mcp-<version>.tgz)
  *
  * Options (flags or environment):
  *   --port 3001              PORT

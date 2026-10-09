@@ -10,21 +10,32 @@ An MCP server that lets Claude, ChatGPT and other MCP Apps hosts answer with rea
 
 ## Run it
 
-Claude Desktop (`claude_desktop_config.json`), Claude Code, or any stdio client:
+Needs Node 20 or newer. Each [release](https://github.com/arrrrniii/lumafx/releases) carries the package as `lumafx-mcp-<version>.tgz`; `npx` runs it straight from that link.
+
+Claude Desktop (`claude_desktop_config.json`), Claude Code, Cursor, VS Code or any stdio client:
 
 ```json
 {
   "mcpServers": {
-    "lumafx": { "command": "npx", "args": ["-y", "lumafx-mcp", "--stdio"] }
+    "lumafx": { "command": "npx", "args": ["-y", "https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz", "--stdio"] }
   }
 }
 ```
 
-Over HTTP (Streamable HTTP, stateless), for remote hosts:
+Claude Code in one line: `claude mcp add lumafx -- npx -y https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz --stdio`
+
+Over HTTP (Streamable HTTP, stateless), for remote hosts such as Claude.ai custom connectors and ChatGPT:
 
 ```bash
-npx lumafx-mcp --port 3001        # http://127.0.0.1:3001/mcp
-npx lumafx-mcp --host 0.0.0.0     # listen on all interfaces (put it behind HTTPS)
+npx -y https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz --port 3001                  # http://127.0.0.1:3001/mcp
+npx -y https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz --host 0.0.0.0 --port 3001   # all interfaces (put it behind HTTPS)
+```
+
+Or install it once and use the `lumafx-mcp` command:
+
+```bash
+npm install -g https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz
+lumafx-mcp --stdio
 ```
 
 | Flag | Environment | |
@@ -37,6 +48,10 @@ npx lumafx-mcp --host 0.0.0.0     # listen on all interfaces (put it behind HTTP
 | `--full-schema` | `LUMAFX_FULL_SCHEMA=1` | Put the full JSON Schema (about 12k tokens) in the tool instead of the compact reference (about 2.5k) |
 
 ## Add it to your own MCP server
+
+```bash
+npm install https://github.com/arrrrniii/lumafx/releases/download/v0.5.0/lumafx-mcp-0.5.0.tgz
+```
 
 ```js
 import { McpServer } from '@modelcontextprotocol/server';

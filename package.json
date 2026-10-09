@@ -4,6 +4,14 @@
   "description": "Premium web effects and animated components from one HTML attribute, plus intelligent UI: blocks an AI writes as JSON (match cards, lineups, standings, charts, tickets, weather…) that render while they stream, on your site or in Claude and ChatGPT through MCP. Framework-agnostic, CSS-first, accessible. Tailwind v4, React Server Components and WordPress. Free forever.",
   "license": "MIT",
   "author": "Arnold Kajolli",
+  "homepage": "https://github.com/arrrrniii/lumafx#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arrrrniii/lumafx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arrrrniii/lumafx/issues"
+  },
   "type": "module",
   "sideEffects": [
     "*.css",
