@@ -84,6 +84,32 @@ await build({
   logLevel: 'warning',
 });
 
+// Builder kit: needs the full metadata (titles, descriptions) for its panels, so no slim-meta plugin.
+await build({
+  entryPoints: { editor: 'src/editor/index.ts' },
+  absWorkingDir: root,
+  outdir: dist,
+  bundle: true,
+  format: 'esm',
+  target: 'es2020',
+  outExtension: { '.js': '.mjs' },
+  define,
+  logLevel: 'warning',
+});
+await build({
+  entryPoints: ['src/editor/global.ts'],
+  absWorkingDir: root,
+  outfile: path.join(dist, 'lumafx-editor.global.js'),
+  bundle: true,
+  minify: true,
+  format: 'iife',
+  target: 'es2020',
+  define,
+  legalComments: 'none',
+  banner: { js: `/*! lumafx editor v${pkg.version} | MIT */` },
+  logLevel: 'warning',
+});
+
 // React: components are server-safe; the runtime island is a client component that imports the package itself.
 await build({
   entryPoints: { 'react/index': 'src/react/index.ts' },
@@ -222,7 +248,20 @@ const llms = [
   '- transition(update, { preset }) — runs a DOM update inside a View Transition (presets: fade, slide, slide-back, zoom, wipe).',
   '- page.cover(x?, y?) / page.reveal() — play the page-transition cover in single-page apps.',
   '- modals.open(target) / modals.close(target).',
-  '- Events: fx:loaded (preloader done), fx:open / fx:close (modal), fx:chat-send / fx:chat-open (chat).',
+  '- loading(target, promise, { colors, size, min, overlay }) — shows a loader-3d in target while the promise runs, resolves with its result.',
+  '- Events: fx:loaded (preloader done), fx:open / fx:close (modal), fx:chat-send / fx:chat-open (chat), fx:invalid / fx:submit / fx:success (form), fx:sort (editor sortable).',
+  '',
+  '## Forms (lumafx/forms, isomorphic)',
+  '- schema({ email: "required email", phone: "phone:AL", password: "required password", confirm: "match:password" }).validate(formDataOrObject, { spam: true, locale: "sq" }) → { ok, data, errors }.',
+  '- Rules: required email phone[:CC] url number integer min:n max:n minlength:n maxlength:n match:field password name pattern:"re" oneof:a|b accepted date. addRule(name, fn, messages) adds your own.',
+  '- In the browser: <form data-fx="form" data-fx-ajax action="/api/x"> uses the same rules from data-rules and native attributes; a 422 JSON { errors: { field: { message } } } lands on the fields.',
+  '',
+  '## Builder kit (lumafx/editor)',
+  '- Effects as data: FxSpec = { effect, options? }. toAttributes(specs) / toAttributeString(specs) for rendering (server-safe), fromAttributes(attrs) to read back.',
+  '- Live elements: apply(el, specsOrPresetIds), add(el, spec), remove(el, name), read(el), clear(el), replay(el), preview(el, specs) → restore().',
+  '- Catalogue: GROUPS, PRESETS (ids like fade-up, zoom-in, chars-flip, tilt, liquid-glass), fields(effect) → form field definitions, catalog(), suggest(el), presetsFor(el).',
+  '- Motion: flip(containerOrElements, mutate), place(node, parent, before), discard(node), enter(el), leave(el), sortable(list, { group, handle, clone, onEnd }).',
+  '- <fx-panel>: set panel.target = element; listen for fx-change (detail.fx, detail.attributes, detail.html). Attributes: theme="light|dark|auto", groups="entrance,hover", all.',
   '- start({ motion: "reduce" }) forces reduced motion; start({ features: { sda: false } }) tests fallbacks.',
   '',
 ].join('\n');
@@ -232,7 +271,7 @@ fs.writeFileSync(path.join(root, 'llms.txt'), llms);
 execSync('npx tsc -p tsconfig.json', { cwd: root, stdio: 'inherit' });
 
 // ---------- size report ----------
-const sizes = ['lumafx.global.js', 'lumafx.css', 'index.mjs', 'react/index.mjs', 'react/runtime.mjs'].map((f) => {
+const sizes = ['lumafx.global.js', 'lumafx.css', 'index.mjs', 'editor.mjs', 'lumafx-editor.global.js', 'react/index.mjs', 'react/runtime.mjs'].map((f) => {
   const buf = fs.readFileSync(path.join(dist, f));
   return `${f.padEnd(20)} ${(buf.length / 1024).toFixed(1).padStart(6)} KB  ${(gzipSync(buf, { level: 9 }).length / 1024).toFixed(1).padStart(5)} KB gzip`;
 });
@@ -245,6 +284,7 @@ if (fs.existsSync(path.join(demoDir, 'page.html'))) {
   const gz = (f) => (gzipSync(fs.readFileSync(path.join(dist, f)), { level: 9 }).length / 1024).toFixed(1) + ' KB';
   fs.copyFileSync(path.join(dist, 'lumafx.css'), path.join(demoDir, 'lumafx.css'));
   fs.copyFileSync(path.join(dist, 'lumafx.global.js'), path.join(demoDir, 'lumafx.global.js'));
+  fs.copyFileSync(path.join(dist, 'lumafx-editor.global.js'), path.join(demoDir, 'lumafx-editor.global.js'));
   const page = fs
     .readFileSync(path.join(demoDir, 'page.html'), 'utf8')
     .replace('__JS_GZ__', gz('lumafx.global.js'))

@@ -218,7 +218,7 @@ function lumafx_settings_page() {
 
 		<h2><?php esc_html_e( 'Page builders and themes', 'lumafx' ); ?></h2>
 		<p><?php esc_html_e( 'In Elementor, Bricks, Divi or any theme, add an effect as a CSS class: fx-reveal, fx-glass, fx-border-beam, fx-tilt, fx-marquee … Options go in data attributes, such as data-fx-duration="4s".', 'lumafx' ); ?></p>
-		<p><?php esc_html_e( 'Liquid modal: give a Group block an HTML anchor (Advanced → HTML anchor), add the modal effect, then link any button to #your-anchor.', 'lumafx' ); ?></p>
+		<p><?php esc_html_e( 'Liquid modal or drawer: give a Group block an HTML anchor (Advanced → HTML anchor), add the modal or drawer effect, then link any button to #your-anchor.', 'lumafx' ); ?></p>
 	</div>
 	<?php
 }

@@ -8,6 +8,7 @@
 @utility fx-color2-* { --fx-color-2: --value(--color-*, [color], [*]); }
 @utility fx-color3-* { --fx-color-3: --value(--color-*, [color], [*]); }
 @utility fx-tint-* { --fx-tint: --value(--color-*, [color], [*]); }
+@utility fx-base-* { --fx-base: --value(--color-*, [color], [*]); }
 
 @utility fx-length-* { --fx-length: calc(--value(integer) * 1%); --fx-length: --value([*]); }
 @utility fx-width-* { --fx-width: calc(--value(number) * 1px); --fx-width: --value([*]); }

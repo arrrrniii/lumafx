@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="lumafx.css">
 <script src="lumafx.global.js"></script>
+<script src="lumafx-editor.global.js"></script>
 <style>
 /* Layout: a specimen book — sticky index rail on the left, one live specimen per effect on the right,
    each captioned by the exact attribute that produces it. Dark-first; light theme mirrors the tokens. */
@@ -506,6 +507,44 @@ button { font: inherit; color: inherit; }
 .cards-grid [data-fx~="card"] { font-family: var(--font-body); }
 .cards-grid [data-fx~="card"] h3 { font-family: var(--font-display); }
 .press-row { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+/* builder kit */
+.builder { display: grid; grid-template-columns: 132px minmax(0, 1fr) minmax(280px, 330px); gap: 14px; align-items: start; padding: 14px; }
+.bk-palette { display: grid; gap: 8px; position: sticky; top: calc(var(--head-h) + 12px); }
+.bk-tile { display: grid; justify-items: center; gap: 6px; padding: 12px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--stage-2); font: 600 12px/1.2 var(--font-body); text-align: center; transition: border-color .2s, transform .2s; }
+.bk-tile:hover { border-color: var(--lamp); transform: translateY(-1px); }
+.bk-tile i { font-style: normal; font-size: 20px; color: var(--lamp); line-height: 1; }
+.bk-canvas { --pg: #eef1f6; display: grid; gap: 12px; align-content: start; min-height: 460px; padding: 14px; border-radius: 16px; background: var(--pg); color: #151824; box-shadow: 0 0 0 1px var(--line); }
+.bk-canvas:empty::before { content: "Drag blocks here"; display: grid; place-items: center; min-height: 420px; border: 2px dashed #c5cad6; border-radius: 12px; color: #7b8194; font: 500 13px/1 var(--font-body); }
+.bk-block { position: relative; border-radius: 14px; padding: 22px; background: #fff; box-shadow: 0 1px 2px rgb(20 24 40 / .06), 0 8px 24px -14px rgb(20 24 40 / .18); outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .15s; }
+.bk-block:hover { outline-color: rgb(20 24 40 / .14); }
+.bk-block:focus-visible { outline-color: rgb(20 24 40 / .35); }
+.bk-canvas .bk-selected, .bk-canvas .bk-selected:hover { outline: 2px solid var(--lamp); outline-offset: 3px; }
+.bk-block [data-bk-part].bk-selected { border-radius: 6px; }
+.bk-block small { font: 600 10.5px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; opacity: .65; }
+.bk-block h4 { margin: 8px 0 6px; font: 700 clamp(20px, 2.6vw, 28px)/1.1 var(--font-display); letter-spacing: -.02em; }
+.bk-block p { margin: 0; font: 400 14px/1.5 var(--font-body); opacity: .8; }
+.bk-btn { display: inline-block; margin-top: 14px; padding: 10px 16px; border-radius: 999px; background: #ffb547; color: #1b1204; font: 600 13px/1 var(--font-body); }
+.bk-hero { background: radial-gradient(120% 140% at 0% 0%, #4a3aa8, #1b1f3a 60%); color: #fff; padding: 34px 26px; }
+.bk-feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.bk-feats > div { padding: 14px; border-radius: 10px; background: #f3f4f8; font: 600 13px/1.3 var(--font-body); }
+.bk-feats > div b { display: block; font-size: 18px; margin-bottom: 6px; }
+.bk-quote { background: #fff8ec; }
+.bk-quote p { font: 600 19px/1.4 var(--font-display); opacity: 1; letter-spacing: -.01em; }
+.bk-quote small { display: block; margin-top: 10px; }
+.bk-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; }
+.bk-gallery img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 9px; }
+.bk-cta { background: #ffb547; color: #1b1204; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.bk-cta h4 { margin: 0; }
+.bk-cta .bk-btn { margin: 0; background: #1b1204; color: #fff; }
+.bk-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-top: 12px; }
+.bk-code { margin: 12px 0 0; max-height: 340px; overflow: auto; padding: 16px; border-radius: 12px; background: var(--code); border: 1px solid var(--line); font: 12px/1.6 var(--font-mono); white-space: pre; }
+#bk-panel { --fxp-bg: var(--stage); --fxp-panel: var(--stage-2); --fxp-line: var(--line); --fxp-fg: var(--fg); --fxp-muted: var(--muted); --fxp-accent: var(--lamp); --fxp-accent-ink: var(--lamp-ink); --fxp-max: 560px; position: sticky; top: calc(var(--head-h) + 12px); }
+@media (max-width: 980px) {
+  .builder { grid-template-columns: 1fr; }
+  .bk-palette { position: static; grid-auto-flow: column; grid-auto-columns: 110px; overflow-x: auto; padding-bottom: 4px; }
+  #bk-panel { position: static; }
+}
+@media (max-width: 560px) { .bk-feats, .bk-gallery { grid-template-columns: 1fr 1fr; } }
 /* loader-3d */
 .loaders { display: flex; flex-wrap: wrap; gap: 8px 28px; justify-content: center; padding-block: 18px; }
 .loaders figure { margin: 0; display: grid; justify-items: center; gap: 4px; }
@@ -551,11 +590,11 @@ button { font: inherit; color: inherit; }
 .form-demo { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
 @media (max-width: 860px) { .form-demo { grid-template-columns: minmax(0, 1fr); } }
 .fd { display: grid; gap: 14px; }
-.fd .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fd .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
 @media (max-width: 520px) { .fd .two { grid-template-columns: 1fr; } }
-.fd label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+.fd label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); min-width: 0; }
 .fd label > span { color: var(--fg); font-weight: 500; }
-.fd input:not([type=checkbox]), .fd textarea { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--stage-2); color: var(--fg); font: inherit; font-size: 15px; resize: vertical; transition: border-color .2s; }
+.fd input:not([type=checkbox]), .fd textarea { width: 100%; min-width: 0; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--stage-2); color: var(--fg); font: inherit; font-size: 15px; resize: vertical; transition: border-color .2s; }
 .fd input:focus, .fd textarea:focus { border-color: var(--lamp); outline: none; }
 .fd .check { display: flex; gap: 10px; align-items: center; color: var(--fg); }
 .fd .check input { width: 18px; height: 18px; accent-color: var(--lamp); }
@@ -619,7 +658,7 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
   <div class="hero-inner">
     <div class="logo-room" id="logo-room" aria-hidden="true"></div>
     <h1 class="sr-only">lumafx: free, open-source web effects</h1>
-    <p class="eyebrow">Open-source web effects · v0.2.0 · MIT, free forever</p>
+    <p class="eyebrow">Open-source web effects · v0.3.0 · MIT, free forever</p>
     <div class="hero-row">
       <p class="lede" data-fx="text-reveal" data-fx-trigger="load" data-fx-delay="380">Premium effects from one HTML attribute. CSS first, works in any framework, accessible by default.</p>
       <div class="install" data-fx="glass border-beam" data-fx-mode="frost" data-fx-color="#ffb547" data-fx-color-2="#7fd4ff" data-fx-duration="7s">
@@ -628,10 +667,10 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
       </div>
     </div>
     <ul class="facts" data-fx="stagger" data-fx-delay="600">
-      <li><b>47</b> effects and components</li>
+      <li><b>52</b> effects and components</li>
       <li><b>__JS_GZ__</b> JS · <b>__CSS_GZ__</b> CSS gzip</li>
       <li><b>0</b> dependencies</li>
-      <li>Tailwind v4 · React · WordPress · plain HTML</li>
+      <li>Tailwind v4 · React · WordPress · plain HTML · your own builder</li>
       <li>Respects reduced motion</li>
     </ul>
   </div>
@@ -644,7 +683,7 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
   <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a>
   <a href="#page-transition">page-transition</a><a href="#modal">modal</a><a href="#chat">chat</a><a href="#hovercard">hovercard</a>
   <a href="#lightbox">lightbox</a><a href="#video-scrub">video-scrub</a><a href="#frames">frames</a><a href="#svg-draw">svg-draw</a>
-  <a href="#ring">ring</a><a href="#card">cards</a><a href="#use">install</a>
+  <a href="#ring">ring</a><a href="#drawer">drawer</a><a href="#form">forms</a><a href="#card">cards</a><a href="#loader-3d">3D loader</a><a href="#editor">builder kit</a><a href="#use">install</a>
 </nav>
 
 <div class="book">
@@ -735,6 +774,10 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
     <h4>Loading</h4>
     <ul>
       <li><a href="#loader-3d">loader-3d <span class="kind js">webgl</span></a></li>
+    </ul>
+    <h4>For builders</h4>
+    <ul>
+      <li><a href="#editor">editor kit <span class="kind js">js</span></a></li>
     </ul>
   </aside>
 
@@ -1503,6 +1546,46 @@ main > footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.
       <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"loader-3d"</i>&gt;&lt;/div&gt;  ·  <b>await</b> lumafx.loading(<i>'#posts'</i>, fetchPosts())</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <!-- ======================= BUILDER KIT (v0.3) ======================= -->
+    <h2 class="group-title" id="builders">For builders</h2>
+
+    <section class="spec" id="editor">
+      <div class="spec-head"><h3>lumafx/editor</h3><span class="kind js">builder kit</span></div>
+      <p class="spec-desc">Everything you need to put these effects inside your own page builder. Drag blocks from the left onto the page, drag them to reorder, then select one and pick an animation: hovering a preset previews it right on the block. Click a selected block again to animate a heading, text or image inside it. The panel is &lt;fx-panel&gt;, and every piece behind it is a function you can call from your own UI.</p>
+      <div class="stage builder">
+        <aside class="bk-palette" id="bk-palette" aria-label="Blocks to drag onto the page">
+          <div class="bk-tile" data-block="hero"><i>▭</i>Hero</div>
+          <div class="bk-tile" data-block="features"><i>▦</i>Features</div>
+          <div class="bk-tile" data-block="quote"><i>❝</i>Quote</div>
+          <div class="bk-tile" data-block="gallery"><i>▤</i>Gallery</div>
+          <div class="bk-tile" data-block="cta"><i>➜</i>Call to action</div>
+        </aside>
+        <div class="bk-canvas" id="bk-canvas" aria-label="Page"></div>
+        <fx-panel id="bk-panel"></fx-panel>
+      </div>
+      <div class="bk-bar">
+        <button class="btn outline small" id="bk-export">Export HTML</button>
+        <span class="note">Alt + ↑ / ↓ moves the focused block · Delete removes it</span>
+      </div>
+      <pre class="bk-code" id="bk-code" hidden></pre>
+<pre class="form-code"><i>// Your builder stores effects as data…</i>
+block.fx = [{ effect: <i>'reveal'</i>, options: { from: <i>'zoom'</i> } }, { effect: <i>'tilt'</i> }];
+
+<i>// …and renders them as attributes, on the server or in the browser.</i>
+<b>import</b> { toAttributes, apply, sortable, place, catalog } <b>from</b> <i>'lumafx/editor'</i>;
+toAttributes(block.fx); <i>// { 'data-fx': 'reveal tilt', 'data-fx-from': 'zoom' }</i>
+apply(el, <i>'chars-flip'</i>);  <i>// a preset id works too</i>
+
+<i>// Drag and drop with springy reordering, and a palette that makes new blocks.</i>
+sortable(canvas, { group: <i>'page'</i>, onEnd: save });
+sortable(palette, { group: <i>'page'</i>, clone: (tile) => makeBlock(tile.dataset.block) });
+
+<i>// Or drop in the ready panel.</i>
+panel.target = selectedBlock;
+panel.addEventListener(<i>'fx-change'</i>, (e) => save(block.id, e.detail.fx));</pre>
+      <div class="codeline"><code>&lt;script src=<i>"lumafx-editor.global.js"</i>&gt;  ·  <b>import</b> { sortable, apply } <b>from</b> <i>'lumafx/editor'</i>  ·  &lt;fx-panel&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
     <!-- ======================= USE IT ======================= -->
     <section class="use" id="use">
       <h2>Use it anywhere</h2>
@@ -1545,6 +1628,20 @@ Every block gets an <b>Effects</b> panel.
 Elementor, Bricks, Divi: add the class
 <b>fx-reveal</b>, <b>fx-glass</b> … to any element.</pre>
         </section>
+        <section>
+          <h5>Your server (forms)</h5>
+<pre>import { schema } from 'lumafx/forms'
+
+const r = schema({ email: '<b>required email</b>' })
+  .validate(await req.formData())</pre>
+        </section>
+        <section>
+          <h5>Your page builder</h5>
+<pre>import { apply, sortable } from 'lumafx/editor'
+
+apply(block, <b>'fade-up'</b>)
+&lt;fx-panel&gt;  <b>// or the ready panel</b></pre>
+        </section>
       </div>
       <div class="promises">
         <div><b>Never hides content</b><span>Hidden states only apply once the runtime is running, with a failsafe if it never boots.</span></div>
@@ -1556,7 +1653,7 @@ Elementor, Bricks, Divi: add the class
     </section>
 
     <footer>
-      <span>lumafx v0.2.0 · MIT · free forever</span>
+      <span>lumafx v0.3.0 · MIT · free forever</span>
       <span id="live-count">Effects running on this page: …</span>
     </footer>
   </main>
@@ -1786,6 +1883,83 @@ Elementor, Bricks, Divi: add the class
   });
 
   document.getElementById('to-top').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // Builder kit: a tiny page builder made from lumafx/editor functions.
+  (() => {
+    const E = window.lumafx.editor;
+    if (!E) return;
+    const canvas = document.getElementById('bk-canvas');
+    const palette = document.getElementById('bk-palette');
+    const panel = document.getElementById('bk-panel');
+    const BLOCKS = {
+      hero: '<section class="bk-block bk-hero" data-label="Hero"><small data-bk-part>Tirana · this weekend</small><h4 data-bk-part>Nights worth staying out for</h4><p data-bk-part>Concerts, rooftops and late kitchens, picked by people who live here.</p><span class="bk-btn" data-bk-part>See what\'s on</span></section>',
+      features: '<section class="bk-block" data-label="Features"><small data-bk-part>Why Sphere</small><h4 data-bk-part>One pass, forty venues</h4><div class="bk-feats" data-bk-part><div data-bk-part><b>⚡</b>Skip the line</div><div data-bk-part><b>🎟</b>Tickets in one tap</div><div data-bk-part><b>🗺</b>Map of tonight</div></div></section>',
+      quote: '<section class="bk-block bk-quote" data-label="Quote"><p data-bk-part>“We sold out the rooftop in a weekend. The page did half the work.”</p><small data-bk-part>Ena, Blloku Sessions</small></section>',
+      gallery: '<section class="bk-block bk-gallery" data-label="Gallery"><img data-bk-part src="img/theth.jpg" alt="Theth valley"><img data-bk-part src="img/ksamil.jpg" alt="Ksamil islands"><img data-bk-part src="img/butrint.jpg" alt="Butrint at dusk"></section>',
+      cta: '<section class="bk-block bk-cta" data-label="Call to action"><h4 data-bk-part>Ready for Friday?</h4><span class="bk-btn" data-bk-part>Get the pass</span></section>',
+    };
+    const makeBlock = (type) => {
+      const t = document.createElement('template');
+      t.innerHTML = BLOCKS[type];
+      const el = t.content.firstElementChild;
+      el.dataset.block = type;
+      el.tabIndex = 0;
+      return el;
+    };
+    ['hero', 'features', 'gallery', 'cta'].forEach((t) => canvas.append(makeBlock(t)));
+    // A few animations to start from.
+    E.apply(canvas.querySelector('.bk-hero h4'), 'chars-flip');
+    E.apply(canvas.querySelector('.bk-feats'), 'cascade-zoom');
+    E.apply(canvas.querySelector('.bk-gallery'), 'tilt-soft');
+    E.apply(canvas.querySelector('.bk-cta'), ['fade-up', 'beam']);
+
+    let selected = null;
+    const select = (el) => {
+      selected && selected.classList.remove('bk-selected');
+      selected = el;
+      el && el.classList.add('bk-selected');
+      panel.target = el;
+    };
+    E.sortable(canvas, { group: 'page', onEnd: (e) => select(e.item) });
+    E.sortable(palette, { group: 'page', clone: (tile) => makeBlock(tile.dataset.block) });
+    canvas.addEventListener('click', (e) => {
+      const block = e.target.closest('.bk-block');
+      if (!block) return select(null);
+      // First click picks the block; clicking inside it again picks the heading, text or image.
+      const part = e.target.closest('[data-bk-part]');
+      if (part && block.contains(part) && selected && (selected === block || block.contains(selected))) select(part);
+      else select(block);
+    });
+    canvas.addEventListener('keydown', (e) => {
+      const block = e.target.closest && e.target.closest('.bk-block');
+      if (!block || e.target !== block) return;
+      if (e.key === 'Enter') select(block);
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        if (selected && block.contains(selected)) select(null);
+        E.discard(block);
+      }
+    });
+    select(canvas.querySelector('.bk-hero'));
+
+    document.getElementById('bk-export').addEventListener('click', () => {
+      const code = document.getElementById('bk-code');
+      // Rebuild each block from its template plus the effects stored on it: clean HTML, as a builder would save it.
+      const html = [...canvas.querySelectorAll(':scope > .bk-block')].map((b) => {
+        const fresh = makeBlock(b.dataset.block);
+        E.apply(fresh, E.read(b));
+        const live = b.querySelectorAll('[data-bk-part]');
+        fresh.querySelectorAll('[data-bk-part]').forEach((p, i) => live[i] && E.apply(p, E.read(live[i])));
+        fresh.querySelectorAll('[data-bk-part]').forEach((p) => p.removeAttribute('data-bk-part'));
+        fresh.removeAttribute('tabindex');
+        fresh.removeAttribute('data-block');
+        fresh.removeAttribute('data-label');
+        return fresh.outerHTML.replace(/></g, '>\n  <').replace(/\n  <\/section>$/, '\n</section>');
+      });
+      code.textContent = html.join('\n\n');
+      code.hidden = false;
+    });
+  })();
 
   // Blog: "Load more" shows the 3D loader while a (fake) request runs.
   const postsEl = document.getElementById('posts');

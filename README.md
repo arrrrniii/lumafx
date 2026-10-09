@@ -1,11 +1,11 @@
 # lumafx
 
-Premium web effects and animated components from one HTML attribute. Border beams, liquid glass, page transitions, a liquid modal, scroll-scrubbed video, a chat widget, 3D rings, text reveals and more: 47 in total.
+Premium web effects and animated components from one HTML attribute. Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll-scrubbed video, a chat widget, cards, smart forms, a WebGL 3D loader, text reveals and more: 52 in total. Plus a kit for putting all of it inside your own page builder.
 
 **Free forever.** MIT licensed, every effect and component. No pro tier, no account, no tracking.
 
 - **Any stack.** Plain HTML, Webflow, Tailwind v4, React and Next.js (Server Components included), and a [WordPress plugin](#wordpress) with an Effects panel on every block.
-- **CSS first.** Six effects are pure CSS and eleven more run in CSS with a JavaScript upgrade or fallback; the rest use a ~30 KB gzip runtime with no dependencies (or register only the ones you use).
+- **CSS first.** Six effects are pure CSS and twelve more run in CSS with a JavaScript upgrade or fallback; the rest use a ~46 KB gzip runtime with no dependencies (or register only the ones you use).
 - **Accessible by default.** `prefers-reduced-motion` is respected everywhere, text effects stay readable for screen readers, carousels and stories work from the keyboard.
 - **Never hides content.** Hidden "before" states only apply once the runtime is running, with a CSS failsafe if it never boots.
 - **Cheap when idle.** Loops pause off-screen, pointer effects sleep until the mouse moves, low-memory and Save-Data devices get a lighter version.
@@ -127,9 +127,109 @@ Presets: `fade`, `slide`, `slide-back`, `zoom`, `wipe`. Within a page, `lumafx.t
 
 <!-- Animated scrollbar with section marks and a label next to the cursor -->
 <div data-fx="scrollbar" data-fx-sections="h2"></div>
+
+<!-- Drawer: a side panel or bottom sheet. Styles: slide, glass, scale, push, dock, liquid -->
+<button data-fx-open="#edit">Edit</button>
+<dialog id="edit" data-fx="drawer" data-fx-side="right" data-fx-style="push">…</dialog>
 ```
 
-Also: `hovercard`, `dock`, `lightbox`, `preloader`, `scroll-progress`. Modals open from `data-fx-open="#id"`, any link to `#id`, or `lumafx.modals.open('#id')`.
+Also: `hovercard`, `dock`, `lightbox`, `preloader`, `scroll-progress`. Modals and drawers open from `data-fx-open="#id"`, any link to `#id`, or `lumafx.modals.open('#id')`; the liquid style flows out of whatever opened them. Drawers close on a click outside, Esc or `data-fx-close`, leaving the way they came. `push` slides the whole page over to make room and `dock` reflows the page beside the panel so it stays usable. Both move the element marked `data-fx-sheet-root` (or `#__next`, `#root`, `#app`, `.wp-site-blocks`), so wrap your page in one for the best result.
+
+## Cards and buttons
+
+```html
+<article data-fx="card" data-fx-style="product">
+  <figure><img src="boat.jpg" alt="Ksamil islands"></figure>
+  <div>
+    <h3>Ksamil by boat</h3><p>Four islands, one lunch.</p>
+    <footer><strong>€45</strong><button data-fx="press" data-fx-style="burst" data-fx-done="Added ✓">Add to cart</button></footer>
+  </div>
+</article>
+```
+
+Card styles: `glow` (the border lights up around the cursor), `product`, `flip` (the last child is the back side), `cover`, `ticket`. `press` works on any button or link: `ripple`, `burst`, `fill`, `squish`, plus an optional done label.
+
+## Forms: one set of rules for the browser and the server
+
+```html
+<form data-fx="form" data-fx-ajax action="/api/join" method="post">
+  <input name="email" type="email" required>
+  <input name="phone" type="tel" data-rules="phone:AL">
+  <input name="password" type="password" required data-rules="password">
+  <input name="confirm" type="password" data-rules="match:password">
+  <button data-fx-sent="You're in ✓">Join</button>
+</form>
+```
+
+```ts
+// app/api/join/route.ts (Next.js); works the same in Express, Hono or a server action
+import { schema } from 'lumafx/forms';
+
+const join = schema({ email: 'required email', phone: 'phone:AL', password: 'required password', confirm: 'match:password' });
+
+export async function POST(req: Request) {
+  const r = join.validate(await req.formData(), { spam: true, locale: 'sq' });
+  if (!r.ok) return Response.json(r, { status: 422 }); // errors land on their fields
+  // r.data is cleaned: trimmed, lower-cased email, phone as +355691234567
+  return Response.json({ ok: true });
+}
+```
+
+Rules: `required email phone[:CC] url number integer min:n max:n minlength:n maxlength:n match:field password name pattern:"re" oneof:a|b accepted date`, plus your own with `addRule(name, fn, messages)`. Email typos get a "Did you mean…?" fix, phone numbers are parsed for 40+ countries and formatted internationally, passwords get a strength meter, and a honeypot plus a time trap stop most bots (`spam: true` checks them on the server). Messages in English and Albanian (`locale: 'sq'`). Events: `fx:invalid`, `fx:submit` (cancelable, for your own fetch), `fx:success`.
+
+## Loading
+
+```html
+<div data-fx="loader-3d"></div>
+<div data-fx="loader-3d" data-fx-colors="#ffc15e,#ff8a4c,#ff4f7b" data-fx-base="#ffe6cc"></div>
+
+<!-- As the page preloader -->
+<div data-fx="preloader" data-fx-style="fade"><div data-fx="loader-3d"></div><span data-fx-count></span></div>
+```
+
+```js
+// Blog pagination: the loader appears in the grid while the request runs.
+const posts = await lumafx.loading('#posts', fetch('/api/posts?page=2').then((r) => r.json()));
+```
+
+## Builder kit
+
+`lumafx/editor` is for people building a page builder, CMS or design tool (or a dashboard with drag-and-drop sections). Every piece is a plain function, so it fits React, Vue, Svelte or vanilla code.
+
+```js
+import { toAttributes, apply, preview, replay, catalog, PRESETS, sortable, place, discard } from 'lumafx/editor';
+
+// Store effects as data in your block JSON…
+block.fx = [{ effect: 'reveal', options: { from: 'zoom' } }, { effect: 'tilt' }];
+// …and render them as attributes, on the server or in the browser.
+toAttributes(block.fx);   // { 'data-fx': 'reveal tilt', 'data-fx-from': 'zoom' }
+apply(el, 'chars-flip');  // a preset id, an effect name or specs
+const undo = preview(el, 'blur-in'); // try it on hover, undo() on leave
+replay(el);               // play entrance effects again after an edit
+
+// Build your own panel from the metadata: groups, presets and form fields per option.
+catalog(); // [{ name, title, desc, group, fit, fields: [{ key, type: 'select' | 'range' | 'time' …, default }] }]
+
+// Canvas motion: springy drag-to-reorder, a palette that creates blocks, smooth insert and delete.
+sortable(canvas, { group: 'page', onEnd: (e) => save(e) });
+sortable(palette, { group: 'page', clone: (tile) => makeBlock(tile.dataset.block) });
+place(newBlock, canvas, refBlock); // neighbours glide out of the way
+discard(block);                    // it shrinks away and the gap closes
+```
+
+Or drop in the ready panel: presets with live previews on the block, options generated from the metadata, replay, and a copyable attribute string.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx-editor.global.js"></script>
+<fx-panel></fx-panel>
+<script>
+  const panel = document.querySelector('fx-panel');
+  panel.target = selectedBlock;
+  panel.addEventListener('fx-change', (e) => save(selectedBlock.id, e.detail.fx));
+</script>
+```
+
+Theme it with CSS variables (`--fxp-bg`, `--fxp-fg`, `--fxp-accent`…) or `theme="light"`. Email builders: inboxes don't run JavaScript and most strip CSS animation, so use the kit for web pages.
 
 ## Scroll-scrubbed video and image sequences
 
@@ -213,11 +313,14 @@ Options are `data-fx-<option>` attributes. Bare numbers get a unit from the opti
 | `register(effect)` | Add your own effect: `{ name, meta, mount(el, ctx) { …; return cleanup } }`. |
 | `transition(update, { preset })` | Run a DOM update inside a View Transition. |
 | `page.cover(x?, y?)` / `page.reveal()` | Play the page-transition cover and reveal yourself (single-page apps). |
-| `modals.open(target)` / `modals.close(target)` | Open or close a `data-fx="modal"` dialog by selector or element. |
+| `modals.open(target, { from })` / `modals.close(target)` | Open or close a modal or drawer by selector or element. `from` is the element the liquid flows out of. |
+| `loading(target, promise, options?)` | Shows a `loader-3d` in `target` while the promise runs, marks it `aria-busy`, resolves with the result. Options: `colors`, `size`, `min`, `overlay`. |
+| `forms` | The isomorphic validation API (`schema`, `validate`, `parsePhone`, `suggestEmail`, `addRule`), also at `lumafx/forms`. |
+| `form.fxForm` | On a smart form: `validate()`, `values()`, `showErrors(errors)`. |
 | `el.fxChat` | On a chat widget: `open()`, `close()`, `reply(text, { typing })`, `typing(on)`, `send(text)`. |
 | `stats()` | Which effects are running on how many elements. |
 
-Opt an area out with `data-fx-off`. Events: `fx:loaded` (preloader finished), `fx:open` / `fx:close` (modal), `fx:chat-send` / `fx:chat-open` (chat).
+Opt an area out with `data-fx-off`. Events: `fx:loaded` (preloader finished), `fx:open` / `fx:close` (modal, drawer), `fx:chat-send` / `fx:chat-open` (chat), `fx:invalid` / `fx:submit` / `fx:success` (form), `fx:sort` (editor `sortable`).
 
 When a `preloader` is on the page, entrance effects (reveal, text-reveal, counter, image-reveal, svg-draw, typewriter…) wait for it, so they play as the curtain lifts instead of behind it.
 
@@ -234,6 +337,7 @@ Everything works in current Chrome, Edge, Safari and Firefox. Some effects upgra
 | Lightbox morph (View Transitions) | ✓ | 18+ | ✓ | Opens without the morph |
 | `expand`, `scroll-progress` on the compositor | ✓ | 26+ | JS | Same motion driven from JavaScript |
 | Liquid modal (SVG goo filter) | ✓ | ✓ | ✓ | Fade when reduced motion is on |
+| `loader-3d` (WebGL) | ✓ | ✓ | ✓ | CSS 3D version without WebGL; a still frame with reduced motion |
 
 ## Performance notes
 
@@ -242,7 +346,8 @@ Everything works in current Chrome, Edge, Safari and Firefox. Some effects upgra
 - `tilt` writes `transform` and `magnetic` writes `translate` inline; don't animate those properties yourself on the same element.
 - Avoid `overflow: hidden` on a `tilt` element if you use `data-fx-depth` children (it flattens 3D).
 - `video-scrub` seeks a video on every frame. Keep the file short (a few seconds) and encode it with frequent keyframes; for long or heavy scenes prefer `frames`.
-- The full runtime is about 30 KB gzip. With a bundler, `lumafx/core` plus `register()` only ships the effects you import.
+- The full runtime is about 46 KB gzip. With a bundler, `lumafx/core` plus `register()` only ships the effects you import.
+- `loader-3d` ray-marches its scene in a fragment shader. Every loader on the page shares one WebGL context, renders only while on screen, and lowers its resolution by itself on slow devices.
 
 ## Development
 

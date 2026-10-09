@@ -45,10 +45,12 @@ function lumafx_render_block( $content, $block ) {
 	if ( ! $effects ) {
 		return $content;
 	}
-	$raw   = isset( $fx['options'] ) ? $fx['options'] : array();
-	$modal = in_array( 'modal', $effects, true );
-	$inner = array_values( array_diff( $effects, array( 'modal' ) ) );
-	// With the modal effect, the dialog gets the modal's options and the block keeps the rest.
+	$raw = isset( $fx['options'] ) ? $fx['options'] : array();
+	// A modal or a drawer wraps the block in a <dialog>: the dialog gets that effect's options
+	// and the block keeps the rest.
+	$dialogs = array_values( array_intersect( $effects, array( 'modal', 'drawer' ) ) );
+	$modal   = $dialogs ? $dialogs[0] : '';
+	$inner   = array_values( array_diff( $effects, array( 'modal', 'drawer' ) ) );
 	$options = lumafx_clean_options( $inner, $raw );
 
 	$p = new WP_HTML_Tag_Processor( $content );
@@ -73,29 +75,31 @@ function lumafx_render_block( $content, $block ) {
 	if ( ! $modal ) {
 		return $html;
 	}
-	return lumafx_wrap_modal( $html, is_string( $id ) ? $id : '', lumafx_clean_options( array( 'modal' ), $raw ) );
+	return lumafx_wrap_modal( $html, is_string( $id ) ? $id : '', lumafx_clean_options( array( $modal ), $raw ), $modal );
 }
 add_filter( 'render_block', 'lumafx_render_block', 10, 2 );
 
 /**
- * Wraps a block in a <dialog> for the modal effect. Any link to #anchor (a Button block, a menu
- * item) opens it; a close button is added for keyboard and touch users.
+ * Wraps a block in a <dialog> for the modal or drawer effect. Any link to #anchor (a Button
+ * block, a menu item) opens it; a close button is added for keyboard and touch users.
  *
  * @param string $html    Block HTML.
  * @param string $id      The block's HTML anchor.
  * @param array  $options Cleaned options.
+ * @param string $kind    'modal' or 'drawer'.
  * @return string
  */
-function lumafx_wrap_modal( $html, $id, $options ) {
+function lumafx_wrap_modal( $html, $id, $options, $kind = 'modal' ) {
 	static $n = 0;
 	++$n;
+	$kind = 'drawer' === $kind ? 'drawer' : 'modal';
 	if ( '' === $id ) {
-		$id = 'lumafx-modal-' . $n;
+		$id = 'lumafx-' . $kind . '-' . $n;
 	}
-	$attrs = ' id="' . esc_attr( $id ) . '" data-fx="modal" class="lumafx-modal" aria-label="' . esc_attr__( 'Dialog', 'lumafx' ) . '"';
-	foreach ( array( 'style', 'color' ) as $key ) {
-		if ( isset( $options[ $key ] ) && is_string( $options[ $key ] ) ) {
-			$attrs .= ' data-fx-' . $key . '="' . esc_attr( $options[ $key ] ) . '"';
+	$attrs = ' id="' . esc_attr( $id ) . '" data-fx="' . $kind . '" class="lumafx-modal" aria-label="' . esc_attr__( 'Dialog', 'lumafx' ) . '"';
+	foreach ( $options as $key => $value ) {
+		if ( is_string( $value ) || is_numeric( $value ) ) {
+			$attrs .= ' data-fx-' . esc_attr( $key ) . '="' . esc_attr( (string) $value ) . '"';
 		}
 	}
 	$close = '<button type="button" class="lumafx-close" data-fx-close aria-label="' . esc_attr__( 'Close', 'lumafx' ) . '">&times;</button>';

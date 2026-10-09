@@ -433,11 +433,15 @@ export const loader3d: Effect = {
 
     let W = 0;
     let H = 0;
+    // Drops resolution step by step if the device cannot keep up.
+    let quality = 1;
+    let ema = 16.7;
+    let frames = 0;
     const layout = () => {
       const rect = el.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       // Small loaders render supersampled for smooth edges; large ones stay at screen resolution.
-      const scale = rect.width * dpr <= 420 ? Math.min(2.5, dpr * 1.6) : Math.min(2, dpr);
+      const scale = (rect.width * dpr <= 420 ? Math.min(2.5, dpr * 1.6) : Math.min(2, dpr)) * quality;
       W = Math.max(1, Math.round(rect.width * scale));
       H = Math.max(1, Math.round(rect.height * scale));
       if (canvas.width !== W || canvas.height !== H) {
@@ -487,6 +491,12 @@ export const loader3d: Effect = {
         off = tick((_now, dt) => {
           time += dt;
           draw();
+          ema = ema * 0.92 + dt * 0.08;
+          if (++frames > 8 && ema > 30 && quality > 0.4) {
+            quality = Math.max(0.4, quality * (ema > 80 ? 0.6 : 0.8));
+            frames = 0;
+            layout();
+          }
         });
       else if (!v && off) {
         off();

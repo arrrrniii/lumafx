@@ -27,7 +27,8 @@ with sync_playwright() as p:
     info = page.evaluate("() => ({ v: window.lumafx && lumafx.version, stats: lumafx.stats() })")
     want = ["preloader", "page-transition", "scrollbar", "scroll-progress", "chat", "smart-header", "hover-icon", "text-reveal", "border-beam", "reveal", "modal", "lightbox", "rotate-words", "clock", "video-scrub"]
     missing = [n for n in want if n not in info["stats"]]
-    check("runtime loads from the plugin and mounts every configured effect", info["v"] == "0.2.0" and not missing, f"{info} missing={missing}")
+    version = json.load(open(os.path.join(os.path.dirname(__file__), "..", "..", "package.json")))["version"]
+    check("runtime loads from the plugin and mounts every configured effect", info["v"] == version and not missing, f"{info} missing={missing}")
     page.screenshot(path=f"{SHOTS}/wp-02-post.png")
 
     h = page.evaluate("() => { const h = document.querySelector('h2.wp-block-heading'); return [h.getAttribute('data-fx-state'), h.querySelectorAll('.fx-u').length, h.getAttribute('aria-label')] }")

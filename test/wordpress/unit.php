@@ -27,6 +27,8 @@ ok( 'false booleans are written as "false"', false !== strpos( $o, 'data-fx-loop
 $o = $r( '<div id="join" class="wp-block-group"><p>Hi</p></div>', array( 'modal', 'reveal' ), array( 'style' => 'glass', 'distance' => '20' ) );
 ok( 'modal wraps the block in a dialog that takes over the anchor', 0 === strpos( $o, '<dialog id="join" data-fx="modal"' ) && false !== strpos( $o, 'data-fx-style="glass"' ) && 1 === substr_count( $o, 'id="join"' ), $o );
 ok( 'modal adds a close button and keeps other effects on the block', false !== strpos( $o, 'data-fx-close' ) && false !== strpos( $o, 'data-fx="reveal"' ) && false !== strpos( $o, 'data-fx-distance="20"' ), $o );
+$o = $r( '<div id="cart" class="wp-block-group"><p>Cart</p></div>', array( 'drawer', 'stagger' ), array( 'side' => 'left', 'style' => 'push', 'size' => '420', 'stagger' => '90' ) );
+ok( 'drawer wraps the block in a dialog with its side, style and size', 0 === strpos( $o, '<dialog id="cart" data-fx="drawer"' ) && false !== strpos( $o, 'data-fx-side="left"' ) && false !== strpos( $o, 'data-fx-style="push"' ) && false !== strpos( $o, 'data-fx-size="420' ) && false !== strpos( $o, 'data-fx="stagger"' ) && false === strpos( $o, '<div id="cart"' ), $o );
 
 $o = $r( '', array( 'reveal' ) );
 ok( 'empty blocks are left alone', '' === $o );

@@ -1,6 +1,6 @@
 {
   "name": "lumafx",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Premium web effects and animated components from one HTML attribute: page transitions, liquid modal, scroll-scrubbed video, chat widget, border beams, liquid glass, text reveals and more. Framework-agnostic, CSS-first, accessible. Tailwind v4, React Server Components and WordPress. Free forever.",
   "license": "MIT",
   "author": "Arnold Kajolli",
@@ -8,7 +8,9 @@
   "sideEffects": [
     "*.css",
     "./dist/auto.mjs",
-    "./dist/lumafx.global.js"
+    "./dist/lumafx.global.js",
+    "./dist/editor.mjs",
+    "./dist/lumafx-editor.global.js"
   ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -32,6 +34,10 @@
       "types": "./dist/types/forms/core.d.ts",
       "import": "./dist/forms.mjs"
     },
+    "./editor": {
+      "types": "./dist/types/editor/index.d.ts",
+      "import": "./dist/editor.mjs"
+    },
     "./react": {
       "types": "./dist/types/react/index.d.ts",
       "import": "./dist/react/index.mjs"
@@ -46,6 +52,7 @@
     "./transitions.css": "./dist/transitions.css",
     "./effects.json": "./dist/effects.json",
     "./global": "./dist/lumafx.global.js",
+    "./editor/global": "./dist/lumafx-editor.global.js",
     "./package.json": "./package.json"
   },
   "files": [
