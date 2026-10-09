@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       lumafx
  * Description:       Premium web effects for any block: glass, reveals, border beams, liquid modals and drawers, cards, smart forms, a 3D loader, video that scrubs with the scroll, page transitions, a chat widget and more. Plus intelligent UI: match cards, lineups, standings, tickets and more from JSON with [lumafx_ui]. Free and open source.
- * Version:           0.4.0
+ * Version:           0.5.0
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            Arnold Kajolli
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'LUMAFX_VERSION', '0.4.0' );
+define( 'LUMAFX_VERSION', '0.5.0' );
 define( 'LUMAFX_FILE', __FILE__ );
 define( 'LUMAFX_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LUMAFX_URL', plugin_dir_url( __FILE__ ) );

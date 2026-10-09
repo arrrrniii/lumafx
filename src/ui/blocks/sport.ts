@@ -130,11 +130,58 @@ export const sport: Record<string, Renderer> = {
         .filter((s) => s.team === side)
         .map((s) => `<li>${esc(s.player)} <span>${esc(s.minute)}${s.type === 'penalty' ? ' (P)' : s.type === 'own-goal' ? ' (OG)' : ''}</span></li>`)
         .join('');
-    const tickets = safeUrl(b.tickets);
+    // A scheduled match whose kickoff has passed: say so instead of selling tickets for it.
+    const ko = Date.parse(b.kickoff);
+    const waiting = (!b.status || b.status === 'scheduled') && Number.isFinite(ko);
+    if (waiting) c.expire(ko);
+    const started = waiting && ko <= c.now;
+    const page = safeUrl(b.url);
+    const tickets = started ? '' : safeUrl(b.tickets);
     const meta = [b.venue ? `${icon('pin')}${esc(b.venue)}` : '', b.kickoff && showScore ? `${icon('calendar')}${fmtDate(c, b.kickoff)}` : '', b.tv ? `${icon('monitor')}${esc(b.tv)}` : ''].filter(Boolean);
-    return `<div class="fxui-match" data-status="${esc(b.status ?? 'scheduled')}"><div class="fxui-matchhead"><span>${esc([b.competition, b.round].filter(Boolean).join(' · '))}</span>${statusBadge(c, b.status, b.minute, b.kickoff, !b.sport || /football|soccer|futboll/i.test(b.sport))}</div><div class="fxui-teams"><div class="fxui-team">${crest(home, 'l')}<strong>${esc(home.name)}</strong>${form(c, home.form)}</div>${center}<div class="fxui-team">${crest(away, 'l')}<strong>${esc(away.name)}</strong>${form(c, away.form)}</div></div>${
+    const badge = started ? `<span class="fxui-status" data-s="pre">${esc(c.t('resultPending'))}</span>` : statusBadge(c, b.status, b.minute, b.kickoff, !b.sport || /football|soccer|futboll/i.test(b.sport));
+    const link = page && (started || STATUS_SCORE(b.status)) ? `<a class="fxui-btn" data-variant="secondary" ${linkAttrs(page)}>${esc(c.t('open'))}${icon('arrow')}</a>` : '';
+    return `<div class="fxui-match" data-status="${esc(started ? 'pending' : (b.status ?? 'scheduled'))}"><div class="fxui-matchhead"><span>${esc([b.competition, b.round].filter(Boolean).join(' · '))}</span>${badge}</div><div class="fxui-teams"><div class="fxui-team">${crest(home, 'l')}<strong>${esc(home.name)}</strong>${form(c, home.form)}</div>${center}<div class="fxui-team">${crest(away, 'l')}<strong>${esc(away.name)}</strong>${form(c, away.form)}</div></div>${
       arr(b.scorers).length ? `<div class="fxui-scorers"><ul>${sc('home')}</ul>${icon('ball')}<ul>${sc('away')}</ul></div>` : ''
-    }${meta.length || tickets ? `<div class="fxui-matchfoot"><span class="fxui-meta">${meta.map((m) => `<span>${m}</span>`).join('')}</span>${tickets ? `<a class="fxui-btn" data-variant="primary" ${linkAttrs(tickets)}>${icon('ticket')}${esc(c.t('buy'))}</a>` : ''}</div>` : ''}</div>`;
+    }${meta.length || tickets || link ? `<div class="fxui-matchfoot"><span class="fxui-meta">${meta.map((m) => `<span>${m}</span>`).join('')}</span>${tickets ? `<a class="fxui-btn" data-variant="primary" ${linkAttrs(tickets)}>${icon('ticket')}${esc(c.t('buy'))}</a>` : link}</div>` : ''}</div>`;
+  },
+
+  fixtures: (b, c) => {
+    const items = arr(b.items);
+    const timed = items.some((x) => Number.isFinite(Date.parse(x.kickoff)));
+    const groups = new Map<string, any[]>();
+    for (const x of items) {
+      const k = timed && Number.isFinite(Date.parse(x.kickoff)) ? String(x.kickoff).slice(0, 10) : '';
+      groups.set(k, [...(groups.get(k) ?? []), x]);
+    }
+    let n = 0;
+    const head = [b.competition, b.round].filter(Boolean).map(esc).join(' · ');
+    return `<div class="fxui-fixtures">${head ? `<div class="fxui-matchhead"><span>${head}</span></div>` : ''}${Array.from(groups.entries())
+      .map(
+        ([k, list]) =>
+          `<section>${k ? `<h4>${fmtDate(c, list[0].kickoff, 'day')}</h4>` : ''}<ul role="list">${list
+            .map((x) => {
+              const ko = Date.parse(x.kickoff);
+              const waiting = (!x.status || x.status === 'scheduled') && Number.isFinite(ko);
+              if (waiting) c.expire(ko);
+              const pending = waiting && ko <= c.now;
+              const sc = arr<number>(x.score);
+              const has = sc.length === 2 && (STATUS_SCORE(x.status) || !waiting);
+              const hw = has && sc[0] > sc[1];
+              const aw = has && sc[1] > sc[0];
+              const mid = has
+                ? `<b class="fxui-fscore"><span data-k="h${n}">${sc[0]}</span>–<span data-k="a${n}">${sc[1]}</span></b>`
+                : pending
+                  ? `<b class="fxui-fscore" data-pending>${esc(c.t('resultPending'))}</b>`
+                  : `<b class="fxui-fscore" data-time>${Number.isFinite(ko) ? fmtDate(c, x.kickoff, 'time') : esc(c.t('vs'))}</b>`;
+              const u = safeUrl(x.url);
+              const live = x.status === 'live' || x.status === 'halftime' ? `<span class="fxui-badge" data-tone="live"><i class="fxui-pulse"></i>${esc(x.status === 'halftime' ? c.t('halftime') : x.minute ? `${x.minute}` : c.t('live'))}</span>` : '';
+              const logo = (l: unknown, name: string) => (safeUrl(l) ? crest({ name, logo: l }, 's') : '');
+              const row = `<span class="fxui-fteam" data-win="${hw}">${logo(x.homeLogo, x.home)}<span>${esc(x.home)}</span></span>${mid}<span class="fxui-fteam" data-win="${aw}"><span>${esc(x.away)}</span>${logo(x.awayLogo, x.away)}</span>`;
+              return `<li data-k="f${n++}" data-status="${esc(pending ? 'pending' : (x.status ?? 'scheduled'))}">${u ? `<a class="fxui-frow" ${linkAttrs(u)}>${row}</a>` : `<div class="fxui-frow">${row}</div>`}${live}</li>`;
+            })
+            .join('')}</ul></section>`,
+      )
+      .join('')}</div>`;
   },
 
   lineup: (b, c) => {

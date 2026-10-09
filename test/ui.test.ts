@@ -89,6 +89,12 @@ describe('streaming JSON', () => {
     expect(parsePartial('{"a":"\\u00eb","b":[1,{"c":null}]}')).toEqual({ a: 'ë', b: [1, { c: null }] });
     expect(parsePartial('Sure! ```json\n[{"type":"text"')).toEqual([{ type: 'text' }]);
     expect(parsePartial('nothing here')).toBeUndefined();
+    // Links, dates and enums wait for their closing quote: no request for "img/bll", no 1 October.
+    expect(parsePartial('{"blocks":[{"type":"image","alt":"Blloku","src":"img/bll')).toEqual({ blocks: [{ type: 'image', alt: 'Blloku' }] });
+    expect(parsePartial('{"type":"event","name":"T’Rocks","start":"2026-10')).toEqual({ type: 'event', name: 'T’Rocks' });
+    expect(parsePartial('{"images":["a.jpg","b.j')).toEqual({ images: ['a.jpg'] });
+    expect(parsePartial('[{"type":"ev')).toEqual([{}]);
+    expect(parsePartial('{"heroImage":"x","title":"Hel')).toEqual({ heroImage: 'x', title: 'Hel' });
   });
 });
 
@@ -207,7 +213,7 @@ describe('follow-ups, text and dates', () => {
     const el = document.createElement('div');
     document.body.append(el);
     render(el, { blocks: [{ type: 'related', items: [{ text: 'Who scored?' }, { text: 'Tickets', url: 'https://sphere.al' }, { url: 'https://x.y' }] }] });
-    const chips = el.querySelectorAll('.fxui-chip');
+    const chips = el.querySelectorAll('.fxui-ask');
     expect(chips).toHaveLength(2);
     expect(chips[1].tagName).toBe('A');
     let asked = '';
@@ -224,7 +230,7 @@ describe('follow-ups, text and dates', () => {
     fx.innerHTML = '<script type="application/json">{"blocks":[{"type":"suggestions","items":[{"text":"Next match?"}]}]}</script>';
     document.body.append(fx);
     await tick();
-    fx.querySelector<HTMLButtonElement>('.fxui-chip')!.click();
+    fx.querySelector<HTMLButtonElement>('.fxui-ask')!.click();
     expect(decodeURIComponent(location.hash)).toBe('#q=Next match?');
   });
 

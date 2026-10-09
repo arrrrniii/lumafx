@@ -5,7 +5,8 @@
  */
 import { validate, type Block, type Doc } from './schema';
 import { labels } from './i18n';
-import { esc, md, type Fmt } from './html';
+import { esc, md, safeUrl, linkAttrs, fmtDate, icon, type Fmt } from './html';
+import { media } from './blocks/media';
 import { content } from './blocks/content';
 import { data } from './blocks/data';
 import { sport } from './blocks/sport';
@@ -34,11 +35,15 @@ export interface Ctx extends Fmt {
   now: number;
   uid: (prefix?: string) => string;
   blocks: (list: unknown) => string;
+  /** A renderer calls this with the moment its output would change (an event starts or ends). */
+  expire: (at: number) => void;
+  /** @internal earliest expiry registered while rendering the current block */
+  exp?: number;
 }
 
 export type Renderer = (b: Block & Record<string, any>, c: Ctx) => string;
 
-export const RENDERERS: Record<string, Renderer> = { ...content, ...data, ...sport, ...events };
+export const RENDERERS: Record<string, Renderer> = { ...content, ...media, ...data, ...sport, ...events };
 
 let docs = 0;
 
@@ -54,15 +59,34 @@ export function makeCtx(o: RenderOptions & { lang: string }): Ctx {
     t: labels(o.lang),
     uid: (p = 'u') => `fxui-${p}-${seed}${(n++).toString(36)}`,
     blocks: (list) => (Array.isArray(list) ? list.map((b) => renderBlock(b as Block, ctx)).join('') : ''),
+    expire: (at) => {
+      if (Number.isFinite(at) && at > ctx.now && (ctx.exp === undefined || at < ctx.exp)) ctx.exp = at;
+    },
   };
   return ctx;
 }
 
 /** One block, wrapped in its section with the optional title and note. */
+const EVIDENCE_ICON: Record<string, string> = { verified: 'shield', reported: 'info', unconfirmed: 'warn', analysis: 'bulb' };
+
+/** The small "Verified · 7 Oct, 12:06 · FSHF" line under a block. */
+function evidence(e: unknown, c: Ctx) {
+  if (!e || typeof e !== 'object') return '';
+  const v = e as { status?: string; asOf?: string; source?: string; url?: string };
+  if (!v.status) return '';
+  const u = safeUrl(v.url);
+  const src = v.source ? (u ? `<a ${linkAttrs(u)}>${esc(v.source)}</a>` : esc(v.source)) : '';
+  const parts = [`<strong>${esc(c.t(v.status))}</strong>`, v.asOf ? fmtDate(c, v.asOf) : '', src].filter(Boolean);
+  return `<p class="fxui-evidence" data-status="${esc(v.status)}">${icon(EVIDENCE_ICON[v.status] ?? 'info')}<span>${parts.join(' · ')}</span></p>`;
+}
+
 export function renderBlock(b: Block, c: Ctx): string {
   const r = RENDERERS[b.type];
   if (!r) return '';
   let body = '';
+  // Nested blocks (group, tabs) keep their own expiry; the outer block takes the earliest.
+  const outer = c.exp;
+  c.exp = undefined;
   try {
     body = r(b as Block & Record<string, any>, c);
   } catch (err) {
@@ -70,10 +94,13 @@ export function renderBlock(b: Block, c: Ctx): string {
     body = '';
     if (typeof console !== 'undefined') console.debug?.('[lumafx/ui]', b.type, err);
   }
+  const exp = c.exp;
+  c.exp = outer === undefined ? exp : exp === undefined ? outer : Math.min(outer, exp);
   const title = typeof b.title === 'string' && b.title ? `<h3 class="fxui-title">${esc(b.title)}</h3>` : '';
   const note = typeof b.note === 'string' && b.note ? `<div class="fxui-note">${md(b.note)}</div>` : '';
   const id = typeof b.id === 'string' && b.id ? ` data-id="${esc(b.id)}"` : '';
-  return `<section class="fxui-b fxui-b-${esc(b.type)}" data-type="${esc(b.type)}"${id}>${title}${body}${note}</section>`;
+  const expires = exp !== undefined ? ` data-expires="${exp}"` : '';
+  return `<section class="fxui-b fxui-b-${esc(b.type)}" data-type="${esc(b.type)}"${id}${expires}>${title}${body}${evidence(b.evidence, c)}${note}</section>`;
 }
 
 /** Every block in document order, nested ones included: the order of `.fxui-b` sections in the DOM. */

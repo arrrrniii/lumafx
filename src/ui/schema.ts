@@ -81,6 +81,17 @@ export const COMMON: Record<string, T> = {
   title: opt(S.str('Heading shown above the block.')),
   note: opt(S.md('Small print under the block.')),
   live: opt(S.obj({ adapter: S.str(), id: S.str(), every: opt(S.int('Seconds between refreshes.', 5)) }, 'Keep the block updated through a registered data adapter.')),
+  evidence: opt(
+    S.obj(
+      {
+        status: S.en(['verified', 'reported', 'unconfirmed', 'analysis'], 'verified: confirmed by an official source; reported: from a credible outlet; analysis: your reading, not fact.'),
+        asOf: opt(S.date('When it was last checked.')),
+        source: opt(S.str('Who confirms it, e.g. FSHF.')),
+        url: opt(S.url()),
+      },
+      'How sure this block is and who says so. Shown as a small line under it.',
+    ),
+  ),
 };
 
 const B = (type: string, group: BlockDef['group'], desc: string, props: Record<string, T>, example: Record<string, unknown>): BlockDef => ({ type, group, desc, props, example });
@@ -134,6 +145,35 @@ export const BLOCKS: BlockDef[] = [
   B('itinerary', 'content', 'A plan by day.', { days: S.arr(S.obj({ label: S.str(), stops: S.arr(S.obj({ time: opt(S.str()), name: S.str(), note: opt(S.str()), url: opt(S.url()) })) })) }, { type: 'itinerary', days: [{ label: 'Saturday', stops: [{ time: '10:00', name: 'Skanderbeg Square' }] }] }),
   B('quiz', 'content', 'Multiple-choice questions with feedback.', { questions: S.arr(S.obj({ q: S.str(), options: S.arr(S.str()), answer: S.int('Index of the correct option.'), explain: opt(S.md()) })) }, { type: 'quiz', questions: [{ q: 'How long is a football match?', options: ['80 minutes', '90 minutes'], answer: 1 }] }),
   B('actions', 'content', 'Buttons that link somewhere.', { buttons: S.arr(S.obj({ label: S.str(), url: S.url(), style: opt(S.en(['primary', 'secondary', 'ghost'])) })) }, { type: 'actions', buttons: [{ label: 'Buy tickets', url: 'https://…', style: 'primary' }] }),
+  B('video', 'content', 'A YouTube or Vimeo video, or a playlist of them. Nothing loads from YouTube until the reader presses play.', {
+    url: opt(S.url('YouTube or Vimeo link.')),
+    title: opt(S.str()),
+    channel: opt(S.str()),
+    poster: opt(S.img()),
+    start: opt(S.int('Start at this second.', 0)),
+    date: opt(S.date('Upload date.')),
+    items: opt(S.arr(S.obj({ url: S.url(), title: S.str(), channel: opt(S.str()), poster: opt(S.img()), start: opt(S.int(undefined, 0)) }), 'Several videos: one player with a list to pick from.')),
+  }, { type: 'video', items: [{ url: 'https://www.youtube.com/watch?v=…', title: 'Artist — Song', channel: 'Official channel' }] }),
+  B('artists', 'content', 'Artists or performers: photo, genres, a short bio and where to listen.', {
+    items: S.arr(
+      S.obj({
+        name: S.str(),
+        image: opt(S.img()),
+        role: opt(S.str('headliner, support, DJ…')),
+        genres: opt(S.arr(S.str())),
+        bio: opt(S.md()),
+        url: opt(S.url('Profile page.')),
+        spotify: opt(S.url()),
+        youtube: opt(S.url()),
+        instagram: opt(S.url()),
+      }),
+    ),
+  }, { type: 'artists', items: [{ name: 'Renis Gjoka', genres: ['Rock'], spotify: 'https://open.spotify.com/artist/…' }] }),
+  B('poll', 'content', 'A question readers vote on (a match prediction, a favourite song), with results.', {
+    question: S.str(),
+    options: S.arr(S.obj({ label: S.str(), votes: opt(S.int(undefined, 0)) })),
+    closes: opt(S.date()),
+  }, { type: 'poll', question: 'Who wins tonight?', options: [{ label: 'Albania' }, { label: 'Draw' }, { label: 'San Marino' }] }),
   B('suggestions', 'content', 'Follow-up questions the reader can ask next (chips). Clicking one asks it in chat; with a url it is a link.', { items: S.arr(S.obj({ text: S.str(), url: opt(S.url()) })) }, { type: 'suggestions', items: [{ text: 'Who are the top scorers in qualifying?' }, { text: 'How do I get to the stadium?' }] }),
   B('sources', 'content', 'Where the facts come from.', {
     items: S.arr(S.obj({ title: S.str(), url: S.url(), publisher: opt(S.str()), date: opt(S.date()) })),
@@ -158,6 +198,7 @@ export const BLOCKS: BlockDef[] = [
     scorers: opt(S.arr(S.obj({ team: Side, player: S.str(), minute: S.str(), type: opt(S.en(['goal', 'penalty', 'own-goal'])) }))),
     tv: opt(S.str()),
     tickets: opt(S.url()),
+    url: opt(S.url('The match page, linked once it has started.')),
   }, { type: 'match', competition: 'Nations League C', status: 'scheduled', kickoff: '2026-10-06T20:45:00+02:00', home: { name: 'Albania', short: 'ALB' }, away: { name: 'San Marino', short: 'SMR' } }),
   B('lineup', 'sport', 'A starting lineup on a pitch. List the goalkeeper first, then each line from defence to attack, each line left to right as seen on screen with the team attacking upward. Players are placed from the formation, or give x/y (0–100) per player.', {
     formation: opt(S.str('e.g. "4-3-3", "3-4-3", "4-2-3-1".')),
@@ -243,6 +284,42 @@ export const BLOCKS: BlockDef[] = [
   }, { type: 'bracket', rounds: [{ name: 'Final', matches: [{ a: { name: 'Team A', score: 2 }, b: { name: 'Team B', score: 1 }, winner: 'a' }] }] }),
 
   /* -------- events & tickets -------- */
+  B('fixtures', 'sport', 'A list of matches, results and upcoming kickoffs, grouped by day.', {
+    competition: opt(S.str()),
+    round: opt(S.str()),
+    items: S.arr(
+      S.obj({
+        home: S.str(),
+        away: S.str(),
+        score: opt(S.pair(S.int())),
+        status: opt(S.en(['scheduled', 'live', 'halftime', 'finished', 'postponed', 'cancelled'])),
+        minute: opt(S.str()),
+        kickoff: opt(S.date()),
+        venue: opt(S.str()),
+        url: opt(S.url()),
+        homeLogo: opt(S.img()),
+        awayLogo: opt(S.img()),
+      }),
+    ),
+  }, { type: 'fixtures', competition: 'Kategoria e Parë', round: 'Java 2', items: [{ home: 'Iliria', away: 'Kukësi', score: [3, 1], status: 'finished', kickoff: '2026-09-12T15:00:00+02:00' }] }),
+  B('listing', 'event', "What's on: events grouped by day, with time, place, price and where to get tickets.", {
+    items: S.arr(
+      S.obj({
+        title: S.str(),
+        start: S.date(),
+        end: opt(S.date()),
+        venue: opt(S.str()),
+        image: opt(S.img()),
+        url: opt(S.url()),
+        price: opt(S.num()),
+        currency: opt(S.str()),
+        category: opt(S.str()),
+        status: opt(S.en(['on-sale', 'few-left', 'sold-out', 'free', 'cancelled', 'postponed'])),
+        seller: opt(S.str('Where tickets are sold when it is not here.')),
+      }),
+    ),
+    filters: opt(S.bool('Show category filters.')),
+  }, { type: 'listing', filters: true, items: [{ title: 'T’Rocks Festival', start: '2026-10-10T19:00:00+02:00', venue: 'Parku Olimpik, Tiranë', category: 'Koncert', price: 1500, currency: 'ALL' }] }),
   B('event', 'event', 'An event: concert, match, festival, cinema, theatre.', {
     name: S.str(),
     image: opt(S.img()),
@@ -256,11 +333,15 @@ export const BLOCKS: BlockDef[] = [
     status: opt(S.en(['on-sale', 'few-left', 'sold-out', 'free', 'cancelled', 'postponed'])),
     url: opt(S.url()),
     cta: opt(S.str()),
+    seller: opt(S.str('Where tickets are sold when it is not here, e.g. Kookooli.')),
+    recap: opt(S.url('Shown instead of the ticket button once the event is over: the result, a recap or the event page.')),
+    recapLabel: opt(S.str('Label for that link, e.g. "See the result".')),
   }, { type: 'event', name: 'Albania – San Marino', start: '2026-10-06T20:45:00+02:00', venue: { name: 'Air Albania Stadium', city: 'Tirana' }, priceFrom: 10, currency: 'EUR', status: 'on-sale' }),
   B('tickets', 'event', 'Ticket tiers to choose from.', {
     currency: opt(S.str()),
     tiers: S.arr(S.obj({ name: S.str(), price: S.num(), perks: opt(S.arr(S.str())), remaining: opt(S.int()), status: opt(S.en(['available', 'few-left', 'sold-out'])) })),
     url: opt(S.url('Checkout link; the chosen tier is added as ?tier=…')),
+    closes: opt(S.date('When sales close; after that the tiers are shown as closed.')),
   }, { type: 'tickets', currency: 'EUR', tiers: [{ name: 'Lindja', price: 10 }, { name: 'VIP', price: 60, status: 'few-left' }] }),
   B('venue', 'event', 'A venue with address, capacity and how to get there.', { name: S.str(), image: opt(S.img()), address: opt(S.str()), city: opt(S.str()), capacity: opt(S.int()), lat: opt(S.num()), lng: opt(S.num()), transport: opt(S.arr(S.str())), url: opt(S.url()) }, { type: 'venue', name: 'Air Albania Stadium', city: 'Tirana', capacity: 22500 }),
   B('schedule', 'event', 'Running order: artists, sets, sessions, kickoffs.', { items: S.arr(S.obj({ time: S.str(), name: S.str(), stage: opt(S.str()), image: opt(S.img()), note: opt(S.str()) })) }, { type: 'schedule', items: [{ time: '22:00', name: 'Headliner', stage: 'Main' }] }),
@@ -308,6 +389,20 @@ const ALIASES: Record<string, string> = {
   references: 'sources',
   buttons: 'actions',
   related: 'suggestions',
+  artist: 'artists',
+  performers: 'artists',
+  youtube: 'video',
+  videos: 'video',
+  playlist: 'video',
+  vote: 'poll',
+  prediction: 'poll',
+  survey: 'poll',
+  'whats-on': 'listing',
+  'events-list': 'listing',
+  agenda: 'listing',
+  calendar: 'listing',
+  matches: 'fixtures',
+  'match-list': 'fixtures',
   followups: 'suggestions',
   'follow-ups': 'suggestions',
   cta: 'actions',

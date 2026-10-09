@@ -4,7 +4,7 @@ Tags: animation, effects, page transition, scroll, glassmorphism
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -58,6 +58,11 @@ The runtime is about 30 KB and the stylesheet about 12 KB gzipped, loaded once a
 Add a Group block with your content. In Advanced, give it an HTML anchor such as "join". Add the modal effect. Link any button to "#join".
 
 == Changelog ==
+
+= 0.5.0 =
+* New intelligent UI blocks: video playlists (nothing loads from YouTube before a click), artists, what's-on listings, fixtures and polls.
+* Events, tickets and matches change by themselves when they start or end: no more "Buy tickets" on a match that has been played, even on cached pages.
+* An evidence line on any block ("Verified · date · source"), and schema.org data built from the same blocks.
 
 = 0.4.0 =
 * Intelligent UI: the [lumafx_ui] shortcode (or an <fx-ui> element in a Custom HTML block) renders match cards, lineups on a pitch, standings, live scores, charts, weather, places, tickets, seat maps, FAQs and more from JSON written by you, your AI or your API. Albanian and English labels, light and dark, and the scripts load only on pages that use it.

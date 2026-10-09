@@ -2,7 +2,7 @@
  * A small MCP Apps client for the view (spec 2026-01-26): the `ui/initialize` handshake, host
  * notifications, the few requests the view sends, and auto-resize. It does what the official
  * `App` class from @modelcontextprotocol/ext-apps does for this view, without bundling the MCP SDK
- * and zod into it (about 95 KB for the whole view instead of 700 KB). The tests run it against the
+ * and zod into it (about 170 KB for the whole view instead of 700 KB). The tests run it against the
  * official host side (`AppBridge`).
  */
 export const PROTOCOL_VERSION = '2026-01-26';

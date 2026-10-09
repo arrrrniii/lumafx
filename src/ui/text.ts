@@ -27,6 +27,11 @@ const TEXT: Record<string, (b: any) => string> = {
   itinerary: (b) => arr(b.days).map((d) => `${d.label}: ${arr(d.stops).map((x) => join([x.time, x.name], ' ')).join(', ')}`).join('\n'),
   quiz: (b) => arr(b.questions).map((q) => `${q.q} (${arr(q.options).join(' / ')})`).join('\n'),
   actions: (b) => arr(b.buttons).map((x) => `${x.label}: ${x.url}`).join('\n'),
+  video: (b) => (arr(b.items).length ? arr(b.items) : [b]).map((v) => join([v.title, v.channel, v.url], ' – ')).join('\n'),
+  artists: (b) => arr(b.items).map((a) => join([a.name, a.role, arr(a.genres).join(', '), a.url ?? a.spotify])).join('\n'),
+  poll: (b) => `${s(b.question)} ${arr(b.options).map((o) => `${o.label}${typeof o.votes === 'number' ? ` (${o.votes})` : ''}`).join(' / ')}`,
+  listing: (b) => arr(b.items).map((x) => join([x.start, x.title, x.venue, typeof x.price === 'number' ? `${x.price} ${x.currency ?? ''}`.trim() : '', x.seller ? `tickets: ${x.seller}` : '', x.url])).join('\n'),
+  fixtures: (b) => [join([b.competition, b.round]), ...arr(b.items).map((x) => `${x.home} ${Array.isArray(x.score) && x.score.length === 2 ? `${x.score[0]}–${x.score[1]}` : 'vs'} ${x.away}${x.kickoff ? ` (${x.kickoff})` : ''}`)].filter(Boolean).join('\n'),
   suggestions: (b) => arr(b.items).map((x) => `→ ${x.text}`).join('\n'),
   sources: (b) => arr(b.items).map((x, i) => `[${i + 1}] ${x.title} – ${x.url}`).join('\n'),
   countdown: (b) => join([b.label, b.to]),
@@ -52,7 +57,7 @@ const TEXT: Record<string, (b: any) => string> = {
   race: (b) => arr(b.rows).map((r) => join([`${r.pos}. ${r.name}`, r.team, r.time ?? r.gap], ' ')).join('\n'),
   fight: (b) => `${arr(b.fighters).map((f) => f.name).join(' vs ')}${b.result ? ` – ${arr(b.fighters)[b.result.winner]?.name ?? ''} by ${b.result.method}` : ''}`,
   bracket: (b) => arr(b.rounds).map((r) => `${r.name}: ${arr(r.matches).map((m) => `${m.a?.name} ${s(m.a?.score)}–${s(m.b?.score)} ${m.b?.name}`).join('; ')}`).join('\n'),
-  event: (b) => join([b.name, b.start, b.venue?.name, b.priceFrom !== undefined ? `from ${b.priceFrom} ${b.currency ?? ''}`.trim() : '', b.url]),
+  event: (b) => join([b.name, b.start, b.venue?.name, b.priceFrom !== undefined ? `from ${b.priceFrom} ${b.currency ?? ''}`.trim() : '', b.seller ? `tickets: ${b.seller}` : '', b.url]),
   tickets: (b) => arr(b.tiers).map((t) => `${t.name}: ${t.price} ${b.currency ?? ''}${t.status === 'sold-out' ? ' (sold out)' : ''}`.trim()).join('\n'),
   venue: (b) => join([b.name, b.address, b.city, b.capacity ? `capacity ${b.capacity}` : '']),
   schedule: (b) => arr(b.items).map((x) => join([x.time, x.name, x.stage], ' ')).join('\n'),
@@ -62,7 +67,9 @@ const TEXT: Record<string, (b: any) => string> = {
 export function blockToText(b: Block): string {
   const nested = b.type === 'group' ? arr(b.blocks) : b.type === 'tabs' ? arr(b.tabs).flatMap((t) => [{ type: 'text', md: `## ${t.label}` }, ...arr(t.blocks)]) : null;
   const body = nested ? nested.map((x) => blockToText(x as Block)).filter(Boolean).join('\n\n') : (TEXT[b.type]?.(b) ?? '');
-  return [b.title ? `## ${b.title}` : '', body, b.note ? s(b.note) : ''].filter(Boolean).join('\n');
+  const ev = b.evidence as { status?: string; source?: string; asOf?: string } | undefined;
+  const proof = ev?.status ? `(${join([ev.status, ev.source, ev.asOf], ', ')})` : '';
+  return [b.title ? `## ${b.title}` : '', body, proof, b.note ? s(b.note) : ''].filter(Boolean).join('\n');
 }
 
 /** The whole document as readable text. */

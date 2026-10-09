@@ -60,7 +60,7 @@ describe('React: intelligent UI', () => {
     await act(async () => root.render(h(FxUIStream, { value: full, done: true, onAsk: (t: string) => asked.push(t) })));
     await act(async () => new Promise((r) => setTimeout(r, 120)));
     expect(el.querySelectorAll('.fxui-b').length).toBe(2);
-    el.querySelector<HTMLButtonElement>('.fxui-chip')!.click();
+    el.querySelector<HTMLButtonElement>('.fxui-ask')!.click();
     expect(asked).toEqual(['More?']);
     await act(async () => root.unmount());
   });

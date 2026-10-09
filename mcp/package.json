@@ -1,6 +1,6 @@
 {
   "name": "lumafx-mcp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "MCP server that shows rich, interactive UI in Claude, ChatGPT and other MCP Apps hosts: match cards, lineups, standings, charts, weather, tickets and more from lumafx/ui. Free and open source.",
   "license": "MIT",
   "author": "Arnold Kajolli",

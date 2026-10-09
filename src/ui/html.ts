@@ -41,7 +41,8 @@ export function md(src: unknown) {
   const out: string[] = [];
   for (const chunk of text.split(/\n{2,}/)) {
     const lines = chunk.split('\n');
-    if (lines.every((l) => /^\s*[-*•]\s+/.test(l))) out.push(`<ul>${lines.map((l) => `<li>${inline(l.replace(/^\s*[-*•]\s+/, ''))}</li>`).join('')}</ul>`);
+    if (lines.every((l) => /^\s*>\s?/.test(l))) out.push(`<blockquote>${lines.map((l) => inline(l.replace(/^\s*>\s?/, ''))).join('<br>')}</blockquote>`);
+    else if (lines.every((l) => /^\s*[-*•]\s+/.test(l))) out.push(`<ul>${lines.map((l) => `<li>${inline(l.replace(/^\s*[-*•]\s+/, ''))}</li>`).join('')}</ul>`);
     else if (lines.every((l) => /^\s*\d+[.)]\s+/.test(l))) out.push(`<ol>${lines.map((l) => `<li>${inline(l.replace(/^\s*\d+[.)]\s+/, ''))}</li>`).join('')}</ol>`);
     else if (/^#{1,4}\s/.test(lines[0])) out.push(`<h4>${inline(lines[0].replace(/^#+\s/, ''))}</h4>${lines.length > 1 ? `<p>${lines.slice(1).map(inline).join('<br>')}</p>` : ''}`);
     else out.push(`<p>${lines.map(inline).join('<br>')}</p>`);
@@ -95,10 +96,12 @@ function ownFormat(names: { days: string[]; months: string[] }, f: Fmt, d: Date,
   if (kind === 'date') return `${parts.day} ${month} ${parts.year}`;
   if (kind === 'day') return `${day}, ${parts.day} ${month}`;
   if (kind === 'short') return `${parts.day} ${month}`;
+  if (kind === 'dom') return parts.day;
+  if (kind === 'month') return month;
   return hasTime ? `${day}, ${parts.day} ${month}, ${time}` : `${day}, ${parts.day} ${month} ${parts.year}`;
 }
 
-export function fmtDate(f: Fmt, v: unknown, kind: 'date' | 'time' | 'datetime' | 'day' | 'short' = 'datetime') {
+export function fmtDate(f: Fmt, v: unknown, kind: 'date' | 'time' | 'datetime' | 'day' | 'short' | 'dom' | 'month' = 'datetime') {
   const d = parseDate(v);
   if (!d) return esc(v);
   const hasTime = typeof v === 'string' && /T\d\d:\d\d/.test(v);
@@ -113,7 +116,11 @@ export function fmtDate(f: Fmt, v: unknown, kind: 'date' | 'time' | 'datetime' |
           ? { weekday: 'short', day: 'numeric', month: 'short' }
           : kind === 'short'
             ? { day: 'numeric', month: 'short' }
-            : hasTime
+            : kind === 'dom'
+              ? { day: 'numeric' }
+              : kind === 'month'
+                ? { month: 'short' }
+                : hasTime
               ? { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }
               : { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
   try {
@@ -184,6 +191,9 @@ export const ICONS: Record<string, string> = {
   bulb: svg('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>'),
   play: svg('<path d="M8 5.5v13l10.5-6.5z"/>'),
   table: svg('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>'),
+  spotify: svg('<circle cx="12" cy="12" r="8.6"/><path d="M7.6 9.6c3-.9 6.4-.6 9 .9M8.2 12.6c2.4-.7 5-.4 7.2.8M8.8 15.4c1.9-.5 3.8-.3 5.5.6"/>'),
+  youtube: svg('<rect x="2.8" y="5.5" width="18.4" height="13" rx="3.6"/><path d="M10.2 9.4v5.2l4.4-2.6z" fill="currentColor"/>'),
+  instagram: svg('<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="3.8"/><path d="M16.9 7.1v.01"/>'),
 };
 
 export const icon = (name: string) => ICONS[name] ?? '';

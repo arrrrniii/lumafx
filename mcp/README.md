@@ -6,7 +6,7 @@ An MCP server that lets Claude, ChatGPT and other MCP Apps hosts answer with rea
 - **Streams.** The view renders the blocks while the model is still writing them.
 - **Talks back.** Follow-up chips become the user's next message, links open through the host, ticket and seat picks reach the model's context.
 - **Works everywhere.** Hosts without UI get a clean plain-text version of the same answer.
-- **Small and safe.** The view is one self-contained 140 KB HTML file with no external requests; everything the model writes is escaped and checked, and unsafe links are dropped (the tool tells the model what it fixed).
+- **Small and safe.** The view is one self-contained 170 KB HTML file with no external requests; everything the model writes is escaped and checked, and unsafe links are dropped (the tool tells the model what it fixed).
 
 ## Run it
 
@@ -71,7 +71,7 @@ server.registerTool(
 
 - `render_ui` is linked to the `ui://lumafx/view.html` resource (`text/html;profile=mcp-app`) through `_meta.ui.resourceUri`, as in the MCP Apps spec (2026-01-26).
 - The view does the `ui/initialize` handshake, renders `ui/notifications/tool-input-partial` as it arrives, settles on the validated `tool-result`, follows the host's theme, fonts and locale, and reports its height so the host can size the frame.
-- It uses a small built-in MCP Apps client instead of bundling the SDK, which keeps the view at about 140 KB instead of 700 KB. The tests run it against the official host bridge from `@modelcontextprotocol/ext-apps`.
+- It uses a small built-in MCP Apps client instead of bundling the SDK, which keeps the view at about 170 KB instead of 700 KB. The tests run it against the official host bridge from `@modelcontextprotocol/ext-apps`.
 
 ## Develop
 

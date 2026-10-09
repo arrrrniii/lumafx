@@ -59,6 +59,8 @@ def new_page(browser, url, errors, **ctx):
     page = context.new_page()
     page.on("pageerror", lambda e: errors.append(f"pageerror: {e}"))
     page.on("console", lambda m: m.type == "error" and errors.append(f"console: {m.text}"))
+    # The console message for a failed load has no URL; record it here so a failure names the file.
+    page.on("response", lambda r: r.status >= 400 and errors.append(f"http {r.status}: {r.url}"))
     page.goto(url, wait_until="load")
     page.wait_for_timeout(400)
     # The demo opens with a preloader; entrance animations start when it lifts.

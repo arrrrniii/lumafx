@@ -38,6 +38,38 @@ const SHAPES: Record<string, Record<string, string>> = {
   },
 };
 
+const HOUR = 36e5;
+
+/** Where an event is in time: before, during or after. Registers the next change with the context. */
+export function phase(c: Ctx, start: unknown, end: unknown, defaultHours = 4): 'before' | 'during' | 'after' | 'unknown' {
+  const s = typeof start === 'string' ? Date.parse(start) : NaN;
+  if (!Number.isFinite(s)) return 'unknown';
+  const e = typeof end === 'string' && Number.isFinite(Date.parse(end)) ? Date.parse(end) : s + defaultHours * HOUR;
+  c.expire(s);
+  c.expire(e);
+  return c.now < s ? 'before' : c.now < e ? 'during' : 'after';
+}
+
+/** Day heading for a list grouped by date: Today, Tomorrow or the weekday and date. */
+function dayLabel(c: Ctx, iso: string) {
+  const key = (d: number) => new Intl.DateTimeFormat('en-CA', { timeZone: c.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(d));
+  try {
+    const k = key(Date.parse(iso));
+    if (k === key(c.now)) return c.t('today');
+    if (k === key(c.now + 24 * HOUR)) return c.t('tomorrow');
+  } catch {
+    /* fall through */
+  }
+  return fmtDate(c, iso, 'day');
+}
+const dayKey = (c: Ctx, iso: string) => {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: c.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.parse(iso)));
+  } catch {
+    return String(iso).slice(0, 10);
+  }
+};
+
 export const events: Record<string, Renderer> = {
   event: (b, c) => {
     const img = safeUrl(b.image);
@@ -45,25 +77,81 @@ export const events: Record<string, Renderer> = {
     const v = b.venue ?? {};
     const when = b.start ? `${fmtDate(c, b.start)}${b.end ? ` – ${fmtDate(c, b.end, String(b.end).slice(0, 10) === String(b.start).slice(0, 10) ? 'time' : 'datetime')}` : ''}` : '';
     const start = b.start ? new Date(b.start) : null;
-    const day = start && !Number.isNaN(start.getTime()) ? `<span class="fxui-datebox"><b>${fmtDate(c, b.start, 'short').replace(/\s.*$/, '')}</b><small>${esc(new Intl.DateTimeFormat(c.locale, { month: 'short', timeZone: c.timeZone }).format(start))}</small></span>` : '';
-    return `<article class="fxui-eventcard${img ? '' : ' fxui-noimg'}">${img ? `<div class="fxui-media"><img src="${esc(img)}" alt="" loading="lazy">${day}</div>` : ''}<div class="fxui-body"><div class="fxui-row">${b.category ? `<span class="fxui-chip">${esc(b.category)}</span>` : '<span></span>'}${statusBadge(c, b.status)}</div><strong class="fxui-name">${esc(b.name)}</strong>${
+    const day = start && !Number.isNaN(start.getTime()) ? `<span class="fxui-datebox"><b>${fmtDate(c, b.start, 'dom')}</b><small>${fmtDate(c, b.start, 'month')}</small></span>` : '';
+    const ph = phase(c, b.start, b.end);
+    const recap = safeUrl(b.recap);
+    const badge =
+      ph === 'after' && b.status !== 'cancelled' && b.status !== 'postponed'
+        ? `<span class="fxui-badge" data-tone="neutral">${esc(c.t('ended'))}</span>`
+        : ph === 'during' && b.status !== 'cancelled'
+          ? `<span class="fxui-badge" data-tone="live"><i class="fxui-pulse"></i>${esc(c.t('happening'))}</span>`
+          : statusBadge(c, b.status);
+    const action =
+      ph === 'after'
+        ? recap
+          ? `<a class="fxui-btn" data-variant="secondary" ${linkAttrs(recap)}>${esc(b.recapLabel || c.t('recap'))}${icon('arrow')}</a>`
+          : ''
+        : u && b.status !== 'sold-out' && b.status !== 'cancelled'
+          ? `<a class="fxui-btn" data-variant="primary" ${linkAttrs(u)}>${icon('ticket')}${esc(b.cta ?? c.t('buy'))}</a>`
+          : '';
+    const price = ph !== 'after' && typeof b.priceFrom === 'number' ? `<span class="fxui-price"><small>${esc(c.t('from'))}</small> <strong>${money(c, b.priceFrom, b.currency)}</strong></span>` : '';
+    const seller = ph !== 'after' && b.seller ? `<small class="fxui-seller">${esc(c.t('ticketsAt'))} ${esc(b.seller)}</small>` : '';
+    return `<article class="fxui-eventcard${img ? '' : ' fxui-noimg'}" data-phase="${ph}">${img ? `<div class="fxui-media"><img src="${esc(img)}" alt="" loading="lazy">${day}</div>` : ''}<div class="fxui-body"><div class="fxui-row">${b.category ? `<span class="fxui-chip">${esc(b.category)}</span>` : '<span></span>'}${badge}</div><strong class="fxui-name">${esc(b.name)}</strong>${
       arr(b.artists).length ? `<span class="fxui-meta">${arr(b.artists).map(esc).join(' · ')}</span>` : ''
-    }<ul class="fxui-facts">${when ? `<li>${icon('calendar')}<span>${when}</span></li>` : ''}${v.name ? `<li>${icon('pin')}<span>${esc([v.name, v.city].filter(Boolean).join(', '))}</span></li>` : ''}</ul><div class="fxui-row">${typeof b.priceFrom === 'number' ? `<span class="fxui-price"><small>${esc(c.t('from'))}</small> <strong>${money(c, b.priceFrom, b.currency)}</strong></span>` : '<span></span>'}${
-      u && b.status !== 'sold-out' && b.status !== 'cancelled' ? `<a class="fxui-btn" data-variant="primary" ${linkAttrs(u)}>${icon('ticket')}${esc(b.cta ?? c.t('buy'))}</a>` : ''
-    }</div></div></article>`;
+    }<ul class="fxui-facts">${when ? `<li>${icon('calendar')}<span>${when}</span></li>` : ''}${v.name ? `<li>${icon('pin')}<span>${esc([v.name, v.city].filter(Boolean).join(', '))}</span></li>` : ''}</ul><div class="fxui-row">${price || seller ? `<span class="fxui-pricebox">${price}${seller}</span>` : '<span></span>'}${action}</div></div></article>`;
   },
 
   tickets: (b, c) => {
-    const u = safeUrl(b.url);
+    const closesAt = Date.parse(b.closes);
+    const closed = Number.isFinite(closesAt) && closesAt <= c.now;
+    if (Number.isFinite(closesAt)) c.expire(closesAt);
+    const u = closed ? '' : safeUrl(b.url);
     const id = c.uid('tier');
-    return `<div class="fxui-tickets" data-url="${esc(u)}"><fieldset><div class="fxui-tiers">${arr(b.tiers)
+    return `<div class="fxui-tickets" data-url="${esc(u)}"${closed ? ' data-closed' : ''}><fieldset${closed ? ' disabled' : ''}><div class="fxui-tiers">${arr(b.tiers)
       .map((t, i) => {
-        const sold = t.status === 'sold-out' || t.remaining === 0;
+        const sold = closed || t.status === 'sold-out' || t.remaining === 0;
         return `<label data-k="t${i}"${sold ? ' data-sold' : ''}><input type="radio" name="${id}" value="${esc(t.name)}"${sold ? ' disabled' : ''}><span class="fxui-tier"><span class="fxui-row"><strong>${esc(t.name)}</strong><b>${money(c, t.price, b.currency)}</b></span>${
           arr(t.perks).length ? `<ul>${arr(t.perks).map((p) => `<li>${icon('check')}${esc(p)}</li>`).join('')}</ul>` : ''
-        }${sold ? statusBadge(c, 'sold-out') : t.status === 'few-left' || (typeof t.remaining === 'number' && t.remaining < 50) ? `<span class="fxui-badge" data-tone="warning">${typeof t.remaining === 'number' ? `${fmtNum(c, t.remaining)} ${esc(c.t('left'))}` : esc(c.t('fewLeft'))}</span>` : ''}</span></label>`;
+        }${closed ? '' : sold ? statusBadge(c, 'sold-out') : t.status === 'few-left' || (typeof t.remaining === 'number' && t.remaining < 50) ? `<span class="fxui-badge" data-tone="warning">${typeof t.remaining === 'number' ? `${fmtNum(c, t.remaining)} ${esc(c.t('left'))}` : esc(c.t('fewLeft'))}</span>` : ''}</span></label>`;
       })
-      .join('')}</div></fieldset>${u ? `<a class="fxui-btn fxui-checkout" data-variant="primary" ${linkAttrs(u)} aria-disabled="true">${icon('ticket')}<span>${esc(c.t('buy'))}</span></a>` : ''}</div>`;
+      .join('')}</div></fieldset>${closed ? `<p class="fxui-closed">${icon('clock')}${esc(c.t('salesClosed'))}</p>` : u ? `<a class="fxui-btn fxui-checkout" data-variant="primary" ${linkAttrs(u)} aria-disabled="true">${icon('ticket')}<span>${esc(c.t('buy'))}</span></a>` : ''}</div>`;
+  },
+
+  listing: (b, c) => {
+    const items = arr(b.items)
+      .filter((x) => typeof x.start === 'string' && Number.isFinite(Date.parse(x.start)))
+      .sort((x, y) => Date.parse(x.start) - Date.parse(y.start));
+    if (!items.length) return `<p class="fxui-empty">${esc(c.t('nothing'))}</p>`;
+    const cats = Array.from(new Set(items.map((x) => x.category).filter(Boolean))) as string[];
+    const filters =
+      b.filters && cats.length > 1
+        ? `<div class="fxui-filters" role="group">${['', ...cats]
+            .map((x, i) => `<button type="button" data-cat="${esc(x)}" aria-pressed="${i === 0}">${esc(x || c.t('all'))}</button>`)
+            .join('')}</div>`
+        : '';
+    const groups = new Map<string, any[]>();
+    for (const x of items) {
+      const k = dayKey(c, x.start);
+      groups.set(k, [...(groups.get(k) ?? []), x]);
+    }
+    let n = 0;
+    return `<div class="fxui-listing">${filters}${Array.from(groups.values())
+      .map(
+        (list) =>
+          `<section class="fxui-day" data-k="d${esc(dayKey(c, list[0].start))}"><h4>${esc(dayLabel(c, list[0].start))}</h4><ul role="list">${list
+            .map((x) => {
+              const ph = phase(c, x.start, x.end, 3);
+              const img = safeUrl(x.image);
+              const u = safeUrl(x.url);
+              const price =
+                x.status === 'free' ? esc(c.t('free')) : typeof x.price === 'number' ? `${esc(c.t('from'))} ${money(c, x.price, x.currency)}` : '';
+              const badge = ph === 'after' ? `<span class="fxui-badge" data-tone="neutral">${esc(c.t('ended'))}</span>` : ph === 'during' ? `<span class="fxui-badge" data-tone="live"><i class="fxui-pulse"></i>${esc(c.t('happening'))}</span>` : x.status && x.status !== 'on-sale' && x.status !== 'free' ? statusBadge(c, x.status) : '';
+              const title = u ? `<a ${linkAttrs(u)}>${esc(x.title)}</a>` : esc(x.title);
+              return `<li data-k="e${n++}" data-cat="${esc(x.category ?? '')}" data-phase="${ph}"><time datetime="${esc(x.start)}">${fmtDate(c, x.start, 'time')}</time>${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="fxui-lthumb">${icon('ticket')}</span>`}<div class="fxui-lbody"><strong>${title}</strong><span class="fxui-meta">${[x.venue ? esc(x.venue) : '', x.category ? esc(x.category) : ''].filter(Boolean).join(' · ')}</span></div><div class="fxui-lside">${badge}${price ? `<span class="fxui-lprice">${price}</span>` : ''}${x.seller && ph !== 'after' ? `<small>${esc(c.t('ticketsAt'))} ${esc(x.seller)}</small>` : ''}</div></li>`;
+            })
+            .join('')}</ul></section>`,
+      )
+      .join('')}</div>`;
   },
 
   venue: (b, c) => {

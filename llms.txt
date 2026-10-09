@@ -1,4 +1,4 @@
-# lumafx 0.4.0
+# lumafx 0.5.0
 
 > Premium web effects and animated components from one HTML attribute. Framework-agnostic, zero dependencies, CSS-first, accessible by default. MIT, free forever.
 
@@ -492,7 +492,7 @@ Options:
 
 ## Intelligent UI (lumafx/ui, isomorphic)
 - An AI answers with JSON blocks { blocks: [{ type, ...props }], lang? } that render as interface, also while streaming. Block reference for prompts: prompt(types?) from "lumafx/ui/server"; tool definitions: anthropicTool({ types }) / openaiTool({ types }); JSON Schema: jsonSchema(types?).
-- Blocks: text, callout, group, tabs, faq, details, table, stats, chart, steps, timeline, compare, product, gallery, image, quote, progress, weather, places, itinerary, quiz, actions, suggestions, sources, countdown, match, lineup, events, match-stats, standings, h2h, player, scoreboard, tennis, race, fight, bracket, event, tickets, venue, schedule, zones.
+- Blocks: text, callout, group, tabs, faq, details, table, stats, chart, steps, timeline, compare, product, gallery, image, quote, progress, weather, places, itinerary, quiz, actions, video, artists, poll, suggestions, sources, countdown, match, lineup, events, match-stats, standings, h2h, player, scoreboard, tennis, race, fight, bracket, fixtures, listing, event, tickets, venue, schedule, zones.
 - Server: validate(input) → { ok, doc, errors } (accepts a doc, a list, one block or JSON text, even fenced); renderToString(doc, { lang, timeZone, theme }) → HTML with the JSON embedded; toText(doc) → plain text.
 - Browser: render(el, doc) · stream(el, opts) → { write(chunk), set(textOrDoc), end() } · hydrate(el) · update(el, id, props) · adapter.set(name, { fetch(id, block) → props | subscribe(id, block, push) → unsubscribe }) for blocks with live: { adapter, id, every }.
 - <fx-ui lang="sq" time-zone="Europe/Tirane" theme="light|dark" ask-url="/search?q=" src="/ui.json"> with a <script type="application/json"> child. Events: fxui:ask (follow-up chip), fxui:select (ticket tier or zone), fxui:answer (quiz), fxui:done.

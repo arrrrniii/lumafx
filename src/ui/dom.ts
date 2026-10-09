@@ -6,7 +6,7 @@
 import { validate, type Block, type Doc, type ValidateOptions } from './schema';
 import { parsePartial } from './partial';
 import { makeCtx, renderBlock, flatten, type Ctx, type RenderOptions } from './render';
-import { fmtNum } from './html';
+import { fmtNum, icon } from './html';
 
 type Cleanup = () => void;
 type Mount = (el: HTMLElement, b: Block & Record<string, any>, c: Ctx) => Cleanup | void;
@@ -207,6 +207,99 @@ const MOUNTS: Record<string, Mount> = {
     return () => clearInterval(id);
   },
 
+  video(el) {
+    const stage = el.querySelector<HTMLElement>('.fxui-stage') ?? el.querySelector<HTMLElement>('.fxui-video');
+    const data = el.querySelector<HTMLScriptElement>('script.fxui-vdata');
+    const list: { href: string; embed: string; poster: string; title: string; channel: string }[] = data ? JSON.parse(data.textContent || '[]') : [];
+    // Inside hosts that block frames (MCP Apps), videos open as links instead.
+    const inline = () => !el.closest('[data-video="link"]');
+    const play = (a: HTMLAnchorElement) => {
+      const src = a.dataset.embed;
+      if (!src) return false;
+      const f = document.createElement('iframe');
+      f.src = src;
+      f.title = a.querySelector('strong')?.textContent ?? 'Video';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.className = 'fxui-frame';
+      a.replaceWith(f);
+      return true;
+    };
+    const onClick = (e: Event) => {
+      const a = (e.target as Element).closest<HTMLAnchorElement>('a.fxui-vplayer');
+      if (a && inline() && play(a)) {
+        e.preventDefault();
+        return;
+      }
+      const btn = (e.target as Element).closest<HTMLButtonElement>('.fxui-vlist button[data-index]');
+      if (!btn || !stage) return;
+      const v = list[Number(btn.dataset.index)];
+      if (!v) return;
+      el.querySelectorAll('.fxui-vlist button').forEach((x) => x.setAttribute('aria-current', String(x === btn)));
+      const a2 = document.createElement('a');
+      a2.className = 'fxui-vplayer';
+      a2.href = v.href;
+      a2.target = '_blank';
+      a2.rel = 'noopener';
+      if (v.embed) a2.dataset.embed = v.embed;
+      a2.setAttribute('aria-label', v.title);
+      a2.innerHTML = `${v.poster ? `<img src="${v.poster.replace(/"/g, '&quot;')}" alt="">` : ''}<span class="fxui-playbtn"></span><span class="fxui-vmeta"><strong></strong><small></small></span>`;
+      a2.querySelector('.fxui-playbtn')!.innerHTML = el.querySelector('.fxui-playbtn')?.innerHTML ?? '▶';
+      a2.querySelector('strong')!.textContent = v.title;
+      a2.querySelector('small')!.textContent = v.channel;
+      stage.replaceChildren(a2);
+      if (inline()) play(a2);
+    };
+    el.addEventListener('click', onClick);
+    return () => el.removeEventListener('click', onClick);
+  },
+
+  poll(el, b, c) {
+    const form = el.querySelector<HTMLFormElement>('.fxui-poll')!;
+    const onSubmit = (e: Event) => e.preventDefault();
+    const onChange = (e: Event) => {
+      const input = e.target as HTMLInputElement;
+      if (input.type !== 'radio' || form.dataset.state !== 'open') return;
+      const opts = Array.from(form.querySelectorAll<HTMLLabelElement>('.fxui-popt'));
+      const votes = opts.map((o, i) => Number(o.dataset.votes || 0) + (i === Number(input.value) ? 1 : 0));
+      const total = votes.reduce((a, v) => a + v, 0) || 1;
+      opts.forEach((o, i) => {
+        const p = Math.round((votes[i] / total) * 100);
+        o.style.setProperty('--p', p + '%');
+        const pct = o.querySelector('.fxui-ppct');
+        if (pct) pct.textContent = p + '%';
+        if (i === Number(input.value)) o.dataset.mine = '';
+      });
+      form.dataset.state = 'results';
+      form.querySelector('fieldset')!.disabled = true;
+      const foot = form.querySelector('.fxui-pfoot small');
+      if (foot) foot.textContent = c.t('voted');
+      emit(el, 'fxui:vote', { block: b.id ?? b.type, option: Number(input.value), label: (b.options as any[])?.[Number(input.value)]?.label });
+    };
+    form.addEventListener('submit', onSubmit);
+    form.addEventListener('change', onChange);
+    return () => {
+      form.removeEventListener('submit', onSubmit);
+      form.removeEventListener('change', onChange);
+    };
+  },
+
+  listing(el) {
+    const bar = el.querySelector<HTMLElement>('.fxui-filters');
+    if (!bar) return;
+    const onClick = (e: Event) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>('button[data-cat]');
+      if (!btn) return;
+      const cat = btn.dataset.cat ?? '';
+      bar.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === btn)));
+      el.querySelectorAll<HTMLElement>('.fxui-day li').forEach((li) => (li.hidden = !!cat && li.dataset.cat !== cat));
+      el.querySelectorAll<HTMLElement>('.fxui-day').forEach((d) => (d.hidden = !d.querySelector('li:not([hidden])')));
+    };
+    bar.addEventListener('click', onClick);
+    return () => bar.removeEventListener('click', onClick);
+  },
+
   suggestions(el) {
     const onClick = (e: Event) => {
       const btn = (e.target as Element).closest<HTMLButtonElement>('button[data-ask]');
@@ -372,7 +465,34 @@ function mountAll(state: Live, scope: HTMLElement, blocks: Block[], withLive = t
     }
     const live = b.live as { adapter?: string; id?: string; every?: number } | undefined;
     if (withLive && live?.adapter && live.id && state.doc.blocks.includes(b)) startLive(state, b, live as { adapter: string; id: string; every?: number });
+    if (sec.dataset.expires && state.doc.blocks.includes(b)) scheduleExpiry(state, sec, b);
   });
+}
+
+/**
+ * Blocks that change with time (an event that ends, sales that close, a kickoff) carry
+ * data-expires. Server-rendered HTML may already be past it, so check on mount, then wake up when
+ * the moment comes.
+ */
+function scheduleExpiry(state: Live, sec: HTMLElement, b: Block) {
+  const at = Number(sec.dataset.expires);
+  // A pinned clock (the `now` option) is a snapshot: it does not move on its own.
+  if (!Number.isFinite(at) || state.opts.now !== undefined) return;
+  const rerender = () => {
+    state.ctx.now = Date.now();
+    const i = state.doc.blocks.indexOf(b);
+    if (i < 0 || !sec.isConnected) return;
+    const fresh = replaceSection(state, sec, b, true);
+    if (fresh) state.sigs[i] = JSON.stringify(b);
+  };
+  const wait = at - Date.now();
+  if (wait <= 0) {
+    queueMicrotask(rerender);
+    return;
+  }
+  if (wait > 2 ** 31 - 1) return;
+  const timer = setTimeout(rerender, wait + 50);
+  state.cleanups.set(sec, [...(state.cleanups.get(sec) ?? []), () => clearTimeout(timer)]);
 }
 
 function startLive(state: Live, b: Block, live: { adapter: string; id: string; every?: number }) {
@@ -456,7 +576,30 @@ function onImageError(e: Event) {
     return;
   }
   const fig = img.closest<HTMLElement>('.fxui-gallery figure, figure.fxui-figure');
-  if (fig) fig.hidden = true;
+  if (fig) {
+    fig.hidden = true;
+    return;
+  }
+  // Faces and thumbnails fall back to initials or an icon instead of an empty box.
+  if (parent?.classList.contains('fxui-aphoto')) {
+    const name = img.closest('li')?.querySelector('.fxui-name')?.textContent ?? '';
+    const span = document.createElement('span');
+    span.textContent = name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]!.toUpperCase())
+      .join('');
+    img.replaceWith(span);
+    return;
+  }
+  if (img.closest('.fxui-day li, .fxui-vlist button')) {
+    const span = document.createElement('span');
+    const video = !!img.closest('.fxui-vlist');
+    span.className = video ? 'fxui-vthumb' : 'fxui-lthumb';
+    span.innerHTML = icon(video ? 'play' : 'ticket');
+    img.replaceWith(span);
+  }
 }
 const watched = new WeakSet<HTMLElement>();
 

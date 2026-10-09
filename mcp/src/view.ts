@@ -13,7 +13,7 @@ let ctx: HostContext = {};
 let current: Stream | null = null;
 let settled = false;
 
-const app = new Host({ name: 'lumafx-ui', version: '0.4.0' });
+const app = new Host({ name: 'lumafx-ui', version: '0.5.0' });
 
 function langFor(args?: Record<string, unknown>) {
   const own = typeof args?.lang === 'string' ? args.lang.slice(0, 2).toLowerCase() : '';

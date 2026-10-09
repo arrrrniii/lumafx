@@ -1,7 +1,17 @@
 /**
- * Parses JSON that is still arriving. Strings that are cut off are closed, unfinished numbers,
- * keys and literals are dropped, and open arrays and objects are closed, so a UI can render
- * whatever has arrived so far. Text before the first { or [ (and ```json fences) is ignored.
+ * Keys whose value is only useful whole. A cut-off link would be fetched ("img/bll" → 404), a
+ * cut-off date read as another date ("2026-10" → 1 October) and a cut-off enum fail validation,
+ * so these wait until their closing quote arrives. Text keys (md, title, …) still stream.
+ */
+const WHOLE = new Set(['type', 'start', 'end', 'kickoff', 'date', 'closes', 'asOf', 'time', 'currency', 'lang', 'theme', 'tone', 'variant', 'status', 'spotify', 'youtube', 'instagram', 'tickets', 'recap', 'email', 'phone']);
+const LINK = /(?:url|href|src|image|images|img|poster|logo|avatar|photo|thumb|thumbnail|website|link)$/i;
+const whole = (key: string | undefined) => key !== undefined && (WHOLE.has(key) || LINK.test(key));
+
+/**
+ * Parses JSON that is still arriving. Strings that are cut off are closed (except for links,
+ * dates and enums, see WHOLE), unfinished numbers, keys and literals are dropped, and open arrays
+ * and objects are closed, so a UI can render whatever has arrived so far. Text before the first
+ * { or [ (and ```json fences) is ignored.
  */
 export function parsePartial(text: string): unknown {
   const start = text.search(/[[{]/);
@@ -45,13 +55,16 @@ export function parsePartial(text: string): unknown {
     return { v: out, done: false };
   }
 
-  function value(): R {
+  function value(key?: string): R {
     ws();
     if (i >= s.length) return INCOMPLETE;
     const c = s[i];
     if (c === '{') return obj();
-    if (c === '[') return arr();
-    if (c === '"') return str().v;
+    if (c === '[') return arr(key);
+    if (c === '"') {
+      const r = str();
+      return r.done || !whole(key) ? r.v : INCOMPLETE;
+    }
     const m = /^(-?\d+(\.\d+)?([eE][+-]?\d+)?|true|false|null)/.exec(s.slice(i, i + 40));
     if (m) {
       const end = i + m[0].length;
@@ -88,13 +101,14 @@ export function parsePartial(text: string): unknown {
       ws();
       if (s[i] !== ':') return out;
       i++;
-      const v = value();
+      const v = value(k.v);
       if (v === INCOMPLETE) return out;
       out[k.v] = v;
     }
   }
 
-  function arr(): unknown[] {
+  /** `key` is the array's own key: the items of "images": [...] are links too. */
+  function arr(key?: string): unknown[] {
     i++;
     const out: unknown[] = [];
     while (true) {
@@ -108,7 +122,7 @@ export function parsePartial(text: string): unknown {
         i++;
         continue;
       }
-      const v = value();
+      const v = value(key);
       if (v === INCOMPLETE) return out;
       out.push(v);
     }

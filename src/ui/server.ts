@@ -10,5 +10,8 @@ export { renderToString, renderBlock, RENDERERS } from './render';
 export type { RenderOptions, Renderer, Ctx } from './render';
 export { parsePartial } from './partial';
 export { toText, blockToText } from './text';
+export { jsonLd, jsonLdScript } from './seo';
+export type { PageMeta } from './seo';
+export { parseVideo } from './blocks/media';
 export { addLabels, labels } from './i18n';
 export { placePlayers, formationLines } from './blocks/sport';

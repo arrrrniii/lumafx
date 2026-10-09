@@ -125,7 +125,7 @@ export const content: Record<string, Renderer> = {
       .map((x, i) => {
         const u = x.url ? safeUrl(x.url) : '';
         const inner = `${icon('arrow')}<span>${esc(x.text)}</span>`;
-        return `<li data-k="q${i}">${u ? `<a class="fxui-chip" ${linkAttrs(u)}>${inner}</a>` : `<button type="button" class="fxui-chip" data-ask="${esc(x.text)}">${inner}</button>`}</li>`;
+        return `<li data-k="q${i}">${u ? `<a class="fxui-ask" ${linkAttrs(u)}>${inner}</a>` : `<button type="button" class="fxui-ask" data-ask="${esc(x.text)}">${inner}</button>`}</li>`;
       })
       .join('')}</ul>`,
 
