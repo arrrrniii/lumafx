@@ -110,6 +110,40 @@ await build({
   logLevel: 'warning',
 });
 
+// Intelligent UI: blocks an AI describes as JSON. No effect metadata needed.
+await build({
+  entryPoints: { ui: 'src/ui/index.ts', 'ui-server': 'src/ui/server.ts' },
+  absWorkingDir: root,
+  outdir: dist,
+  bundle: true,
+  splitting: true,
+  format: 'esm',
+  target: 'es2020',
+  outExtension: { '.js': '.mjs' },
+  chunkNames: 'chunks/[name]-[hash]',
+  define,
+  logLevel: 'warning',
+});
+await build({
+  entryPoints: ['src/ui/global.ts'],
+  absWorkingDir: root,
+  outfile: path.join(dist, 'lumafx-ui.global.js'),
+  bundle: true,
+  minify: true,
+  format: 'iife',
+  target: 'es2020',
+  define,
+  legalComments: 'none',
+  banner: { js: `/*! lumafx ui v${pkg.version} | MIT */` },
+  logLevel: 'warning',
+});
+{
+  const src = fs.readFileSync(path.join(root, 'src/css/ui.css'), 'utf8');
+  const min = await transform(src, { loader: 'css', minify: true, target: ['chrome105', 'safari15.4', 'firefox110'], legalComments: 'none' });
+  fs.writeFileSync(path.join(dist, 'lumafx-ui.css'), `/*! lumafx ui v${pkg.version} | MIT */\n` + min.code);
+  for (const w of min.warnings ?? []) console.warn('ui css:', w.text);
+}
+
 // React: components are server-safe; the runtime island is a client component that imports the package itself.
 await build({
   entryPoints: { 'react/index': 'src/react/index.ts' },
@@ -271,7 +305,7 @@ fs.writeFileSync(path.join(root, 'llms.txt'), llms);
 execSync('npx tsc -p tsconfig.json', { cwd: root, stdio: 'inherit' });
 
 // ---------- size report ----------
-const sizes = ['lumafx.global.js', 'lumafx.css', 'index.mjs', 'editor.mjs', 'lumafx-editor.global.js', 'react/index.mjs', 'react/runtime.mjs'].map((f) => {
+const sizes = ['lumafx.global.js', 'lumafx.css', 'index.mjs', 'editor.mjs', 'lumafx-editor.global.js', 'lumafx-ui.global.js', 'lumafx-ui.css', 'ui-server.mjs', 'react/index.mjs', 'react/runtime.mjs'].map((f) => {
   const buf = fs.readFileSync(path.join(dist, f));
   return `${f.padEnd(20)} ${(buf.length / 1024).toFixed(1).padStart(6)} KB  ${(gzipSync(buf, { level: 9 }).length / 1024).toFixed(1).padStart(5)} KB gzip`;
 });
@@ -285,6 +319,8 @@ if (fs.existsSync(path.join(demoDir, 'page.html'))) {
   fs.copyFileSync(path.join(dist, 'lumafx.css'), path.join(demoDir, 'lumafx.css'));
   fs.copyFileSync(path.join(dist, 'lumafx.global.js'), path.join(demoDir, 'lumafx.global.js'));
   fs.copyFileSync(path.join(dist, 'lumafx-editor.global.js'), path.join(demoDir, 'lumafx-editor.global.js'));
+  fs.copyFileSync(path.join(dist, 'lumafx-ui.global.js'), path.join(demoDir, 'lumafx-ui.global.js'));
+  fs.copyFileSync(path.join(dist, 'lumafx-ui.css'), path.join(demoDir, 'lumafx-ui.css'));
   const page = fs
     .readFileSync(path.join(demoDir, 'page.html'), 'utf8')
     .replace('__JS_GZ__', gz('lumafx.global.js'))
