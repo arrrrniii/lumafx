@@ -11,6 +11,12 @@
   <img alt="No dependencies" src="https://img.shields.io/badge/runtime%20dependencies-0-2f55e4">
 </p>
 
+<p align="center">
+  <a href="https://arrrrniii.github.io/lumafx/"><img src="docs/preview/hero.png" alt="The lumafx demo page: the word lumafx in large type over a dark aurora background" width="100%"></a>
+  <br>
+  <a href="https://arrrrniii.github.io/lumafx/"><strong>Open the live demo →</strong></a>
+</p>
+
 Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll-scrubbed video, a chat widget, cards, smart forms, a WebGL 3D loader, text reveals and more: **52 effects and components**. A kit for putting them inside your own page builder. And **[intelligent UI](#intelligent-ui-lumafxui)**: blocks an AI writes as JSON (match cards, lineups, standings, tables, charts, tickets…) that render while they stream, on your site or inside Claude and ChatGPT.
 
 - **Any stack.** Plain HTML, Webflow, Tailwind v4, React and Next.js (Server Components included), a [WordPress plugin](#wordpress) and an [MCP server](#in-claude-and-chatgpt-mcp).
@@ -19,6 +25,22 @@ Border beams, liquid glass, page transitions, a liquid modal and drawers, scroll
 - **Never hides content.** Hidden "before" states only apply once the runtime runs, with a CSS failsafe if it never boots.
 - **Cheap when idle.** Loops pause off-screen, pointer effects sleep until the mouse moves, Save-Data devices get a lighter version.
 - **AI-ready.** Ships `llms.txt` and `effects.json` so coding agents apply effects correctly, and `lumafx/ui` so your own AI answers with real interface.
+
+## Preview
+
+| Border beam | Text reveal | 3D loader (WebGL) |
+| :---: | :---: | :---: |
+| <img src="docs/preview/border-beam.gif" alt="Three dark cards with light beams running around their borders"> | <img src="docs/preview/text-reveal.gif" alt="Headlines revealing word by word and letter by letter"> | <img src="docs/preview/loader-3d.gif" alt="Two glossy 3D loaders whose pages fan open over a plate"> |
+
+**Intelligent UI.** The model writes JSON; lumafx draws it while it is still writing, in your app, your blog or inside Claude and ChatGPT. Every block follows the light or dark theme (these previews switch with your GitHub theme).
+
+<p align="center"><img src="docs/preview/ui-streaming.gif" alt="A live match card and a league table appearing piece by piece while the JSON streams in" width="640"></p>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/preview/ui-football-dark.png"><img src="docs/preview/ui-football-light.png" alt="A lineup on a pitch, a live match card with scorers and team stats, a league table with form and zones, and a player card"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/preview/ui-data-dark.png"><img src="docs/preview/ui-data-light.png" alt="Headline numbers, a sortable table with bars in the goals column, a column chart and a line chart"></picture>
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/preview/ui-events-dark.png"><img src="docs/preview/ui-events-light.png" alt="An event card with tickets, ticket tiers to choose from and a stadium seat map with prices"></picture>
 
 ## What's in this repository
 
@@ -135,6 +157,8 @@ The components render plain elements with `data-fx` attributes: no hooks, no `"u
 - **Liquid modal without code:** give a Group block an HTML anchor such as `join`, add the `modal` effect, link any button to `#join`.
 - **Intelligent UI:** `[lumafx_ui lang="sq"]{"blocks":[…]}[/lumafx_ui]`, `[lumafx_ui src="https://…/ui.json"]`, or `<fx-ui>` in a Custom HTML block.
 - **Elementor, Bricks, Divi:** add effects as CSS classes (`fx-reveal`, `fx-glass`…) and options as attributes (`data-fx-duration="4s"`).
+
+<img src="docs/preview/wordpress-editor.png" alt="The WordPress block editor with the lumafx Effects panel open in the sidebar, adding glass and tilt to a paragraph" width="100%">
 
 To update, upload the newer zip; WordPress offers to replace the installed version. Tested on WordPress 7.1 with a block theme (`npm run test:wordpress`).
 
@@ -339,6 +363,8 @@ Safe by design: everything a model writes is escaped, links are limited to http(
 
 ### In Claude and ChatGPT (MCP)
 
+<img src="docs/preview/mcp-chat.png" alt="A chat where the assistant answers a question about Albania–San Marino with a match card and a match details block" width="480" align="right">
+
 [`lumafx-mcp`](mcp/README.md) is an MCP server with one tool, `render_ui`, and an MCP Apps view. Hosts that support MCP Apps show the blocks inline and stream them while the model writes; follow-up chips become the next message, links open through the host, ticket picks reach the model's context. Hosts without UI get a plain-text version. It needs Node 20 or newer.
 
 **Claude Desktop, Cursor, VS Code and other local hosts** (stdio). Add to the host's MCP config, e.g. `claude_desktop_config.json`:
@@ -506,7 +532,7 @@ npm run test:wordpress # real WordPress (SQLite, block theme): plugin internals,
 cd mcp && npm install && npm run build && npm test && npm run test:view   # MCP server and its view
 ```
 
-`node scripts/build.mjs` also regenerates the demo (`demo/index.html`), `llms.txt`, the README effects table and the WordPress plugin zip. `python3 scripts/make_media.py` regenerates the demo video and image sequence.
+`node scripts/build.mjs` also regenerates the demo (`demo/index.html`), `llms.txt`, the README effects table and the WordPress plugin zip. `python3 scripts/make_media.py` regenerates the demo video and image sequence, and `python3 scripts/previews.py` the README previews in `docs/preview/` (Playwright and ffmpeg; `ui` or `effects` to redo only one part).
 
 | Folder | Contents |
 | --- | --- |
@@ -514,7 +540,8 @@ cd mcp && npm install && npm run build && npm test && npm run test:view   # MCP 
 | `dist/` | Built files, committed so GitHub installs and the CDN work without a build |
 | `mcp/` | `lumafx-mcp`, the MCP server and its view |
 | `wordpress/lumafx/` | The WordPress plugin |
-| `demo/` | The demo page and its media |
+| `demo/` | The demo page and its media (published to GitHub Pages) |
+| `docs/preview/` | README previews, made by `scripts/previews.py` |
 | `test/` | Unit, Tailwind, browser and WordPress tests |
 
 ## Releasing

@@ -355,11 +355,12 @@ if (fs.existsSync(path.join(demoDir, 'page.html'))) {
     .readFileSync(path.join(demoDir, 'page.html'), 'utf8')
     .replace('__JS_GZ__', gz('lumafx.global.js'))
     .replace('__CSS_GZ__', gz('lumafx.css'))
-    .replace('<!--ORBIT_SSR-->', () => orbitHtml);
+    .replace('<!--ORBIT_SSR-->', () => orbitHtml)
+    .replaceAll('__VERSION__', pkg.version);
   fs.writeFileSync(path.join(demoDir, 'artifact.html'), page);
   fs.writeFileSync(
     path.join(demoDir, 'index.html'),
-    `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n${page}\n</body>\n</html>\n`,
+    `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n<meta name="description" content="lumafx: premium web effects, animated components and intelligent UI from one HTML attribute. Free and open source.">\n<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2311131a'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='800' font-size='16' text-anchor='middle' fill='%23ffb547'%3Efx%3C/text%3E%3C/svg%3E">\n</head>\n<body>\n${page}\n</body>\n</html>\n`,
   );
 }
 
