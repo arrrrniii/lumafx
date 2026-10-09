@@ -254,7 +254,7 @@ Example: <button data-fx-open="#join">Join</button>
 <dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>
 Options:
   - data-fx-style: enum (default: liquid). liquid = gooey drop from the bottom, glass = blurred glass sheet, scale = classic zoom. One of: liquid, glass, scale.
-  - data-fx-color: color (default: #15171f). Panel color.
+  - data-fx-color: color (default: #20232e). Panel color.
 
 ### hovercard — Hover card [js]
 A small card that springs open right next to the hovered or focused element and stays inside the viewport.

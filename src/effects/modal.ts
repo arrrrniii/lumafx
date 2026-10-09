@@ -3,6 +3,13 @@ import type { Effect } from '../core/types';
 import { setState } from '../core/util';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const smooth = (a: number, b: number, x: number) => {
+  const t = clamp((x - a) / (b - a), 0, 1);
+  return t * t * (3 - 2 * t);
+};
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 let gooReady = false;
 
 /** The "gooey" filter: blur, then sharpen the alpha so nearby shapes melt together. */
@@ -104,56 +111,100 @@ export const modal: Effect = {
       return { r, vh, vw, rise: vh - r.top + 40 };
     };
 
-    const playLiquid = async (opening: boolean) => {
-      const { r, vh, vw } = geometry();
-      const fill: FillMode = 'both';
-      // The shape takes the panel's box; neck and drop sit at the bottom edge under it.
-      Object.assign(shape.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-      const dropSize = Math.min(220, r.width * 0.55);
-      Object.assign(drop.style, { left: vw / 2 - dropSize / 2 + 'px', top: vh - dropSize * 0.35 + 'px', width: dropSize + 'px', height: dropSize + 'px' });
-      const neckW = Math.min(120, r.width * 0.32);
-      Object.assign(neck.style, { left: vw / 2 - neckW / 2 + 'px', top: r.bottom - 20 + 'px', width: neckW + 'px', height: vh - r.bottom + 40 + 'px', transformOrigin: '50% 100%' });
+    /*
+     * Liquid: drawn frame by frame so every part stays connected.
+     * A low pool swells at the bottom edge, a droplet rises out of it on a strand,
+     * the strand thins and snaps, and the droplet settles into the panel with a small wobble.
+     * Closing plays the same path backwards (the panel drops, reconnects, and is absorbed).
+     * The pieces sit in one layer under an SVG "goo" filter, which melts them into a single shape.
+     */
+    let raf = 0;
+    const stopLiquid = () => cancelAnimationFrame(raf);
+    const playLiquid = (opening: boolean) =>
+      new Promise<void>((resolve) => {
+        const { r, vh, vw } = geometry();
+        if (r.width < 1 || r.height < 1) return resolve();
+        const pad = 70;
+        const left = Math.max(0, r.left - pad);
+        const top = Math.max(0, r.top - pad);
+        const width = Math.min(vw, r.right + pad) - left;
+        const height = vh - top;
+        Object.assign(goo!.style, { left: left + 'px', top: top + 'px', width: width + 'px', height: height + 'px' });
 
-      const fromY = vh - r.top - r.height * 0.15;
-      // Overall timing is linear; each segment carries its own easing so the stretch and the
-      // "snap" where the panel detaches read clearly.
-      const shapeFrames: Keyframe[] = [
-        { translate: `0 ${fromY}px`, scale: '0.35 0.25', borderRadius: '50%', offset: 0, easing: 'cubic-bezier(.45,0,.3,1)' },
-        { translate: `0 ${fromY * 0.32}px`, scale: '0.72 0.88', borderRadius: '42%', offset: 0.46, easing: 'cubic-bezier(.3,.5,.3,1)' },
-        { translate: '0 -12px', scale: '1.035 1.045', borderRadius: '28px', offset: 0.72, easing: 'cubic-bezier(.3,0,.3,1)' },
-        { translate: '0 0', scale: '1 1', borderRadius: '24px', offset: 1 },
-      ];
-      // The neck stretches, thins, and snaps as the panel pulls away from the edge.
-      const neckFrames: Keyframe[] = [
-        { scale: '1 0.2', opacity: 1, offset: 0, easing: 'ease-out' },
-        { scale: '0.75 1', opacity: 1, offset: 0.42, easing: 'ease-in' },
-        { scale: '0.07 1', opacity: 1, offset: 0.64 },
-        { scale: '0 0.4', opacity: 0, offset: 0.7 },
-        { scale: '0 0.4', opacity: 0, offset: 1 },
-      ];
-      // The pool at the bottom swells while it feeds the drop, then sinks away.
-      const dropFrames: Keyframe[] = [
-        { translate: `0 ${dropSize * 0.6}px`, scale: '0.6', offset: 0, easing: 'ease-out' },
-        { translate: '0 0', scale: '1', offset: 0.28 },
-        { translate: '0 0', scale: '1.1', offset: 0.62, easing: 'cubic-bezier(.5,0,.75,0)' },
-        { translate: `0 ${dropSize}px`, scale: '0.5', offset: 1 },
-      ];
-      const timing = { duration: opening ? 1150 : 950, easing: 'linear', fill };
-      const dir: PlaybackDirection = opening ? 'normal' : 'reverse';
-      const a1 = shape.animate(shapeFrames, { ...timing, direction: dir });
-      const a2 = neck.animate(neckFrames, { ...timing, direction: dir });
-      const a3 = drop.animate(dropFrames, { ...timing, direction: dir });
-      const a4 = p.animate(
-        [
-          { opacity: 0, translate: '0 14px' },
-          { opacity: 0, translate: '0 14px', offset: 0.64 },
-          { opacity: 1, translate: '0 0' },
-        ],
-        { duration: opening ? 1150 : 950, easing: 'ease-out', fill, direction: dir },
-      );
-      anims.push(a1, a2, a3, a4);
-      await Promise.all([a1.finished, a4.finished]);
-    };
+        const W = r.width;
+        const H = r.height;
+        const radius = parseFloat(getComputedStyle(p).borderTopLeftRadius) || 26;
+        const cx = r.left - left + W / 2;
+        const cy = r.top - top + H / 2;
+        const bottom = height; // the viewport's bottom edge, in layer coordinates
+        const d0 = clamp(W * 0.12, 40, 66); // droplet diameter as it leaves the edge
+        const poolW = clamp(W * 0.36, 110, 200);
+        const poolH = 80;
+
+        Object.assign(shape.style, { left: r.left - left + 'px', top: r.top - top + 'px', width: W + 'px', height: H + 'px' });
+        Object.assign(drop.style, { left: cx - poolW / 2 + 'px', top: bottom - poolH * 0.36 + 'px', width: poolW + 'px', height: poolH + 'px' });
+        Object.assign(neck.style, { left: '0px', top: '0px', width: '100px', height: '100px' });
+
+        const render = (k: number) => {
+          // Travel and growth of the droplet.
+          // The droplet stays small while the strand holds it, then blooms into the panel once free.
+          const q = easeInOut(clamp((k - 0.03) / 0.6, 0, 1));
+          const grow = easeInOut(clamp((k - 0.24) / 0.46, 0, 1));
+          const emerge = smooth(0, 0.08, k);
+          const y = lerp(bottom - d0 * 0.2, cy, q);
+          let sx = lerp(d0 / W, 1, grow) * emerge;
+          let sy = lerp(d0 / H, 1, grow) * emerge;
+          // Stretched like a drop while it travels...
+          const stretch = Math.sin(q * Math.PI) * 0.34 * (1 - grow * 0.6);
+          sy *= 1 + stretch;
+          sx *= 1 - stretch * 0.45;
+          // ...and a damped wobble as it lands.
+          const land = clamp((k - 0.66) / 0.34, 0, 1);
+          const wobble = Math.sin(land * Math.PI * 2) * (1 - land) * 0.05;
+          sx *= 1 + wobble;
+          sy *= 1 - wobble;
+          // Round while travelling, panel corners on arrival.
+          const c = smooth(0.3, 0.72, k);
+          shape.style.transform = `translate(0px, ${(y - cy).toFixed(2)}px) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+          shape.style.borderRadius = `${lerp(W / 2, radius, c).toFixed(2)}px / ${lerp(H / 2, radius, c).toFixed(2)}px`;
+
+          // The pool swells while it feeds the droplet, then sinks back below the edge.
+          const swell = smooth(0, 0.12, k) * (1 - smooth(0.3, 0.55, k));
+          drop.style.transform = `translate(0px, ${((1 - swell) * poolH * 0.7).toFixed(2)}px) scale(${(0.55 + 0.45 * swell).toFixed(4)}, ${(0.45 + 0.55 * swell).toFixed(4)})`;
+          drop.style.opacity = swell > 0.01 ? '1' : '0';
+
+          // The strand between them thins and snaps.
+          const dropBottom = y + (H * sy) / 2;
+          const nw = d0 * 0.36 * (1 - smooth(0.14, 0.36, k)) * emerge;
+          const y1 = dropBottom - 14;
+          const y2 = bottom + 6;
+          if (nw > 0.5 && y2 > y1) {
+            neck.style.opacity = '1';
+            neck.style.transform = `translate(${(cx - nw / 2).toFixed(2)}px, ${y1.toFixed(2)}px) scale(${(nw / 100).toFixed(4)}, ${((y2 - y1) / 100).toFixed(4)})`;
+          } else neck.style.opacity = '0';
+
+          // The content appears only once the panel has formed.
+          const show = smooth(0.68, 0.9, k);
+          p.style.opacity = show.toFixed(3);
+          p.style.translate = `0 ${((1 - show) * 12).toFixed(2)}px`;
+        };
+
+        const duration = opening ? 1000 : 820;
+        let start = -1;
+        const step = (now: number) => {
+          if (start < 0) start = now;
+          const t = Math.min(1, (now - start) / duration);
+          render(opening ? t : 1 - t);
+          if (t < 1) raf = requestAnimationFrame(step);
+          else {
+            p.style.opacity = '';
+            p.style.translate = '';
+            resolve();
+          }
+        };
+        render(opening ? 0 : 1);
+        raf = requestAnimationFrame(step);
+      });
 
     const playSheet = async (opening: boolean) => {
       const { rise } = geometry();
@@ -185,6 +236,7 @@ export const modal: Effect = {
         if (dlg.open || animating) return;
         animating = true;
         clearAnims();
+        stopLiquid();
         dlg.showModal();
         setState(dlg, 'opening');
         try {
@@ -231,20 +283,13 @@ export const modal: Effect = {
       // Clicks outside the panel (on the dialog's transparent area) close it.
       if (!p.contains(t)) api.close();
     };
-    // Keep the liquid background glued to the panel if the window is resized while open.
-    const onResize = () => {
-      if (style !== 'liquid' || !dlg.open || animating) return;
-      const r = p.getBoundingClientRect();
-      Object.assign(shape.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-    };
     dlg.addEventListener('cancel', onCancel);
     dlg.addEventListener('click', onClick);
-    window.addEventListener('resize', onResize);
 
     return () => {
       dlg.removeEventListener('cancel', onCancel);
       dlg.removeEventListener('click', onClick);
-      window.removeEventListener('resize', onResize);
+      stopLiquid();
       clearAnims();
       instances.delete(dlg);
       goo?.remove();

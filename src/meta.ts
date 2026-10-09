@@ -398,7 +398,7 @@ const defs: Meta[] = [
     desc: 'Accessible <dialog> that rises out of the bottom edge like a drop of liquid and detaches, then melts back on close. Open it from any element with data-fx-open="#id", or any link to href="#id".',
     options: {
       style: choice(['liquid', 'glass', 'scale'], 'liquid', 'liquid = gooey drop from the bottom, glass = blurred glass sheet, scale = classic zoom.'),
-      color: color('#15171f', 'Panel color.'),
+      color: color('#20232e', 'Panel color.'),
     },
     example: '<button data-fx-open="#join">Join</button>\n<dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>',
   },

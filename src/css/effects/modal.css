@@ -1,5 +1,7 @@
---_md-c: var(--fx-color, #15171f);
+--_md-c: var(--fx-color, #20232e);
 --_md-r: 26px;
+/* A lighter top edge makes the surface read as a glossy material, not a flat stain. */
+--_md-fill: linear-gradient(180deg, color-mix(in oklab, var(--_md-c) 78%, #fff), var(--_md-c) 64px);
 :where(&) {
   position: fixed;
   inset: 0;
@@ -16,12 +18,13 @@
 }
 &[open] { display: grid; place-items: center; }
 &::backdrop {
-  background: rgb(4 5 9 / .5);
+  background: rgb(3 4 8 / .62);
   -webkit-backdrop-filter: blur(8px) saturate(1.2);
   backdrop-filter: blur(8px) saturate(1.2);
 }
 &[open]::backdrop { animation: fx-md-bd-in .5s ease both; }
-&[data-fx-state~="closing"]::backdrop { animation: fx-md-bd-out .7s ease .15s both; }
+/* Stays dark while the panel falls, then clears as the liquid reaches the edge. */
+&[data-fx-state~="closing"]::backdrop { animation: fx-md-bd-out .82s cubic-bezier(.55, 0, .8, .2) both; }
 
 & > .fx-md-panel {
   position: relative;
@@ -33,21 +36,32 @@
   overscroll-behavior: contain;
   padding: clamp(22px, 4vw, 36px);
   border-radius: var(--_md-r);
-  background: var(--_md-c);
-  box-shadow: 0 1px 0 rgb(255 255 255 / .06) inset, 0 30px 80px -20px rgb(0 0 0 / .6);
+  background: var(--_md-fill);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .22), inset 0 0 0 1px rgb(255 255 255 / .06), 0 30px 70px -20px rgb(0 0 0 / .7);
 }
-/* liquid: the gooey layer is the panel's background, so the drop, neck and panel melt into one shape. */
+/* liquid: while it moves, the gooey layer draws the panel's body (drop, strand and pool melt into one
+   shape); at rest the panel draws itself again, with crisp edges. */
 & > .fx-md-goo {
   position: fixed;
-  inset: 0;
+  display: none;
   pointer-events: none;
-  filter: url(#fx-goo) drop-shadow(0 24px 40px rgb(0 0 0 / .45));
+  /* Goo, then a 1px light rim along the top edges, then the shadow. */
+  filter: url(#fx-goo) drop-shadow(0 -1px 0 rgb(255 255 255 / .3)) drop-shadow(0 22px 34px rgb(0 0 0 / .55));
 }
-& > .fx-md-goo > i { position: absolute; display: block; background: var(--_md-c); }
-& > .fx-md-goo > .fx-md-shape { border-radius: var(--_md-r); }
-& > .fx-md-goo > .fx-md-drop { border-radius: 50%; }
-& > .fx-md-goo > .fx-md-neck { border-radius: 999px; }
-&[data-fx-style-active="liquid"] > .fx-md-panel { background: transparent; box-shadow: none; }
+&:is([data-fx-state~="opening"], [data-fx-state~="closing"]) > .fx-md-goo { display: block; }
+& > .fx-md-goo > i {
+  position: absolute;
+  display: block;
+  background: var(--_md-fill);
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+& > .fx-md-goo > .fx-md-drop { border-radius: 50%; transform-origin: 50% 100%; }
+& > .fx-md-goo > .fx-md-neck { border-radius: 0; background: var(--_md-c); transform-origin: 0 0; }
+&[data-fx-style-active="liquid"]:is([data-fx-state~="opening"], [data-fx-state~="closing"]) > .fx-md-panel {
+  background: transparent;
+  box-shadow: none;
+}
 
 &[data-fx-style-active="glass"] > .fx-md-panel {
   background:
