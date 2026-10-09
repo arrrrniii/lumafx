@@ -395,9 +395,10 @@ const defs: Meta[] = [
     name: 'modal',
     title: 'Liquid modal',
     kind: 'js',
-    desc: 'Accessible <dialog> that rises out of the bottom edge like a drop of liquid and detaches, then melts back on close. Open it from any element with data-fx-open="#id", or any link to href="#id".',
+    desc: 'Accessible <dialog> that pulls out of the button, dock icon or link that opened it like a drop of liquid, detaches, and blooms into the panel; closing flows back into the trigger. Without a trigger it rises from the bottom edge. Open it with data-fx-open="#id", any link to href="#id", or modals.open().',
     options: {
-      style: choice(['liquid', 'glass', 'scale'], 'liquid', 'liquid = gooey drop from the bottom, glass = blurred glass sheet, scale = classic zoom.'),
+      style: choice(['liquid', 'glass', 'scale'], 'liquid', 'liquid = a gooey drop that pulls out of the trigger, glass = blurred glass sheet, scale = classic zoom.'),
+      from: choice(['auto', 'trigger', 'bottom'], 'auto', 'Where the liquid comes from: the button, icon or link that opened it (auto), or always the bottom edge.'),
       color: color('#20232e', 'Panel color.'),
     },
     example: '<button data-fx-open="#join">Join</button>\n<dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>',

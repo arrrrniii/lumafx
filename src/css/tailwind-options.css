@@ -41,7 +41,7 @@
 @utility fx-split-* { --fx-split: --value('words', 'chars', 'lines'); }
 @utility fx-style-* { --fx-style: --value('blur', 'rise', 'flip', 'fade', 'scale', 'default', 'wave', 'curtain', 'circle', 'slide', 'liquid', 'glass'); }
 @utility fx-trigger-* { --fx-trigger: --value('view', 'load', 'hover', 'loop'); }
-@utility fx-from-* { --fx-from: --value('up', 'down', 'left', 'right', 'zoom', 'blur', 'book', 'clip', 'center', 'circle', 'diagonal'); }
+@utility fx-from-* { --fx-from: --value('up', 'down', 'left', 'right', 'zoom', 'blur', 'book', 'clip', 'center', 'circle', 'diagonal', 'auto', 'trigger', 'bottom'); }
 @utility fx-mode-* { --fx-mode: --value('beam', 'full', 'liquid', 'frost', 'view', 'scroll'); }
 @utility fx-light-* { --fx-light: --value('top', 'cursor'); }
 @utility fx-fallback-* { --fx-fallback: --value('auto', 'clip', 'radius'); }
