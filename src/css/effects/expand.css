@@ -1,0 +1,12 @@
+--_ex-in: var(--fx-inset, 8vw);
+--_ex-r: var(--fx-radius, 32px);
+:where(&) { overflow: clip; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-fx-nosda], [data-fx-reduced]) & {
+      animation: fx-expand 1ms linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 50%;
+    }
+  }
+}

@@ -1,16 +1,19 @@
-# lumafx 0.1.0
+# lumafx 0.2.0
 
-> Premium web effects from one HTML attribute. Framework-agnostic, zero dependencies, CSS-first, accessible by default.
+> Premium web effects and animated components from one HTML attribute. Framework-agnostic, zero dependencies, CSS-first, accessible by default. MIT, free forever.
 
 ## Usage
 - Plain HTML: <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.css"> and <script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.global.js"></script> in <head>.
 - npm: `import "lumafx/css"; import "lumafx/auto";` (or `import { start } from "lumafx"; start();`).
 - Tailwind v4: `@import "lumafx/tailwind.css";` then classes like `fx-border-beam fx-duration-4000 fx-color-violet-500`.
 - React/Next.js: `import { BorderBeam, TextReveal } from "lumafx/react"` (Server Component safe) plus `<FxRuntime />` from "lumafx/react/runtime" once in the layout.
+- WordPress: the lumafx plugin adds an Effects panel to every block (stored as a block attribute, rendered as data-fx attributes) and site-wide settings for page transitions, preloader, scrollbar, chat, smart header. Page builders: add fx-<name> classes.
+- Modal: <dialog id="x" data-fx="modal"> opened by data-fx-open="#x", a link to #x, or lumafx.modals.open("#x"); close with data-fx-close or Esc.
+- Chat: listen for fx:chat-send (detail.text) on the element and answer with el.fxChat.reply(text).
 - Add an effect: data-fx="name" (several: data-fx="tilt spotlight"), or class="fx-name".
 - Options: data-fx-<option>="value". Bare numbers: time = ms, length = px, percent = %.
 - Every effect respects prefers-reduced-motion. Content is never left hidden if JavaScript fails.
-- Combine freely. Pseudo-elements in use: border-beam ::before, shine ::after, aurora ::before and ::after. Avoid putting aurora on the same element as border-beam or shine.
+- Combine freely. Pseudo-elements in use: border-beam ::before, shine ::after, aurora ::before and ::after, dapple ::after, hover-icon ::before/::after. Avoid combining effects that use the same pseudo-element.
 
 ## Effects
 
@@ -226,7 +229,195 @@ Example: <img data-fx="morph" data-fx-name="hero-1" …>
 Options:
   - data-fx-name: string. Unique transition name.
 
+### page-transition — SVG page transitions [js]
+Animated SVG cover between pages of any site (WordPress and Webflow included). Covers on leave, reveals on arrival. Place one element anywhere in <body>.
+Example: <div data-fx="page-transition" data-fx-style="wave" data-fx-label="Sphere"></div>
+Options:
+  - data-fx-style: enum (default: wave). Shape of the transition. One of: wave, curtain, circle, slide.
+  - data-fx-color: color (default: #0b0c12). Cover color.
+  - data-fx-color-2: color (default: #ffb547). Accent layer color.
+  - data-fx-duration: time (default: 750ms). Length of each half (cover or reveal).
+  - data-fx-label: string. Text shown on the cover, e.g. your brand.
+  - data-fx-links: string (default: a[href]). Which links trigger a transition.
+
+### preloader — Preloader [js]
+Full-screen intro with a 000→100 counter that follows real page loading, then lifts away. Hides itself after a few seconds even if JavaScript fails.
+Example: <div data-fx="preloader"><span>Sphere</span></div>
+Options:
+  - data-fx-style: enum (default: slide). How it exits. One of: slide, wave, fade.
+  - data-fx-color: color (default: #0b0c12). Background color.
+  - data-fx-min: time (default: 900ms). Minimum time on screen.
+
+### modal — Liquid modal [js]
+Accessible <dialog> that rises out of the bottom edge like a drop of liquid and detaches, then melts back on close. Open it from any element with data-fx-open="#id", or any link to href="#id".
+Example: <button data-fx-open="#join">Join</button>
+<dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>
+Options:
+  - data-fx-style: enum (default: liquid). liquid = gooey drop from the bottom, glass = blurred glass sheet, scale = classic zoom. One of: liquid, glass, scale.
+  - data-fx-color: color (default: #15171f). Panel color.
+
+### hovercard — Hover card [js]
+A small card that springs open right next to the hovered or focused element and stays inside the viewport.
+Example: <a data-fx="hovercard" data-fx-for="#tip-sphere">Sphere</a>
+Options:
+  - data-fx-for: string. Selector of the card content (hidden in the page).
+  - data-fx-text: string. Plain text content instead of a selector.
+  - data-fx-placement: enum (default: auto). Preferred side. One of: auto, top, bottom, left, right.
+  - data-fx-delay: time (default: 90ms). Hover delay before opening.
+
+### chat — Chat widget [js]
+Animated chat launcher and panel: the button morphs into the window, messages slide in, a typing indicator bounces. Emits fx:chat-send so you can connect any backend.
+Example: <div data-fx="chat" data-fx-title="Support" data-fx-greeting="Hi! How can we help?"></div>
+Options:
+  - data-fx-title: string (default: Chat). Panel title.
+  - data-fx-subtitle: string. Line under the title.
+  - data-fx-greeting: string. First message from you to the visitor.
+  - data-fx-placeholder: string (default: Write a message…). Input placeholder.
+  - data-fx-quick: string. Comma-separated quick replies shown as chips.
+  - data-fx-color: color (default: #ffb547). Accent color.
+  - data-fx-position: enum (default: right). Corner of the screen. One of: right, left.
+
+### smart-header — Smart header [hybrid]
+Hides while you scroll down, slides back as glass when you scroll up, and can dock an oversized hero logo into the bar as you scroll.
+Example: <header data-fx="smart-header"><a data-fx-logo>mejuma</a><nav>…</nav></header>
+Options:
+  - data-fx-threshold: length (default: 80px). Scroll distance before it reacts.
+  - data-fx-hide: boolean (default: true). Hide while scrolling down.
+
+### scrollbar — Animated scrollbar [js]
+Custom page scrollbar with a springy thumb, section marks, and a label that pops up next to the cursor showing which section is at that point.
+Example: <div data-fx="scrollbar"></div>
+Options:
+  - data-fx-sections: string (default: h2, [data-fx-section]). Elements that become section marks.
+  - data-fx-color: color (default: #ffb547). Thumb color.
+
+### scroll-progress — Scroll progress [hybrid]
+A reading-progress bar that fills as the page scrolls. Runs on the compositor in modern browsers.
+Example: <div data-fx="scroll-progress"></div>
+Options:
+  - data-fx-color: color (default: #ffb547). Bar color.
+  - data-fx-height: length (default: 3px). Bar thickness.
+
+### dock — Magnifying dock [js]
+Icons grow as the cursor passes over them, like the macOS dock. Labels appear above the hovered icon.
+Example: <nav data-fx="dock"><a data-fx-label="Home">🏠</a>…</nav>
+Options:
+  - data-fx-magnify: number (default: 1.8). Maximum scale of the closest icon.
+  - data-fx-range: length (default: 150px). How far the magnification reaches.
+
+### hover-icon — Hover icon [css]
+Menu links slide an icon in on hover while the text makes room. Uses the data-fx-icon text, or a child marked data-fx-icon-el.
+Example: <a data-fx="hover-icon" data-fx-icon="✦">Work</a>
+Options:
+  - data-fx-icon: string (default: →). Icon character or emoji.
+  - data-fx-side: enum (default: left). Where the icon appears. One of: left, right.
+
+### lightbox — Lightbox [js]
+Click a thumbnail and it grows into a full-screen viewer (View Transitions), with keyboard, swipe, zoom and a counter. Put it on a link to a large image, or on a gallery to page through every linked image inside.
+Example: <a data-fx="lightbox" data-fx-group="villa" href="big.jpg"><img src="small.jpg" alt="…"></a>
+Options:
+  - data-fx-group: string. Links with the same group page through together.
+
+### image-reveal — Image reveal [js]
+The image is uncovered by a moving mask while it settles from a slight zoom. Seven mask shapes.
+Example: <figure data-fx="image-reveal" data-fx-from="circle"><img …></figure>
+Options:
+  - data-fx-from: enum (default: up). Direction or shape of the mask. One of: up, down, left, right, center, circle, diagonal.
+  - data-fx-duration: time (default: 1200ms). Reveal length.
+  - data-fx-delay: time (default: 0ms). Delay before it starts.
+  - data-fx-scale: number (default: 1.25). Starting zoom of the image.
+
+### expand — Expand on scroll [hybrid]
+An inset, rounded image or video grows to full width as it scrolls into the middle of the screen.
+Example: <div data-fx="expand"><video autoplay muted loop playsinline …></video></div>
+Options:
+  - data-fx-inset: length (default: 8vw). Starting inset on each side.
+  - data-fx-radius: length (default: 32px). Starting corner radius.
+
+### image-trail — Image trail [js]
+Moving the cursor leaves a trail of images that pop in and fade away.
+Example: <section data-fx="image-trail" data-fx-images="a.jpg, b.jpg, c.jpg">…</section>
+Options:
+  - data-fx-images: string. Comma-separated image URLs (or put <img> children inside).
+  - data-fx-size: length (default: 190px). Image width.
+  - data-fx-spacing: length (default: 90px). Cursor travel between images.
+
+### video-scrub — Scroll-scrubbed video [js]
+The video plays forward as you scroll down and backward as you scroll up, pinned while its section passes.
+Example: <section data-fx="video-scrub"><video src="flyover.mp4" muted playsinline preload="auto"></video></section>
+Options:
+  - data-fx-length: length (default: 300vh). Scroll distance for the whole video.
+  - data-fx-smooth: number (default: 8). Smoothing (higher follows the scroll more tightly).
+
+### frames — Image sequence [js]
+Apple-style scroll animation from numbered images drawn on a canvas. Sharper and smoother to scrub than video.
+Example: <section data-fx="frames" data-fx-src="/seq/f-###.jpg" data-fx-count="90"></section>
+Options:
+  - data-fx-src: string. URL pattern, ### is replaced by the frame number: /seq/frame-###.jpg
+  - data-fx-count: number (default: 60). Number of frames.
+  - data-fx-start: number (default: 1). First frame number.
+  - data-fx-length: length (default: 300vh). Scroll distance for the whole sequence.
+
+### svg-draw — SVG draw + flow [js]
+Draws the strokes of an SVG when it scrolls into view (or with the scroll), and can send glowing pulses travelling along the paths.
+Example: <svg data-fx="svg-draw" data-fx-pulse="2" …><path …/></svg>
+Options:
+  - data-fx-mode: enum (default: view). view = draws once, scroll = drawing follows the scroll. One of: view, scroll.
+  - data-fx-duration: time (default: 1800ms). Drawing time per path.
+  - data-fx-stagger: time (default: 140ms). Delay between paths.
+  - data-fx-pulse: number (default: 0). Glowing pulses travelling along each path (0 = none).
+  - data-fx-color: color (default: #ffb547). Pulse color.
+
+### dot-field — Dot field [js]
+A grid of dots that ripples away from the cursor and breathes when idle.
+Example: <section data-fx="dot-field">…</section>
+Options:
+  - data-fx-color: color (default: #ffb547). Dot color.
+  - data-fx-gap: length (default: 22px). Distance between dots.
+  - data-fx-force: number (default: 1). How strongly dots react.
+
+### typewriter — Typewriter [js]
+Types the text letter by letter with a blinking caret. Child lines type one after another, like a terminal.
+Example: <p data-fx="typewriter">npm i lumafx</p>
+Options:
+  - data-fx-speed: time (default: 34ms). Time per letter.
+  - data-fx-delay: time (default: 0ms). Delay before typing starts.
+  - data-fx-loop: boolean (default: false). Erase and start again.
+
+### rotate-words — Rotating words [js]
+Cycles through a list of words in place, with the width easing between them.
+Example: We build <span data-fx="rotate-words" data-fx-words="sites, apps, events">brands</span>
+Options:
+  - data-fx-words: string. Comma-separated words. The element text is the first.
+  - data-fx-interval: time (default: 2200ms). Time each word stays.
+  - data-fx-style: enum (default: flip). Transition style. One of: flip, slide, blur.
+
+### clock — Live clock [js]
+Shows the live time in any time zone, ticking every second.
+Example: <time data-fx="clock" data-fx-tz="Asia/Dubai"></time>
+Options:
+  - data-fx-tz: string. IANA time zone, e.g. Europe/Tirane. Default: the visitor’s.
+  - data-fx-seconds: boolean (default: true). Show seconds.
+  - data-fx-hour12: boolean (default: false). 12-hour clock with AM/PM.
+
+### dapple — Leaf shadows [css]
+Soft, slowly swaying shadows of leaves over a section, like sunlight through a tree.
+Example: <section data-fx="dapple">…</section>
+Options:
+  - data-fx-opacity: number (default: 0.4). Shadow strength, 0–1.
+  - data-fx-duration: time (default: 16s). Length of one sway.
+
+### ring — 3D ring carousel [js]
+Items stand on a 3D ring you can drag and fling; it turns slowly on its own when idle.
+Example: <div data-fx="ring"><figure>…</figure><figure>…</figure></div>
+Options:
+  - data-fx-speed: number (default: 6). Idle rotation in degrees per second (0 = still).
+  - data-fx-tilt: number (default: 8). Viewing angle in degrees.
+
 ## JavaScript API
 - start(options?) · stop() · refresh() · mount(root) · stats() · register(effect)
 - transition(update, { preset }) — runs a DOM update inside a View Transition (presets: fade, slide, slide-back, zoom, wipe).
+- page.cover(x?, y?) / page.reveal() — play the page-transition cover in single-page apps.
+- modals.open(target) / modals.close(target).
+- Events: fx:loaded (preloader done), fx:open / fx:close (modal), fx:chat-send / fx:chat-open (chat).
 - start({ motion: "reduce" }) forces reduced motion; start({ features: { sda: false } }) tests fallbacks.

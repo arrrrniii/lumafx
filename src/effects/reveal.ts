@@ -2,6 +2,7 @@ import { META } from '../meta';
 import type { Effect } from '../core/types';
 import { onView } from '../core/view';
 import { setState } from '../core/util';
+import { whenLoaded } from '../core/gate';
 
 const VIEW = { margin: '0px 0px -10% 0px', threshold: 0 };
 
@@ -12,7 +13,7 @@ function watchIn(el: HTMLElement, once: boolean) {
     el,
     (visible) => {
       if (visible) {
-        setState(el, 'in');
+        whenLoaded(() => setState(el, 'in'));
         if (once && off) {
           off();
           off = null;

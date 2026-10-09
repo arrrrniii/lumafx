@@ -1,0 +1,199 @@
+--_ch-c: var(--fx-color, #ffb547);
+--_ch-bg: var(--fx-chat-bg, rgb(16 17 23 / .94));
+--_ch-fg: var(--fx-chat-fg, #f2f1ee);
+--_ch-ink: var(--fx-chat-ink, #15130f);
+--_ch-spring: cubic-bezier(.2, 1.15, .3, 1);
+:where(&) {
+  position: fixed;
+  z-index: 2147482800;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--_ch-fg);
+}
+&[data-position="left"] { right: auto; left: max(18px, env(safe-area-inset-left)); }
+
+& .fx-chat-launch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--_ch-c);
+  color: var(--_ch-ink);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), 0 14px 34px -10px color-mix(in oklab, var(--_ch-c) 70%, #000);
+  transition: scale .45s var(--_ch-spring), box-shadow .3s;
+}
+& .fx-chat-launch:hover { scale: 1.07; }
+& .fx-chat-launch:active { scale: .94; }
+& .fx-chat-launch:focus-visible { outline: 2px solid var(--_ch-c); outline-offset: 4px; }
+& .fx-chat-launch > span { grid-area: 1 / 1; display: grid; transition: rotate .5s var(--_ch-spring), scale .4s var(--_ch-spring), opacity .2s; }
+& .fx-chat-i2 { opacity: 0; rotate: -120deg; scale: .4; }
+&[data-open] .fx-chat-i1 { opacity: 0; rotate: 120deg; scale: .4; }
+&[data-open] .fx-chat-i2 { opacity: 1; rotate: 0deg; scale: 1; }
+/* A soft ping invites the first click. */
+& .fx-chat-launch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 var(--_ch-c);
+  animation: fx-ch-ping 2.6s ease-out 1.6s 2;
+  pointer-events: none;
+}
+&[data-open] .fx-chat-launch::after { animation: none; }
+
+& .fx-chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100vw - 36px));
+  height: min(560px, calc(100dvh - 120px));
+  border-radius: 24px;
+  background: var(--_ch-bg);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .08), inset 0 1px 0 rgb(255 255 255 / .12), 0 30px 70px -20px rgb(0 0 0 / .6);
+  overflow: hidden;
+  /* Grows out of the launcher. */
+  transform-origin: calc(100% - 30px) calc(100% + 46px);
+  clip-path: inset(62% 0 0 62% round 30px);
+  opacity: 0;
+  scale: .4;
+  translate: 0 24px;
+  visibility: hidden;
+  transition: clip-path .55s cubic-bezier(.65, 0, .35, 1), scale .6s var(--_ch-spring), translate .6s var(--_ch-spring), opacity .25s ease, visibility 0s linear .6s;
+}
+&[data-position="left"] .fx-chat-panel { right: auto; left: 0; transform-origin: 30px calc(100% + 46px); clip-path: inset(62% 62% 0 0 round 30px); }
+&[data-open] .fx-chat-panel {
+  clip-path: inset(0 0 0 0 round 24px);
+  opacity: 1;
+  scale: 1;
+  translate: none;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+& .fx-chat-head { display: flex; align-items: center; gap: 12px; padding: 16px 14px 14px 16px; border-bottom: 1px solid rgb(255 255 255 / .07); }
+& .fx-chat-avatar {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, rgb(255 255 255 / .7), transparent 45%), conic-gradient(from 200deg, var(--_ch-c), color-mix(in oklab, var(--_ch-c) 40%, #7fd4ff), var(--_ch-c));
+}
+& .fx-chat-avatar::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 0 2.5px var(--_ch-bg);
+}
+& .fx-chat-titles { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
+& .fx-chat-titles b { font-weight: 650; }
+& .fx-chat-titles small { opacity: .6; font-size: 12.5px; }
+& .fx-chat-titles small:empty { display: none; }
+& .fx-chat-x {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / .06);
+  color: inherit;
+  cursor: pointer;
+  transition: background-color .2s, rotate .4s var(--_ch-spring);
+}
+& .fx-chat-x:hover { background: rgb(255 255 255 / .12); rotate: 90deg; }
+
+& .fx-chat-log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+& .fx-msg {
+  max-width: 82%;
+  padding: 9px 13px;
+  border-radius: 18px;
+  overflow-wrap: anywhere;
+  animation: fx-ch-msg .5s var(--_ch-spring) both;
+}
+& .fx-msg[data-from="them"] { align-self: flex-start; background: rgb(255 255 255 / .08); border-bottom-left-radius: 6px; transform-origin: 0 100%; }
+& .fx-msg[data-from="me"] { align-self: flex-end; background: var(--_ch-c); color: var(--_ch-ink); border-bottom-right-radius: 6px; transform-origin: 100% 100%; }
+& .fx-typing { display: flex; gap: 4px; padding: 13px 14px; }
+& .fx-typing i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .45; animation: fx-ch-dot 1.1s ease-in-out infinite; }
+& .fx-typing i:nth-child(2) { animation-delay: .14s; }
+& .fx-typing i:nth-child(3) { animation-delay: .28s; }
+
+& .fx-chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+& .fx-chat-quick:empty { display: none; }
+& .fx-chat-quick button {
+  padding: 6px 12px;
+  border: 1px solid color-mix(in oklab, var(--_ch-c) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--_ch-c) 8%, transparent);
+  color: var(--_ch-c);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color .2s, scale .3s var(--_ch-spring);
+}
+& .fx-chat-quick button:hover { background: color-mix(in oklab, var(--_ch-c) 20%, transparent); scale: 1.04; }
+&[data-open] .fx-chat-quick button { animation: fx-ch-msg .5s var(--_ch-spring) calc(.25s + var(--i, 0) * 70ms) both; }
+
+& .fx-chat-form { display: flex; gap: 8px; padding: 10px 10px 12px; border-top: 1px solid rgb(255 255 255 / .07); }
+& .fx-chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 15px;
+  border: 1px solid rgb(255 255 255 / .1);
+  border-radius: 999px;
+  background: rgb(255 255 255 / .05);
+  color: inherit;
+  font: inherit;
+  outline: none;
+  transition: border-color .2s, background-color .2s;
+}
+& .fx-chat-form input::placeholder { color: inherit; opacity: .45; }
+& .fx-chat-form input:focus { border-color: color-mix(in oklab, var(--_ch-c) 70%, transparent); background: rgb(255 255 255 / .08); }
+& .fx-chat-form button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--_ch-c);
+  color: var(--_ch-ink);
+  cursor: pointer;
+  transition: scale .35s var(--_ch-spring);
+}
+& .fx-chat-form button:hover { scale: 1.08; }
+& .fx-chat-form button:active { scale: .9; }
+
+@fx-reduced {
+  & .fx-chat-panel { scale: 1; translate: none; clip-path: none; transition: opacity .2s, visibility 0s linear .2s; }
+  &[data-open] .fx-chat-panel { transition-delay: 0s; }
+  & .fx-msg, &[data-open] .fx-chat-quick button, & .fx-chat-launch::after { animation: none; }
+  & .fx-typing i { animation-duration: 2.4s; }
+}

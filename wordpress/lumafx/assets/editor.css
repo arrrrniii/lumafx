@@ -1,0 +1,8 @@
+/* lumafx editor UI */
+.lumafx-panel .lumafx-effect { margin-top: 16px; padding-top: 14px; border-top: 1px solid #e0e0e0; }
+.lumafx-panel .lumafx-effect-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 4px; font-weight: 600; }
+.lumafx-panel .lumafx-effect-title code { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: #f0f0f0; }
+.lumafx-panel .lumafx-effect-desc { margin: 0 0 10px; color: #757575; font-size: 12px; line-height: 1.5; }
+.lumafx-panel .lumafx-hint { margin: 0 0 12px; }
+.lumafx-panel .lumafx-options { display: grid; gap: 14px; }
+.lumafx-panel .lumafx-empty { margin: 12px 0 0; color: #757575; font-size: 12px; }

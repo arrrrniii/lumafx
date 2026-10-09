@@ -59,6 +59,7 @@ button { font: inherit; color: inherit; }
 /* ---------- hero ---------- */
 .hero {
   padding-block: clamp(56px, 9vw, 120px) clamp(48px, 7vw, 88px);
+  scroll-margin-top: 0;
   padding-inline: max(16px, 5vw);
   border-bottom: 1px solid var(--line);
 }
@@ -111,7 +112,7 @@ button { font: inherit; color: inherit; }
   grid-template-columns: 210px minmax(0, 1fr);
   gap: 56px;
 }
-.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 28px); align-self: start; padding-block: 48px; }
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); align-self: start; padding-block: 48px; }
 .rail h4 { font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 22px 0 8px; }
 .rail h4:first-child { margin-top: 0; }
 .rail ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
@@ -137,7 +138,7 @@ button { font: inherit; color: inherit; }
 }
 .group-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
-.spec { padding-block: 40px; display: grid; gap: 18px; scroll-margin-top: 24px; min-width: 0; }
+.spec { padding-block: 40px; display: grid; gap: 18px; scroll-margin-top: 80px; min-width: 0; }
 .spec + .spec { border-top: 1px solid var(--line); }
 .spec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
 .spec-head h3 { font-size: clamp(1.6rem, 3vw, 2.15rem); font-weight: 700; letter-spacing: -.025em; }
@@ -348,6 +349,155 @@ button { font: inherit; color: inherit; }
 .pages p { color: var(--muted); }
 .pages[data-page="2"] { background: color-mix(in oklab, var(--lamp) 22%, var(--stage-2)); }
 
+/* ---------- v0.2: site header, preloader ---------- */
+.site-head {
+  --fx-header-bg: color-mix(in oklab, var(--bg) 72%, transparent);
+  --head-h: 64px;
+  height: var(--head-h);
+  margin-bottom: calc(var(--head-h) * -1);
+  display: flex; align-items: center; gap: 24px;
+  padding-inline: max(16px, 4vw);
+}
+.logo {
+  font: 800 28px/.86 var(--font-display); letter-spacing: -.055em; text-decoration: none;
+  font-variation-settings: "opsz" 96; white-space: nowrap;
+}
+.logo em { font-style: normal; color: var(--lamp); }
+.site-nav { display: flex; gap: 22px; margin-left: auto; font: 500 14px/1 var(--font-body); }
+.site-nav a { text-decoration: none; color: var(--muted); transition: color .2s; }
+.site-nav a:hover { color: var(--fg); }
+.head-cta {
+  border: 0; cursor: pointer; border-radius: 999px; padding: 10px 16px;
+  background: var(--fg); color: var(--bg); font: 600 13px/1 var(--font-body);
+}
+@media (max-width: 720px) { .site-nav { display: none; } .head-cta { margin-left: auto; } }
+.hero { padding-top: 76px; }
+.logo-room { height: var(--logo-room, 20vw); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.loader { gap: 22px; }
+.loader-mark { font: 800 clamp(2rem, 6vw, 3.4rem)/1 var(--font-display); letter-spacing: -.05em; }
+.loader-mark em { font-style: normal; color: var(--lamp); }
+.loader-note { font: 500 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: #8a8ea0; }
+.loader [data-fx-count] { color: var(--lamp); }
+.loader-bar { display: block; width: min(320px, 60vw); height: 2px; background: var(--lamp); border-radius: 2px; }
+
+/* ---------- v0.2 specimens ---------- */
+.btn.small { padding: 11px 16px; font-size: 14px; }
+.pt-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.note { font: 500 13px/1.5 var(--font-mono); color: var(--muted); }
+.note b { color: var(--lamp); font-weight: 500; }
+.edge-demo { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+.edge-mock { position: relative; width: 120px; height: 160px; border-radius: 14px; background: var(--stage-2); border: 1px solid var(--line); }
+.edge-mock::before { content: ""; position: absolute; right: 8px; top: 12px; bottom: 12px; width: 6px; border-radius: 6px; background: rgb(140 140 155 / .18); }
+.edge-mock::after { content: ""; position: absolute; right: 8px; top: 40px; height: 34px; width: 6px; border-radius: 6px; background: var(--lamp); }
+.edge-mock span { position: absolute; right: 22px; top: 48px; padding: 5px 8px; border-radius: 8px; background: #121319; color: #f4f3f0; font: 500 10.5px/1 var(--font-body); white-space: nowrap; box-shadow: 0 8px 20px -8px #000; }
+
+.md-panel-body { display: grid; gap: 14px; color: #f2f1ee; }
+.md-panel-body h3 { font: 700 1.7rem/1.1 var(--font-display); letter-spacing: -.02em; }
+.md-panel-body p { color: #a3a6b5; }
+.md-panel-body form { display: flex; gap: 8px; flex-wrap: wrap; }
+.md-panel-body input { flex: 1; min-width: 180px; padding: 13px 16px; border-radius: 999px; border: 1px solid #2c3040; background: #0d0f15; color: inherit; font: inherit; }
+.md-panel-body .row-end { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.md-x { border: 0; background: #22252f; color: #f2f1ee; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1; }
+
+.hc-text { font: 500 clamp(1.3rem, 2.6vw, 1.8rem)/1.45 var(--font-display); letter-spacing: -.01em; max-width: 34ch; }
+.hc-text a { text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--lamp) 60%, transparent); text-underline-offset: .18em; text-decoration-thickness: 2px; }
+.hc-card { display: grid; gap: 8px; width: 240px; }
+.hc-card img { aspect-ratio: 16 / 10; object-fit: cover; }
+.hc-card b { font: 600 15px/1.2 var(--font-display); }
+.hc-card span { color: #b4b6c2; font-size: 13px; }
+
+.dock-wrap { display: grid; place-items: center; padding-top: 40px; }
+.app { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; color: #fff; text-decoration: none; box-shadow: inset 0 1px 0 rgb(255 255 255 / .35), 0 6px 14px -6px rgb(0 0 0 / .6); }
+.app svg { width: 24px; height: 24px; }
+.app.a1 { background: linear-gradient(160deg, #ffcf6e, #f0802c); }
+.app.a2 { background: linear-gradient(160deg, #7fd4ff, #2f74ff); }
+.app.a3 { background: linear-gradient(160deg, #ff8fb1, #d6336c); }
+.app.a4 { background: linear-gradient(160deg, #8ef0b5, #18a46a); }
+.app.a5 { background: linear-gradient(160deg, #c5a8ff, #6a3fe0); }
+.app.a6 { background: linear-gradient(160deg, #e3e6ef, #8a90a3); }
+
+.menu-demo { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+.menu-demo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.menu-demo a { font: 700 clamp(1.5rem, 3vw, 2.1rem)/1.15 var(--font-display); letter-spacing: -.02em; text-decoration: none; }
+.menu-demo a::before, .menu-demo a::after { color: var(--lamp); }
+.menu-demo small { font: 500 11px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 10px; }
+
+.lb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.lb-grid a { display: block; border-radius: 12px; overflow: hidden; }
+.lb-grid img { aspect-ratio: 1; object-fit: cover; width: 100%; transition: scale .5s cubic-bezier(.2, .8, .2, 1); }
+.lb-grid a:hover img { scale: 1.05; }
+@media (max-width: 560px) { .lb-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.ir-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.ir-grid figure { margin: 0; display: grid; gap: 8px; }
+.ir-grid .ir { border-radius: 14px; }
+.ir-grid img { aspect-ratio: 4 / 5; object-fit: cover; width: 100%; }
+.ir-grid figcaption { font: 500 11px/1 var(--font-mono); color: var(--muted); }
+@media (max-width: 640px) { .ir-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.expand-box img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+
+.trail-zone {
+  height: 380px; border-radius: var(--radius); background: var(--stage-2); border: 1px solid var(--line);
+  display: grid; place-content: center; text-align: center; gap: 6px; cursor: crosshair;
+}
+.trail-zone h4 { font: 800 clamp(2rem, 5vw, 3.4rem)/1 var(--font-display); letter-spacing: -.04em; margin: 0; position: relative; z-index: 4; pointer-events: none; mix-blend-mode: difference; color: #fff; }
+.trail-zone p { color: var(--muted); position: relative; z-index: 4; pointer-events: none; }
+
+.scrub { border-radius: var(--radius); background: #000; color: #fff; }
+.scrub .fx-pin { border-radius: var(--radius); }
+.scrub-title { display: grid; gap: 10px; justify-items: center; text-align: center; padding: 24px; opacity: calc(1 - var(--fx-p, 0) * 2.4); translate: 0 calc(var(--fx-p, 0) * -60px); }
+.scrub-title h4 { font: 800 clamp(2.2rem, 6vw, 4.6rem)/.95 var(--font-display); letter-spacing: -.04em; margin: 0; text-shadow: 0 10px 40px rgb(0 0 0 / .45); }
+.scrub-title p { font: 500 12px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; opacity: .85; }
+.scrub-bar { align-self: end !important; place-self: end center !important; width: min(60%, 360px); height: 3px; margin-bottom: 28px; border-radius: 3px; background: rgb(255 255 255 / .2); overflow: hidden; }
+.scrub-bar::after { content: ""; display: block; height: 100%; background: var(--lamp); transform-origin: 0 50%; scale: var(--fx-p, 0) 1; }
+.frames-label { display: grid; gap: 8px; justify-items: center; opacity: calc(1 - var(--fx-p, 0) * 3); }
+.frames-label h4 { font: 700 clamp(2rem, 5vw, 3.6rem)/1 var(--font-display); letter-spacing: -.03em; margin: 0; color: #fff; text-shadow: 0 6px 30px rgb(0 0 0 / .4); }
+.frames-label p { font: 500 12px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: #fff; opacity: .8; }
+
+.dapple-card {
+  border-radius: var(--radius); padding: clamp(28px, 5vw, 56px); min-height: 340px; display: grid; align-content: end; gap: 10px;
+  background: linear-gradient(170deg, #f7efe2, #ead9bf); color: #2a2216;
+}
+.dapple-card small { font: 500 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: #7a6a52; }
+.dapple-card h4 { font: 700 clamp(2rem, 4.5vw, 3.2rem)/1 var(--font-display); letter-spacing: -.03em; margin: 0; }
+.dapple-card p { color: #5d503d; max-width: 42ch; }
+
+.pipe { width: 100%; height: auto; display: block; }
+.pipe path, .pipe line { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; opacity: .7; }
+.pipe .node rect, .pipe .node circle { fill: var(--stage-2); stroke: var(--line); stroke-width: 1.2; }
+.pipe .node text { fill: var(--fg); font: 500 12px var(--font-mono); text-anchor: middle; dominant-baseline: middle; }
+.pipe .node .lamp { stroke: var(--lamp); }
+
+.field { height: 340px; border-radius: var(--radius); background: #07080d; border: 1px solid var(--line); display: grid; place-content: center; text-align: center; gap: 10px; color: #fff; position: relative; overflow: clip; }
+.field h4 { font: 700 clamp(1.8rem, 4vw, 2.8rem)/1.05 var(--font-display); letter-spacing: -.03em; margin: 0; }
+.field .readout { position: absolute; left: 18px; bottom: 16px; font: 500 11px/1.6 var(--font-mono); color: #8a8ea0; letter-spacing: .08em; text-align: left; }
+.field .readout b { color: var(--lamp); font-weight: 500; }
+
+.term { border-radius: 14px; background: #07080d; border: 1px solid var(--line); overflow: hidden; }
+.term-bar { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.term-bar i { width: 11px; height: 11px; border-radius: 50%; background: #2c2f3b; }
+.term-bar i:first-child { background: #ff5f57; } .term-bar i:nth-child(2) { background: #febc2e; } .term-bar i:nth-child(3) { background: #28c840; }
+.term-body { padding: 18px 20px; display: grid; gap: 6px; font: 400 14px/1.6 var(--font-mono); color: #d9d8d2; min-height: 130px; }
+.term-body .ok { color: #6fdc9b; }
+
+.rw-line { font: 800 clamp(2rem, 5.5vw, 4rem)/1.05 var(--font-display); letter-spacing: -.04em; }
+.rw-line [data-fx~="rotate-words"] { color: var(--lamp); }
+
+.clocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.clocks div { display: grid; gap: 6px; padding: 18px; border-radius: 14px; background: var(--stage-2); }
+.clocks time { font: 500 clamp(1.5rem, 3vw, 2rem)/1 var(--font-mono); letter-spacing: -.02em; }
+.clocks span { font: 500 11px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+.ring-demo figure { margin: 0; width: 170px; display: grid; gap: 8px; }
+.ring-demo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 14px; }
+.ring-demo figcaption { font: 600 13px/1.2 var(--font-body); text-align: center; }
+
+/* Leave room for the custom scrollbar, which only appears with a mouse. */
+@media (hover: hover) and (pointer: fine) { .demo-chat { right: 40px; } }
+
 /* ---------- use it ---------- */
 .use { padding-block: 72px 40px; display: grid; gap: 28px; border-top: 1px solid var(--line); }
 .use h2 { font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -.03em; }
@@ -368,17 +518,39 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
   .rail { display: none; }
   .chips {
     display: flex; gap: 8px; overflow-x: auto; padding: 14px max(16px, 4vw); border-bottom: 1px solid var(--line);
-    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in oklab, var(--bg) 88%, transparent);
-    backdrop-filter: blur(10px); scrollbar-width: none;
+    scrollbar-width: none;
   }
   .chips a { flex: none; font: 500 12px/1 var(--font-mono); padding: 8px 12px; border-radius: 99px; border: 1px solid var(--line); text-decoration: none; color: var(--muted); }
 }
 </style>
 
-<header class="hero" data-fx="aurora" data-fx-color="#ff9a3c" data-fx-color-2="#2f8fff" data-fx-color-3="#b2397a" data-fx-opacity="0.42">
+<div class="loader" id="loader" data-fx="preloader" data-fx-style="wave" data-fx-min="1300">
+  <span class="loader-mark">luma<em>fx</em></span>
+  <span data-fx-count>000</span>
+  <i class="loader-bar" data-fx-bar></i>
+  <span class="loader-note">Calibrating light field</span>
+</div>
+<div data-fx="scroll-progress"></div>
+<div data-fx="scrollbar" data-fx-sections=".spec-head h3, .use h2"></div>
+<div id="pt" data-fx="page-transition" data-fx-style="wave" data-fx-label="lumafx" data-fx-links="a[data-transition]" data-fx-color="#ffb547" data-fx-color-2="#0b0c12"></div>
+
+<header class="site-head" data-fx="smart-header">
+  <a class="logo" href="#top" data-fx-logo="0.9" aria-label="lumafx, back to top"><span data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip" data-fx-trigger="load" data-fx-stagger="45">luma<em>fx</em></span></a>
+  <nav class="site-nav" data-fx="hover-icon" aria-label="Sections">
+    <a href="#navigation" data-fx-icon="↗">Navigation</a>
+    <a href="#components" data-fx-icon="◐">Components</a>
+    <a href="#images" data-fx-icon="✦">Images</a>
+    <a href="#live" data-fx-icon="⌁">Live</a>
+    <a href="#use" data-fx-icon="→">Install</a>
+  </nav>
+  <button class="head-cta" data-fx-open="#join">Join the beta</button>
+</header>
+
+<header class="hero" id="top" data-fx="aurora" data-fx-color="#ff9a3c" data-fx-color-2="#2f8fff" data-fx-color-3="#b2397a" data-fx-opacity="0.42">
   <div class="hero-inner">
-    <p class="eyebrow">Open-source web effects · v0.1.0</p>
-    <h1 class="wordmark" data-fx="text-reveal" data-fx-split="chars" data-fx-style="flip" data-fx-trigger="load" data-fx-stagger="45">luma<em>fx</em></h1>
+    <div class="logo-room" id="logo-room" aria-hidden="true"></div>
+    <h1 class="sr-only">lumafx: free, open-source web effects</h1>
+    <p class="eyebrow">Open-source web effects · v0.2.0 · MIT, free forever</p>
     <div class="hero-row">
       <p class="lede" data-fx="text-reveal" data-fx-trigger="load" data-fx-delay="380">Premium effects from one HTML attribute. CSS first, works in any framework, accessible by default.</p>
       <div class="install" data-fx="glass border-beam" data-fx-mode="frost" data-fx-color="#ffb547" data-fx-color-2="#7fd4ff" data-fx-duration="7s">
@@ -387,10 +559,10 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
       </div>
     </div>
     <ul class="facts" data-fx="stagger" data-fx-delay="600">
-      <li><b>24</b> effects</li>
+      <li><b>47</b> effects and components</li>
       <li><b>__JS_GZ__</b> JS · <b>__CSS_GZ__</b> CSS gzip</li>
       <li><b>0</b> dependencies</li>
-      <li>Tailwind v4 · React Server Components · plain HTML</li>
+      <li>Tailwind v4 · React · WordPress · plain HTML</li>
       <li>Respects reduced motion</li>
     </ul>
   </div>
@@ -400,7 +572,10 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
   <a href="#border-beam">border-beam</a><a href="#glass">glass</a><a href="#squircle">squircle</a><a href="#text-reveal">text-reveal</a>
   <a href="#spotlight">spotlight</a><a href="#magnetic">magnetic</a><a href="#tilt">tilt</a><a href="#cursor-image">cursor-image</a>
   <a href="#reveal">reveal</a><a href="#stack">stack</a><a href="#hscroll">hscroll</a><a href="#carousel">carousel</a>
-  <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a><a href="#use">install</a>
+  <a href="#stories">stories</a><a href="#ripple">ripple</a><a href="#morph">morph</a>
+  <a href="#page-transition">page-transition</a><a href="#modal">modal</a><a href="#chat">chat</a><a href="#hovercard">hovercard</a>
+  <a href="#lightbox">lightbox</a><a href="#video-scrub">video-scrub</a><a href="#frames">frames</a><a href="#svg-draw">svg-draw</a>
+  <a href="#ring">ring</a><a href="#use">install</a>
 </nav>
 
 <div class="book">
@@ -443,6 +618,40 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
       <li><a href="#stories">stories <span class="kind js">js</span></a></li>
       <li><a href="#ripple">ripple <span class="kind js">webgl</span></a></li>
       <li><a href="#morph">morph <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Navigation</h4>
+    <ul>
+      <li><a href="#page-transition">page-transition <span class="kind js">js</span></a></li>
+      <li><a href="#preloader">preloader <span class="kind js">js</span></a></li>
+      <li><a href="#smart-header">smart-header <span class="kind css">css+js</span></a></li>
+      <li><a href="#scrollbar">scrollbar <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Components</h4>
+    <ul>
+      <li><a href="#modal">modal <span class="kind js">js</span></a></li>
+      <li><a href="#hovercard">hovercard <span class="kind js">js</span></a></li>
+      <li><a href="#chat">chat <span class="kind js">js</span></a></li>
+      <li><a href="#dock">dock <span class="kind js">js</span></a></li>
+      <li><a href="#hover-icon">hover-icon <span class="kind css">css</span></a></li>
+      <li><a href="#lightbox">lightbox <span class="kind js">js</span></a></li>
+    </ul>
+    <h4>Images &amp; video</h4>
+    <ul>
+      <li><a href="#image-reveal">image-reveal <span class="kind js">js</span></a></li>
+      <li><a href="#expand">expand <span class="kind css">css+js</span></a></li>
+      <li><a href="#image-trail">image-trail <span class="kind js">js</span></a></li>
+      <li><a href="#video-scrub">video-scrub <span class="kind js">js</span></a></li>
+      <li><a href="#frames">frames <span class="kind js">js</span></a></li>
+      <li><a href="#dapple">dapple <span class="kind css">css</span></a></li>
+    </ul>
+    <h4>SVG &amp; live</h4>
+    <ul>
+      <li><a href="#svg-draw">svg-draw <span class="kind js">js</span></a></li>
+      <li><a href="#dot-field">dot-field <span class="kind js">js</span></a></li>
+      <li><a href="#typewriter">typewriter <span class="kind js">js</span></a></li>
+      <li><a href="#rotate-words">rotate-words <span class="kind js">js</span></a></li>
+      <li><a href="#clock">clock <span class="kind js">js</span></a></li>
+      <li><a href="#ring">ring <span class="kind js">js</span></a></li>
     </ul>
   </aside>
 
@@ -780,12 +989,293 @@ footer { padding-block: 28px 56px; color: var(--muted); font: 400 12px/1.6 var(-
       <div class="codeline"><code>lumafx.transition(() =&gt; render(), { preset: <i>"slide"</i> })</code><button class="btn-ghost" data-copy>Copy</button></div>
     </section>
 
+    <!-- ======================= NAVIGATION (v0.2) ======================= -->
+    <h2 class="group-title" id="navigation">Navigation</h2>
+
+    <section class="spec" id="page-transition">
+      <div class="spec-head"><h3>page-transition</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">An animated cover between pages of any multi-page site, WordPress and Webflow included. It covers when a link is clicked and reveals the next page as it arrives, with no flash in between. Single-page apps call lumafx.page.cover() and reveal().</p>
+      <div class="stage" style="display:grid; gap: 16px; justify-items: center">
+        <div class="pt-buttons" role="group" aria-label="Play a transition">
+          <button class="btn primary small" data-pt="wave">Wave</button>
+          <button class="btn outline small" data-pt="curtain">Curtain</button>
+          <button class="btn outline small" data-pt="circle">Circle</button>
+          <button class="btn outline small" data-pt="slide">Slide</button>
+        </div>
+        <p class="note">On a real site this plays between pages automatically.</p>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"page-transition"</i> data-fx-style=<i>"wave"</i> data-fx-label=<i>"Sphere"</i>&gt;&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="preloader">
+      <div class="spec-head"><h3>preloader</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">The intro you saw when this page opened: a 000 → 100 counter that follows real loading, then lifts away with a wave. Entrance animations wait for it, so they play as the curtain rises. It removes itself after a few seconds even if JavaScript fails.</p>
+      <div class="stage center"><button class="btn primary small" id="replay-loader">Replay the intro</button></div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"preloader"</i> data-fx-style=<i>"wave"</i>&gt;&lt;span data-fx-count&gt;&lt;/span&gt;&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="smart-header">
+      <div class="spec-head"><h3>smart-header</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">The bar at the top of this page. The giant wordmark docks into it as you scroll, the bar hides while you read down and slides back as glass when you scroll up. Mark any logo with data-fx-logo to dock it.</p>
+      <div class="stage center"><button class="btn outline small" id="to-top">Back to the top to watch it dock</button></div>
+      <div class="codeline"><code>&lt;header <b>data-fx</b>=<i>"smart-header"</i>&gt;&lt;a data-fx-logo=<i>"0.9"</i>&gt;mejuma&lt;/a&gt;…&lt;/header&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="scrollbar">
+      <div class="spec-head"><h3>scrollbar + scroll-progress</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Look at the right edge of this page. The thumb springs and stretches with your speed, every section leaves a mark, and hovering shows which section sits at that point, right next to your cursor. Click to jump, drag to scrub. The amber line at the very top is scroll-progress.</p>
+      <div class="stage edge-demo">
+        <p class="note">Hover the <b>right edge</b> of the window. On touch screens the native scrollbar stays.</p>
+        <div class="edge-mock" aria-hidden="true"><span>tilt · 34%</span></div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"scrollbar"</i> data-fx-sections=<i>"h2"</i>&gt;&lt;/div&gt; &lt;div <b>data-fx</b>=<i>"scroll-progress"</i>&gt;&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= COMPONENTS (v0.2) ======================= -->
+    <h2 class="group-title" id="components">Components</h2>
+
+    <section class="spec" id="modal">
+      <div class="spec-head"><h3>modal</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">A real &lt;dialog&gt; with focus handling, Esc and a blurred backdrop. The liquid style rises out of the bottom edge like a drop, stretches, and detaches; closing melts it back down.</p>
+      <div class="stage center">
+        <button class="btn primary" data-fx-open="#join">Liquid</button>
+        <button class="btn outline" data-fx-open="#md-glass">Glass</button>
+        <button class="btn outline" data-fx-open="#md-scale">Scale</button>
+      </div>
+      <div class="codeline"><code>&lt;button data-fx-open=<i>"#join"</i>&gt; … &lt;dialog id=<i>"join"</i> <b>data-fx</b>=<i>"modal"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="hovercard">
+      <div class="spec-head"><h3>hovercard</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Point at a word and a small card springs open beside it, flipping sides to stay on screen. It also opens on keyboard focus and is linked for screen readers.</p>
+      <div class="stage">
+        <p class="hc-text">Made in <a href="#hovercard" data-fx="hovercard" data-fx-for="#hc-tirana">Tirana</a> for people who would rather <a href="#hovercard" data-fx="hovercard" data-fx-for="#hc-ship">ship</a> than tweak keyframes, and free for <a href="#hovercard" data-fx="hovercard" data-fx-text="MIT licensed. No account, no pro tier, no tracking.">everyone</a>.</p>
+        <template id="hc-tirana"><div class="hc-card"><img src="img/blloku.jpg" alt=""><b>Tirana, Albania</b><span>Where lumafx was built. 41.33° N, 19.82° E.</span></div></template>
+        <template id="hc-ship"><div class="hc-card"><b>One attribute</b><span>data-fx="reveal" and you're done. Every effect is a single line of HTML.</span></div></template>
+      </div>
+      <div class="codeline"><code>&lt;a <b>data-fx</b>=<i>"hovercard"</i> data-fx-for=<i>"#card"</i>&gt;Tirana&lt;/a&gt; &lt;template id=<i>"card"</i>&gt;…&lt;/template&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="chat">
+      <div class="spec-head"><h3>chat</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">The bubble in the corner. The launcher morphs into the window, messages spring in, quick replies stagger, and a typing indicator bounces. It fires fx:chat-send, so you can connect any backend or AI.</p>
+      <div class="stage center"><button class="btn primary small" id="open-chat">Open the chat</button></div>
+      <div class="codeline"><code>chat.addEventListener(<i>'fx:chat-send'</i>, e =&gt; chat.fxChat.reply(answer(e.detail.text)))</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="dock">
+      <div class="spec-head"><h3>dock</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Icons swell as the cursor passes, with neighbours making room, like the macOS dock. Labels float above.</p>
+      <div class="stage dock-wrap">
+        <nav data-fx="dock" aria-label="Apps">
+          <a class="app a1" href="#dock" data-fx-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z"/></svg><span class="sr-only">Home</span></a>
+          <a class="app a2" href="#dock" data-fx-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM15.5 15.5 20 20"/></svg><span class="sr-only">Search</span></a>
+          <a class="app a3" href="#dock" data-fx-label="Events"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg><span class="sr-only">Events</span></a>
+          <a class="app a4" href="#dock" data-fx-label="Messages"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4C6.9 4 3 7.4 3 11.5c0 2.1 1 4 2.8 5.3L5 20l3.6-1.7c1.1.3 2.2.5 3.4.5 5.1 0 9-3.4 9-7.5S17.1 4 12 4z"/></svg><span class="sr-only">Messages</span></a>
+          <a class="app a5" href="#dock" data-fx-label="Music"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 18.5a2.5 2.5 0 1 1-2-2.45V5l11-2v12.5a2.5 2.5 0 1 1-2-2.45V7.3L9 8.6z"/></svg><span class="sr-only">Music</span></a>
+          <a class="app a6" href="#dock" data-fx-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm8 3.5-2.1-.7-.5-1.3 1-2-1.4-1.4-2 1-1.3-.5L13 5h-2l-.7 2.1-1.3.5-2-1-1.4 1.4 1 2-.5 1.3L4 12v2l2.1.7.5 1.3-1 2 1.4 1.4 2-1 1.3.5L11 21h2l.7-2.1 1.3-.5 2 1 1.4-1.4-1-2 .5-1.3L20 14z"/></svg><span class="sr-only">Settings</span></a>
+        </nav>
+      </div>
+      <div class="codeline"><code>&lt;nav <b>data-fx</b>=<i>"dock"</i>&gt;&lt;a data-fx-label=<i>"Home"</i>&gt;…&lt;/a&gt;&lt;/nav&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="hover-icon">
+      <div class="spec-head"><h3>hover-icon</h3><span class="kind css">zero JS</span></div>
+      <p class="spec-desc">Menu links slide an icon in while the text makes room. Put it on one link, or on a whole &lt;nav&gt; or list, including WordPress menus. The header of this page uses it too.</p>
+      <div class="stage menu-demo">
+        <div><small>icon before</small>
+          <ul data-fx="hover-icon">
+            <li><a href="#hover-icon" data-fx-icon="✦">Work</a></li>
+            <li><a href="#hover-icon" data-fx-icon="◐">Studio</a></li>
+            <li><a href="#hover-icon" data-fx-icon="✎">Journal</a></li>
+          </ul>
+        </div>
+        <div><small>side right</small>
+          <ul data-fx="hover-icon" data-fx-side="right">
+            <li><a href="#hover-icon">Contact</a></li>
+            <li><a href="#hover-icon">Careers</a></li>
+            <li><a href="#hover-icon" data-fx-icon="↗">Instagram</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;ul <b>data-fx</b>=<i>"hover-icon"</i>&gt;&lt;li&gt;&lt;a data-fx-icon=<i>"✦"</i>&gt;Work&lt;/a&gt;&lt;/li&gt;…&lt;/ul&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="lightbox">
+      <div class="spec-head"><h3>lightbox</h3><span class="kind js">View Transitions</span></div>
+      <p class="spec-desc">Click a thumbnail and it grows into a full-screen viewer. Arrow keys, swipe, click to zoom, Esc to close, and it shrinks back into its place.</p>
+      <div class="stage lb-grid">
+        <a href="img/theth-wide.jpg" data-fx="lightbox" data-fx-group="alb" data-fx-caption="Theth, Accursed Mountains"><img src="img/theth.jpg" alt="Theth valley at dusk"></a>
+        <a href="img/ksamil-wide.jpg" data-fx="lightbox" data-fx-group="alb" data-fx-caption="Ksamil islands"><img src="img/ksamil.jpg" alt="Ksamil bay"></a>
+        <a href="img/valbona.jpg" data-fx="lightbox" data-fx-group="alb" data-fx-caption="Valbona"><img src="img/valbona.jpg" alt="Valbona ridges in the mist"></a>
+        <a href="img/butrint.jpg" data-fx="lightbox" data-fx-group="alb" data-fx-caption="Butrint"><img src="img/butrint.jpg" alt="Golden hills over Butrint"></a>
+      </div>
+      <div class="codeline"><code>&lt;a <b>data-fx</b>=<i>"lightbox"</i> data-fx-group=<i>"trip"</i> href=<i>"big.jpg"</i>&gt;&lt;img src=<i>"small.jpg"</i>&gt;&lt;/a&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= IMAGES & VIDEO (v0.2) ======================= -->
+    <h2 class="group-title" id="images">Images &amp; video</h2>
+
+    <section class="spec" id="image-reveal">
+      <div class="spec-head"><h3>image-reveal</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">A moving mask uncovers the image while it settles from a slight zoom. Up, down, left, right, center, circle or diagonal.</p>
+      <div class="stage" style="display:grid; gap: 16px">
+        <div class="ir-grid" id="ir-demo">
+          <figure><div class="ir" data-fx="image-reveal"><img src="img/llogara.jpg" alt=""></div><figcaption>up</figcaption></figure>
+          <figure><div class="ir" data-fx="image-reveal" data-fx-from="circle" data-fx-delay="120"><img src="img/dajti.jpg" alt=""></div><figcaption>circle</figcaption></figure>
+          <figure><div class="ir" data-fx="image-reveal" data-fx-from="diagonal" data-fx-delay="240"><img src="img/durres.jpg" alt=""></div><figcaption>diagonal</figcaption></figure>
+          <figure><div class="ir" data-fx="image-reveal" data-fx-from="center" data-fx-delay="360"><img src="img/valbona.jpg" alt=""></div><figcaption>center</figcaption></figure>
+        </div>
+        <div class="toolbar"><button class="btn-ghost" data-replay="#ir-demo .ir">Replay</button></div>
+      </div>
+      <div class="codeline"><code>&lt;figure <b>data-fx</b>=<i>"image-reveal"</i> data-fx-from=<i>"circle"</i>&gt;&lt;img …&gt;&lt;/figure&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="expand">
+      <div class="spec-head"><h3>expand</h3><span class="kind css">CSS + JS</span></div>
+      <p class="spec-desc">An inset, rounded image or video opens up to full width as it reaches the middle of the screen. Pure CSS scroll timeline where supported.</p>
+      <div class="expand-box" data-fx="expand" data-fx-inset="10%" data-fx-radius="40"><img src="img/ksamil-wide.jpg" alt="Ksamil bay at golden hour"></div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"expand"</i>&gt;&lt;video autoplay muted loop …&gt;&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="image-trail">
+      <div class="spec-head"><h3>image-trail</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Moving the cursor leaves a trail of photos that pop in and drift away. Nothing happens on touch screens.</p>
+      <div class="trail-zone" data-fx="image-trail" data-fx-images="img/theth.jpg, img/ksamil.jpg, img/dajti.jpg, img/blloku.jpg, img/valbona.jpg, img/butrint.jpg, img/llogara.jpg, img/durres.jpg" data-fx-size="170">
+        <h4>Move through here</h4>
+        <p>eight places in Albania</p>
+      </div>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"image-trail"</i> data-fx-images=<i>"a.jpg, b.jpg, c.jpg"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="video-scrub">
+      <div class="spec-head"><h3>video-scrub</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">The video plays as you scroll down and rewinds as you scroll up, held in place while its section passes. Use a short, all-keyframe video for the smoothest scrubbing.</p>
+      <section class="scrub" data-fx="video-scrub" data-fx-length="260vh">
+        <video muted playsinline preload="auto" poster="media/flight-poster.jpg">
+          <source src="media/flight.mp4" type="video/mp4">
+          <source src="media/flight.webm" type="video/webm">
+        </video>
+        <div class="scrub-title"><p>Scroll to fly</p><h4>Through the valley</h4></div>
+        <i class="scrub-bar"></i>
+      </section>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"video-scrub"</i>&gt;&lt;video src=<i>"flight.mp4"</i> muted playsinline&gt;&lt;/video&gt;&lt;/section&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="frames">
+      <div class="spec-head"><h3>frames</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">The Apple product-page technique: numbered images drawn on a canvas as you scroll. Sharper than video and perfectly smooth in both directions.</p>
+      <section class="scrub" data-fx="frames" data-fx-src="seq/sunset-###.jpg" data-fx-count="48" data-fx-length="240vh" aria-label="Sunset over the bay">
+        <div class="frames-label"><h4>Scroll slowly.</h4><p>48 frames of a sunset</p></div>
+        <i class="scrub-bar"></i>
+      </section>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"frames"</i> data-fx-src=<i>"/seq/f-###.jpg"</i> data-fx-count=<i>"48"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="dapple">
+      <div class="spec-head"><h3>dapple</h3><span class="kind css">zero JS</span></div>
+      <p class="spec-desc">Soft leaf shadows sway over a section, like sunlight through a tree. Generated in CSS, no video file.</p>
+      <div class="dapple-card" data-fx="dapple" data-fx-opacity="0.42">
+        <small>Villa · Ksamil</small>
+        <h4>Morning light, all year.</h4>
+        <p>Four bedrooms under the olive trees, a two-minute walk from the bay.</p>
+      </div>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"dapple"</i> data-fx-opacity=<i>"0.4"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <!-- ======================= SVG & LIVE (v0.2) ======================= -->
+    <h2 class="group-title" id="live">SVG &amp; live</h2>
+
+    <section class="spec" id="svg-draw">
+      <div class="spec-head"><h3>svg-draw</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Strokes draw themselves when the SVG scrolls into view, then glowing pulses travel along the paths. Works with any inline SVG.</p>
+      <div class="stage">
+        <svg class="pipe" viewBox="0 0 820 250" data-fx="svg-draw" data-fx-pulse="2" data-fx-color="#ffb547" role="img" aria-label="Pipeline: design, data-fx, runtime, live site">
+          <path d="M120 125 C 200 125, 210 60, 300 60"/>
+          <path d="M120 125 C 200 125, 210 190, 300 190"/>
+          <path d="M380 60 C 450 60, 450 125, 520 125"/>
+          <path d="M380 190 C 450 190, 450 125, 520 125"/>
+          <path d="M600 125 L 700 125"/>
+          <g class="node"><rect x="40" y="105" width="80" height="40" rx="12"/><text x="80" y="126">design</text></g>
+          <g class="node"><rect x="300" y="40" width="80" height="40" rx="12"/><text x="340" y="61">html</text></g>
+          <g class="node"><rect x="300" y="170" width="80" height="40" rx="12"/><text x="340" y="191">data-fx</text></g>
+          <g class="node"><rect class="lamp" x="520" y="105" width="80" height="40" rx="12"/><text x="560" y="126">runtime</text></g>
+          <g class="node"><circle class="lamp" cx="730" cy="125" r="30"/><text x="730" y="126">live</text></g>
+        </svg>
+      </div>
+      <div class="codeline"><code>&lt;svg <b>data-fx</b>=<i>"svg-draw"</i> data-fx-pulse=<i>"2"</i>&gt;&lt;path …/&gt;&lt;/svg&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="dot-field">
+      <div class="spec-head"><h3>dot-field</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">A grid of dots that parts around the cursor and breathes when idle. It sits behind your content.</p>
+      <div class="field" data-fx="dot-field" data-fx-gap="20" id="field">
+        <h4>Calibrating signal field</h4>
+        <p class="note">move the cursor</p>
+        <div class="readout" aria-hidden="true">X <b id="fx-x">0.000</b> · Y <b id="fx-y">0.000</b></div>
+      </div>
+      <div class="codeline"><code>&lt;section <b>data-fx</b>=<i>"dot-field"</i> data-fx-color=<i>"#ffb547"</i>&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="typewriter">
+      <div class="spec-head"><h3>typewriter</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Types letter by letter with a blinking caret, line after line, without moving the layout. Screen readers get the full text at once.</p>
+      <div class="term">
+        <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="term-body" data-fx="typewriter" data-fx-speed="38" data-fx-loop>
+          <div>$ npm i lumafx</div>
+          <div class="ok">added 1 package in 0.8s, 0 dependencies</div>
+          <div>$ echo "free forever"</div>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;p <b>data-fx</b>=<i>"typewriter"</i>&gt;npm i lumafx&lt;/p&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="rotate-words">
+      <div class="spec-head"><h3>rotate-words</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Cycles words in place while the width eases between them. Flip, slide or blur.</p>
+      <div class="stage">
+        <p class="rw-line">Websites that feel <span data-fx="rotate-words" data-fx-words="magical, fast, human, alive">premium</span></p>
+      </div>
+      <div class="codeline"><code>&lt;span <b>data-fx</b>=<i>"rotate-words"</i> data-fx-words=<i>"fast, human"</i>&gt;premium&lt;/span&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="clock">
+      <div class="spec-head"><h3>clock</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Live time in any time zone, ticking on the second. A small detail studios love in footers.</p>
+      <div class="stage clocks">
+        <div><time data-fx="clock" data-fx-tz="Europe/Tirane">--:--:--</time><span>Tirana</span></div>
+        <div><time data-fx="clock" data-fx-tz="Asia/Dubai">--:--:--</time><span>Dubai</span></div>
+        <div><time data-fx="clock" data-fx-tz="America/New_York">--:--:--</time><span>New York</span></div>
+        <div><time data-fx="clock" data-fx-tz="Asia/Tokyo" data-fx-seconds="false">--:--</time><span>Tokyo</span></div>
+      </div>
+      <div class="codeline"><code>&lt;time <b>data-fx</b>=<i>"clock"</i> data-fx-tz=<i>"Asia/Dubai"</i>&gt;&lt;/time&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
+    <section class="spec" id="ring">
+      <div class="spec-head"><h3>ring</h3><span class="kind js">runtime</span></div>
+      <p class="spec-desc">Items stand on a 3D ring. Drag and fling it, use the arrow keys, or let it turn slowly by itself.</p>
+      <div class="stage bleed">
+        <div class="ring-demo" data-fx="ring" aria-label="Places">
+          <figure><img src="img/theth.jpg" alt=""><figcaption>Theth</figcaption></figure>
+          <figure><img src="img/ksamil.jpg" alt=""><figcaption>Ksamil</figcaption></figure>
+          <figure><img src="img/dajti.jpg" alt=""><figcaption>Dajti</figcaption></figure>
+          <figure><img src="img/blloku.jpg" alt=""><figcaption>Blloku</figcaption></figure>
+          <figure><img src="img/valbona.jpg" alt=""><figcaption>Valbona</figcaption></figure>
+          <figure><img src="img/butrint.jpg" alt=""><figcaption>Butrint</figcaption></figure>
+          <figure><img src="img/llogara.jpg" alt=""><figcaption>Llogara</figcaption></figure>
+          <figure><img src="img/durres.jpg" alt=""><figcaption>Durrës</figcaption></figure>
+        </div>
+      </div>
+      <div class="codeline"><code>&lt;div <b>data-fx</b>=<i>"ring"</i>&gt;&lt;figure&gt;…&lt;/figure&gt;…&lt;/div&gt;</code><button class="btn-ghost" data-copy>Copy</button></div>
+    </section>
+
     <!-- ======================= USE IT ======================= -->
     <section class="use" id="use">
       <h2>Use it anywhere</h2>
       <div class="use-grid">
         <section>
-          <h5>Plain HTML or WordPress</h5>
+          <h5>Plain HTML, Webflow, Framer embeds</h5>
 <pre>&lt;link rel="stylesheet" href="lumafx.css"&gt;
 &lt;script src="lumafx.global.js"&gt;&lt;/script&gt;
 
@@ -814,21 +1304,55 @@ import { FxRuntime } from 'lumafx/react/runtime'
 &lt;TextReveal as="h1" <b>split="chars"</b>&gt;Hello&lt;/TextReveal&gt;
 &lt;FxRuntime /&gt;  <b>// once, in layout.tsx</b></pre>
         </section>
+        <section>
+          <h5>WordPress</h5>
+<pre>Plugins → Add New → Upload <b>lumafx.zip</b>
+
+Every block gets an <b>Effects</b> panel.
+Elementor, Bricks, Divi: add the class
+<b>fx-reveal</b>, <b>fx-glass</b> … to any element.</pre>
+        </section>
       </div>
       <div class="promises">
         <div><b>Never hides content</b><span>Hidden states only apply once the runtime is running, with a failsafe if it never boots.</span></div>
         <div><b>Calm by default</b><span>prefers-reduced-motion swaps every effect for a still or opacity-only version.</span></div>
         <div><b>Cheap when idle</b><span>Loops pause off-screen, pointer effects sleep until the mouse moves, lite mode on low-memory devices.</span></div>
         <div><b>Readable by AI tools</b><span>Ships llms.txt and effects.json so coding agents apply effects correctly.</span></div>
+        <div><b>Free forever</b><span>MIT licensed, every effect and component. No pro tier, no account, no tracking.</span></div>
       </div>
     </section>
 
     <footer>
-      <span>lumafx v0.1.0 · MIT</span>
+      <span>lumafx v0.2.0 · MIT · free forever</span>
       <span id="live-count">Effects running on this page: …</span>
     </footer>
   </main>
 </div>
+
+<dialog id="join" data-fx="modal" aria-labelledby="join-title">
+  <div class="md-panel-body">
+    <div class="row-end"><h3 id="join-title">Join the beta</h3><button class="md-x" data-fx-close aria-label="Close">×</button></div>
+    <p>Get new effects the day they ship. One email a month, no spam.</p>
+    <form onsubmit="event.preventDefault(); this.querySelector('button').textContent = 'You are in ✓'">
+      <input type="email" required placeholder="you@studio.com" aria-label="Email">
+      <button class="btn primary small" type="submit">Join</button>
+    </form>
+  </div>
+</dialog>
+<dialog id="md-glass" data-fx="modal" data-fx-style="glass" aria-label="Glass modal">
+  <div class="md-panel-body">
+    <div class="row-end"><h3>Glass sheet</h3><button class="md-x" data-fx-close aria-label="Close">×</button></div>
+    <p>A frosted panel that springs up from the bottom and settles with a small overshoot.</p>
+  </div>
+</dialog>
+<dialog id="md-scale" data-fx="modal" data-fx-style="scale" aria-label="Scale modal">
+  <div class="md-panel-body">
+    <div class="row-end"><h3>Classic scale</h3><button class="md-x" data-fx-close aria-label="Close">×</button></div>
+    <p>The familiar zoom-in, for when you want calm.</p>
+  </div>
+</dialog>
+
+<div class="demo-chat" id="chat-widget" data-fx="chat" data-fx-title="lumafx" data-fx-subtitle="Demo bot · replies instantly" data-fx-greeting="Hi! I'm a demo bot. Ask me anything about lumafx." data-fx-quick="How do I install it?, Does it work on WordPress?, Is it really free?"></div>
 
 <script>
 (() => {
@@ -921,6 +1445,72 @@ import { FxRuntime } from 'lumafx/react/runtime'
     }
   }, { rootMargin: '-45% 0px -50% 0px' });
   document.querySelectorAll('.spec').forEach((s) => io.observe(s));
+
+  // ---------- v0.2 ----------
+  // Docking wordmark: reserve exactly the room the big logo needs under the header.
+  const logo = document.querySelector('.site-head [data-fx-logo]');
+  const room = document.getElementById('logo-room');
+  const sizeRoom = () => {
+    if (!logo || !room || !logo.offsetWidth) return;
+    const vw = document.documentElement.clientWidth;
+    const frac = parseFloat(logo.getAttribute('data-fx-logo')) || 0.9;
+    room.style.height = ((logo.offsetHeight * vw * frac) / logo.offsetWidth).toFixed(1) + 'px';
+  };
+  sizeRoom();
+  addEventListener('resize', sizeRoom);
+  if (logo && 'ResizeObserver' in window) new ResizeObserver(sizeRoom).observe(logo);
+
+  // Page transitions: play each style in place.
+  const pt = document.getElementById('pt');
+  const ptButtons = [...document.querySelectorAll('[data-pt]')];
+  ptButtons.forEach((b) =>
+    b.addEventListener('click', async (e) => {
+      ptButtons.forEach((x) => {
+        x.classList.toggle('primary', x === b);
+        x.classList.toggle('outline', x !== b);
+      });
+      pt.setAttribute('data-fx-style', b.dataset.pt);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await window.lumafx.page.cover(e.clientX, e.clientY);
+      await new Promise((r) => setTimeout(r, 450));
+      await window.lumafx.page.reveal();
+    }),
+  );
+
+  // Preloader: replace it with a fresh copy to replay the intro.
+  document.getElementById('replay-loader').addEventListener('click', () => {
+    const old = document.getElementById('loader');
+    const fresh = old.cloneNode(true);
+    ['data-fx-done', 'data-fx-state', 'style', 'role', 'aria-valuenow'].forEach((a) => fresh.removeAttribute(a));
+    old.replaceWith(fresh);
+  });
+
+  document.getElementById('to-top').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // Chat: a tiny demo bot answering through the fx:chat-send event.
+  const chat = document.getElementById('chat-widget');
+  document.getElementById('open-chat').addEventListener('click', () => chat.fxChat && chat.fxChat.open());
+  const answers = [
+    [/install|npm|script|start|use/i, 'Add one script tag, or npm i lumafx and import "lumafx/auto". Then put data-fx="reveal" on anything.'],
+    [/wordpress|wp|elementor|gutenberg|bricks|divi/i, 'Yes. Install the plugin and every block gets an Effects panel. In Elementor or Bricks, add fx-reveal or fx-glass as a CSS class.'],
+    [/free|price|cost|licen|pay/i, 'Completely free and MIT licensed, forever. No pro tier, no account.'],
+    [/react|next/i, 'Use the components from lumafx/react and add <FxRuntime /> once in your layout.'],
+    [/tailwind/i, 'Add @import "lumafx/tailwind.css" and use classes like fx-glass or fx-border-beam.'],
+  ];
+  chat.addEventListener('fx:chat-send', (e) => {
+    const hit = answers.find(([re]) => re.test(e.detail.text));
+    chat.fxChat.reply(hit ? hit[1] : 'Good question! Every effect is one HTML attribute. Ask me about install, WordPress or price.');
+  });
+
+  // Dot field readout
+  const field = document.getElementById('field');
+  const rx = document.getElementById('fx-x');
+  const ry = document.getElementById('fx-y');
+  field.addEventListener('pointermove', (e) => {
+    const r = field.getBoundingClientRect();
+    rx.textContent = ((e.clientX - r.left) / r.width).toFixed(3);
+    ry.textContent = ((e.clientY - r.top) / r.height).toFixed(3);
+  });
 
   // Live count of mounted effects
   const count = document.getElementById('live-count');

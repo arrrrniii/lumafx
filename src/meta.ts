@@ -360,6 +360,291 @@ const defs: Meta[] = [
     },
     example: '<img data-fx="morph" data-fx-name="hero-1" …>',
   },
+
+  /* ---------------- v0.2 · navigation ---------------- */
+  {
+    name: 'page-transition',
+    title: 'SVG page transitions',
+    kind: 'js',
+    desc: 'Animated SVG cover between pages of any site (WordPress and Webflow included). Covers on leave, reveals on arrival. Place one element anywhere in <body>.',
+    options: {
+      style: choice(['wave', 'curtain', 'circle', 'slide'], 'wave', 'Shape of the transition.'),
+      color: color('#0b0c12', 'Cover color.'),
+      'color-2': color('#ffb547', 'Accent layer color.'),
+      duration: time('750ms', 'Length of each half (cover or reveal).', false),
+      label: { type: 'string', desc: 'Text shown on the cover, e.g. your brand.' },
+      links: { type: 'string', default: 'a[href]', desc: 'Which links trigger a transition.' },
+    },
+    example: '<div data-fx="page-transition" data-fx-style="wave" data-fx-label="Sphere"></div>',
+  },
+  {
+    name: 'preloader',
+    title: 'Preloader',
+    kind: 'js',
+    desc: 'Full-screen intro with a 000→100 counter that follows real page loading, then lifts away. Hides itself after a few seconds even if JavaScript fails.',
+    options: {
+      style: choice(['slide', 'wave', 'fade'], 'slide', 'How it exits.'),
+      color: color('#0b0c12', 'Background color.'),
+      min: time('900ms', 'Minimum time on screen.', false),
+    },
+    example: '<div data-fx="preloader"><span>Sphere</span></div>',
+  },
+
+  /* ---------------- v0.2 · components ---------------- */
+  {
+    name: 'modal',
+    title: 'Liquid modal',
+    kind: 'js',
+    desc: 'Accessible <dialog> that rises out of the bottom edge like a drop of liquid and detaches, then melts back on close. Open it from any element with data-fx-open="#id", or any link to href="#id".',
+    options: {
+      style: choice(['liquid', 'glass', 'scale'], 'liquid', 'liquid = gooey drop from the bottom, glass = blurred glass sheet, scale = classic zoom.'),
+      color: color('#15171f', 'Panel color.'),
+    },
+    example: '<button data-fx-open="#join">Join</button>\n<dialog id="join" data-fx="modal">…<button data-fx-close>Close</button></dialog>',
+  },
+  {
+    name: 'hovercard',
+    title: 'Hover card',
+    kind: 'js',
+    desc: 'A small card that springs open right next to the hovered or focused element and stays inside the viewport.',
+    options: {
+      for: { type: 'string', desc: 'Selector of the card content (hidden in the page).' },
+      text: { type: 'string', desc: 'Plain text content instead of a selector.' },
+      placement: choice(['auto', 'top', 'bottom', 'left', 'right'], 'auto', 'Preferred side.'),
+      delay: time('90ms', 'Hover delay before opening.', false),
+    },
+    example: '<a data-fx="hovercard" data-fx-for="#tip-sphere">Sphere</a>',
+  },
+  {
+    name: 'chat',
+    title: 'Chat widget',
+    kind: 'js',
+    desc: 'Animated chat launcher and panel: the button morphs into the window, messages slide in, a typing indicator bounces. Emits fx:chat-send so you can connect any backend.',
+    options: {
+      title: { type: 'string', default: 'Chat', desc: 'Panel title.' },
+      subtitle: { type: 'string', desc: 'Line under the title.' },
+      greeting: { type: 'string', desc: 'First message from you to the visitor.' },
+      placeholder: { type: 'string', default: 'Write a message…', desc: 'Input placeholder.' },
+      quick: { type: 'string', desc: 'Comma-separated quick replies shown as chips.' },
+      color: color('#ffb547', 'Accent color.'),
+      position: choice(['right', 'left'], 'right', 'Corner of the screen.'),
+    },
+    example: '<div data-fx="chat" data-fx-title="Support" data-fx-greeting="Hi! How can we help?"></div>',
+  },
+  {
+    name: 'smart-header',
+    title: 'Smart header',
+    kind: 'hybrid',
+    desc: 'Hides while you scroll down, slides back as glass when you scroll up, and can dock an oversized hero logo into the bar as you scroll.',
+    options: {
+      threshold: len('80px', 'Scroll distance before it reacts.', false),
+      hide: flag('Hide while scrolling down.', true),
+    },
+    example: '<header data-fx="smart-header"><a data-fx-logo>mejuma</a><nav>…</nav></header>',
+  },
+  {
+    name: 'scrollbar',
+    title: 'Animated scrollbar',
+    kind: 'js',
+    desc: 'Custom page scrollbar with a springy thumb, section marks, and a label that pops up next to the cursor showing which section is at that point.',
+    options: {
+      sections: { type: 'string', default: 'h2, [data-fx-section]', desc: 'Elements that become section marks.' },
+      color: color('#ffb547', 'Thumb color.'),
+    },
+    example: '<div data-fx="scrollbar"></div>',
+  },
+  {
+    name: 'scroll-progress',
+    title: 'Scroll progress',
+    kind: 'hybrid',
+    desc: 'A reading-progress bar that fills as the page scrolls. Runs on the compositor in modern browsers.',
+    options: {
+      color: color('#ffb547', 'Bar color.'),
+      height: len('3px', 'Bar thickness.'),
+    },
+    example: '<div data-fx="scroll-progress"></div>',
+  },
+  {
+    name: 'dock',
+    title: 'Magnifying dock',
+    kind: 'js',
+    desc: 'Icons grow as the cursor passes over them, like the macOS dock. Labels appear above the hovered icon.',
+    options: {
+      magnify: num(1.8, 'Maximum scale of the closest icon.'),
+      range: len('150px', 'How far the magnification reaches.', false),
+    },
+    example: '<nav data-fx="dock"><a data-fx-label="Home">🏠</a>…</nav>',
+  },
+  {
+    name: 'hover-icon',
+    title: 'Hover icon',
+    kind: 'css',
+    desc: 'Menu links slide an icon in on hover while the text makes room. Uses the data-fx-icon text, or a child marked data-fx-icon-el.',
+    options: {
+      icon: { type: 'string', default: '→', desc: 'Icon character or emoji.' },
+      side: choice(['left', 'right'], 'left', 'Where the icon appears.'),
+    },
+    example: '<a data-fx="hover-icon" data-fx-icon="✦">Work</a>',
+  },
+  {
+    name: 'lightbox',
+    title: 'Lightbox',
+    kind: 'js',
+    desc: 'Click a thumbnail and it grows into a full-screen viewer (View Transitions), with keyboard, swipe, zoom and a counter. Put it on a link to a large image, or on a gallery to page through every linked image inside.',
+    options: {
+      group: { type: 'string', desc: 'Links with the same group page through together.' },
+    },
+    example: '<a data-fx="lightbox" data-fx-group="villa" href="big.jpg"><img src="small.jpg" alt="…"></a>',
+  },
+
+  /* ---------------- v0.2 · images & video ---------------- */
+  {
+    name: 'image-reveal',
+    title: 'Image reveal',
+    kind: 'js',
+    desc: 'The image is uncovered by a moving mask while it settles from a slight zoom. Seven mask shapes.',
+    options: {
+      from: choice(['up', 'down', 'left', 'right', 'center', 'circle', 'diagonal'], 'up', 'Direction or shape of the mask.'),
+      duration: time('1200ms', 'Reveal length.'),
+      delay: time('0ms', 'Delay before it starts.'),
+      scale: num(1.25, 'Starting zoom of the image.', true),
+    },
+    example: '<figure data-fx="image-reveal" data-fx-from="circle"><img …></figure>',
+  },
+  {
+    name: 'expand',
+    title: 'Expand on scroll',
+    kind: 'hybrid',
+    desc: 'An inset, rounded image or video grows to full width as it scrolls into the middle of the screen.',
+    options: {
+      inset: len('8vw', 'Starting inset on each side.'),
+      radius: len('32px', 'Starting corner radius.'),
+    },
+    example: '<div data-fx="expand"><video autoplay muted loop playsinline …></video></div>',
+  },
+  {
+    name: 'image-trail',
+    title: 'Image trail',
+    kind: 'js',
+    desc: 'Moving the cursor leaves a trail of images that pop in and fade away.',
+    options: {
+      images: { type: 'string', desc: 'Comma-separated image URLs (or put <img> children inside).' },
+      size: len('190px', 'Image width.', false),
+      spacing: len('90px', 'Cursor travel between images.', false),
+    },
+    example: '<section data-fx="image-trail" data-fx-images="a.jpg, b.jpg, c.jpg">…</section>',
+  },
+  {
+    name: 'video-scrub',
+    title: 'Scroll-scrubbed video',
+    kind: 'js',
+    desc: 'The video plays forward as you scroll down and backward as you scroll up, pinned while its section passes.',
+    options: {
+      length: len('300vh', 'Scroll distance for the whole video.'),
+      smooth: num(8, 'Smoothing (higher follows the scroll more tightly).'),
+    },
+    example: '<section data-fx="video-scrub"><video src="flyover.mp4" muted playsinline preload="auto"></video></section>',
+  },
+  {
+    name: 'frames',
+    title: 'Image sequence',
+    kind: 'js',
+    desc: 'Apple-style scroll animation from numbered images drawn on a canvas. Sharper and smoother to scrub than video.',
+    options: {
+      src: { type: 'string', desc: 'URL pattern, ### is replaced by the frame number: /seq/frame-###.jpg' },
+      count: num(60, 'Number of frames.'),
+      start: num(1, 'First frame number.'),
+      length: len('300vh', 'Scroll distance for the whole sequence.'),
+    },
+    example: '<section data-fx="frames" data-fx-src="/seq/f-###.jpg" data-fx-count="90"></section>',
+  },
+
+  /* ---------------- v0.2 · SVG & live ---------------- */
+  {
+    name: 'svg-draw',
+    title: 'SVG draw + flow',
+    kind: 'js',
+    desc: 'Draws the strokes of an SVG when it scrolls into view (or with the scroll), and can send glowing pulses travelling along the paths.',
+    options: {
+      mode: choice(['view', 'scroll'], 'view', 'view = draws once, scroll = drawing follows the scroll.'),
+      duration: time('1800ms', 'Drawing time per path.'),
+      stagger: time('140ms', 'Delay between paths.'),
+      pulse: num(0, 'Glowing pulses travelling along each path (0 = none).'),
+      color: color('#ffb547', 'Pulse color.'),
+    },
+    example: '<svg data-fx="svg-draw" data-fx-pulse="2" …><path …/></svg>',
+  },
+  {
+    name: 'dot-field',
+    title: 'Dot field',
+    kind: 'js',
+    desc: 'A grid of dots that ripples away from the cursor and breathes when idle.',
+    options: {
+      color: color('#ffb547', 'Dot color.'),
+      gap: len('22px', 'Distance between dots.', false),
+      force: num(1, 'How strongly dots react.'),
+    },
+    example: '<section data-fx="dot-field">…</section>',
+  },
+  {
+    name: 'typewriter',
+    title: 'Typewriter',
+    kind: 'js',
+    desc: 'Types the text letter by letter with a blinking caret. Child lines type one after another, like a terminal.',
+    options: {
+      speed: time('34ms', 'Time per letter.', false),
+      delay: time('0ms', 'Delay before typing starts.', false),
+      loop: flag('Erase and start again.'),
+    },
+    example: '<p data-fx="typewriter">npm i lumafx</p>',
+  },
+  {
+    name: 'rotate-words',
+    title: 'Rotating words',
+    kind: 'js',
+    desc: 'Cycles through a list of words in place, with the width easing between them.',
+    options: {
+      words: { type: 'string', desc: 'Comma-separated words. The element text is the first.' },
+      interval: time('2200ms', 'Time each word stays.', false),
+      style: choice(['flip', 'slide', 'blur'], 'flip', 'Transition style.'),
+    },
+    example: 'We build <span data-fx="rotate-words" data-fx-words="sites, apps, events">brands</span>',
+  },
+  {
+    name: 'clock',
+    title: 'Live clock',
+    kind: 'js',
+    desc: 'Shows the live time in any time zone, ticking every second.',
+    options: {
+      tz: { type: 'string', desc: 'IANA time zone, e.g. Europe/Tirane. Default: the visitor’s.' },
+      seconds: flag('Show seconds.', true),
+      hour12: flag('12-hour clock with AM/PM.'),
+    },
+    example: '<time data-fx="clock" data-fx-tz="Asia/Dubai"></time>',
+  },
+  {
+    name: 'dapple',
+    title: 'Leaf shadows',
+    kind: 'css',
+    loop: true,
+    desc: 'Soft, slowly swaying shadows of leaves over a section, like sunlight through a tree.',
+    options: {
+      opacity: num(0.4, 'Shadow strength, 0–1.', true),
+      duration: time('16s', 'Length of one sway.'),
+    },
+    example: '<section data-fx="dapple">…</section>',
+  },
+  {
+    name: 'ring',
+    title: '3D ring carousel',
+    kind: 'js',
+    desc: 'Items stand on a 3D ring you can drag and fling; it turns slowly on its own when idle.',
+    options: {
+      speed: num(6, 'Idle rotation in degrees per second (0 = still).'),
+      tilt: num(8, 'Viewing angle in degrees.'),
+    },
+    example: '<div data-fx="ring"><figure>…</figure><figure>…</figure></div>',
+  },
 ];
 
 export const META: Record<string, Meta> = Object.fromEntries(defs.map((d) => [d.name, d as Meta]));

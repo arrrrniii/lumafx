@@ -1,0 +1,2 @@
+/* The element only carries the options. The cover itself is .fx-pt, appended to <body> (see base.css). */
+:where(&) { display: none; }

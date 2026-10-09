@@ -1,0 +1,13 @@
+:where(&) { position: relative; }
+&[data-fx-state~="pinned"] { height: var(--fx-length, 300vh); }
+& > .fx-pin {
+  position: sticky;
+  top: 0;
+  display: grid;
+  height: 100vh;
+  height: 100svh;
+  overflow: clip;
+}
+& > .fx-pin > * { grid-area: 1 / 1; min-width: 0; }
+& > .fx-pin > :not(canvas, video, img) { z-index: 1; place-self: center; }
+& .fx-frames-canvas { display: block; width: 100%; height: 100%; }

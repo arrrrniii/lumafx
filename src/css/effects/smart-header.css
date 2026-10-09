@@ -1,0 +1,18 @@
+--_sh-bg: var(--fx-header-bg, color-mix(in oklab, Canvas 70%, transparent));
+:where(&) {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  transition: translate .5s cubic-bezier(.2, .8, .2, 1), background-color .35s ease, box-shadow .35s ease, -webkit-backdrop-filter .35s, backdrop-filter .35s;
+}
+&[data-fx-state~="scrolled"] {
+  background-color: var(--_sh-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  backdrop-filter: blur(16px) saturate(1.6);
+  box-shadow: 0 1px 0 rgb(255 255 255 / .06), 0 12px 30px -20px rgb(0 0 0 / .55);
+}
+&[data-fx-state~="hidden"] { translate: 0 calc(-100% - 4px); }
+& [data-fx-logo] { display: inline-block; transform-origin: 0 0; will-change: transform; }
+@fx-reduced {
+  transition: background-color .2s ease;
+}

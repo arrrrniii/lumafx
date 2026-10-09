@@ -131,11 +131,13 @@ describe('metadata consistency', () => {
   it('only reads documented options in CSS', () => {
     const known = new Set(cssOptionKeys());
     // Variables written by the runtime itself (pointer positions, indices…)
-    const runtime = new Set(['i', 'mx', 'my', 'gx', 'gy', 'go', 'shx', 'shy', 's', 'br', 'k', 'mq-dur', 'hs-dist', 'hs-p', 'elev', 'angle', 'float-size', 'vt-x', 'vt-y']);
+    const runtime = new Set(['i', 'mx', 'my', 'gx', 'gy', 'go', 'shx', 'shy', 's', 'br', 'k', 'mq-dur', 'hs-dist', 'hs-p', 'elev', 'angle', 'float-size', 'vt-x', 'vt-y', 'p', 'ring-a', 'ring-r', 'pt-early']);
+    // Documented theming hooks people set in their own CSS.
+    const theme = new Set(['icon', 'chat-bg', 'chat-fg', 'chat-ink', 'header-bg', 'dock-half', 'hc-bg', 'hc-fg']);
     for (const n of EFFECT_NAMES) {
       const css = fs.readFileSync(path.join('src/css/effects', n + '.css'), 'utf8');
       for (const [, key] of css.matchAll(/var\(--fx-([\w-]+)/g)) {
-        const ok = known.has(key) || runtime.has(key);
+        const ok = known.has(key) || runtime.has(key) || theme.has(key);
         expect(ok, `${n}.css reads --fx-${key}`).toBe(true);
         if (known.has(key) && !runtime.has(key)) {
           expect(META[n].options[key]?.css, `${n} should declare css option "${key}"`).toBe(true);

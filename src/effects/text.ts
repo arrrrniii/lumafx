@@ -1,6 +1,7 @@
 import { META } from '../meta';
 import type { Effect } from '../core/types';
 import { onView } from '../core/view';
+import { whenLoaded } from '../core/gate';
 import { isInteractive, setState } from '../core/util';
 import { indexLines, splitText, type SplitMode } from './split';
 
@@ -46,13 +47,13 @@ export const textReveal: Effect = {
     let raf = 0;
     if (ctx.str('trigger', 'view') === 'load') {
       // Two frames so the hidden state is painted before transitioning.
-      raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => setState(el, 'in'))));
+      whenLoaded(() => (raf = requestAnimationFrame(() => (raf = requestAnimationFrame(() => setState(el, 'in'))))));
     } else {
       off = onView(
         el,
         (visible) => {
           if (visible) {
-            setState(el, 'in');
+            whenLoaded(() => setState(el, 'in'));
             if (once) {
               off?.();
               off = null;
@@ -138,13 +139,13 @@ export const scramble: Effect = {
         el.removeEventListener('pointerenter', play);
         el.removeEventListener('focusin', play);
       });
-    } else if (trigger === 'load') play();
+    } else if (trigger === 'load') whenLoaded(play);
     else {
       let off: (() => void) | null = onView(
         el,
         (v) => {
           if (v) {
-            play();
+            whenLoaded(play);
             off?.();
             off = null;
           }
@@ -253,7 +254,7 @@ export const counter: Effect = {
           render(from + (p.value - from) * easeOutExpo(t));
           raf = requestAnimationFrame(step);
         };
-        raf = requestAnimationFrame(step);
+        whenLoaded(() => (raf = requestAnimationFrame(step)));
       },
       VIEW,
     );

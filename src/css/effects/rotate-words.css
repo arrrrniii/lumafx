@@ -1,0 +1,2 @@
+& .fx-rw { display: inline-grid; justify-items: start; vertical-align: bottom; perspective: 400px; }
+& .fx-rw-word { grid-area: 1 / 1; white-space: nowrap; backface-visibility: hidden; }

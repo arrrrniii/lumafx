@@ -1,0 +1,26 @@
+--_pl-bg: var(--fx-color, #0b0c12);
+:where(&) {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483500;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: var(--_pl-bg);
+  color: #f4f1ea;
+}
+& [data-fx-count] {
+  font: 500 clamp(56px, 13vw, 168px)/.9 ui-monospace, "JetBrains Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.04em;
+}
+& [data-fx-bar] {
+  transform-origin: 0 50%;
+  scale: var(--fx-p, 0) 1;
+}
+/* Without JavaScript it lifts itself after a moment; with the runtime present it waits for the real load. */
+animation: fx-pl-away .6s ease 2.5s forwards;
+.fx-ready & { animation-delay: 9s; }
+&[data-fx-state~="run"] { animation: none; }
+&[data-fx-done] { visibility: hidden; pointer-events: none; }

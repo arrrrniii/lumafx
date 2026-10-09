@@ -1,0 +1,21 @@
+:where(&) { position: relative; touch-action: pan-y; }
+& > .fx-ring-track { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+&[data-fx-state~="on"] {
+  display: grid;
+  place-items: center;
+  padding-block: 48px;
+  overflow: clip;
+  perspective: 1500px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+&[data-fx-state~="dragging"] { cursor: grabbing; }
+&[data-fx-state~="on"] > .fx-ring-track { display: grid; transform-style: preserve-3d; }
+&[data-fx-state~="on"] > .fx-ring-track > * {
+  grid-area: 1 / 1;
+  transform: rotateY(var(--fx-ring-a, 0deg)) translateZ(var(--fx-ring-r, 300px));
+  transition: opacity .3s;
+}
+&[data-fx-state~="on"] img { -webkit-user-drag: none; pointer-events: none; }
+&:focus-visible { outline: 2px solid currentColor; outline-offset: 6px; }

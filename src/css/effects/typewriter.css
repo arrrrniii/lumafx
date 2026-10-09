@@ -1,0 +1,3 @@
+& .fx-tw-box { display: inline-grid; }
+& .fx-tw-box > * { grid-area: 1 / 1; }
+& .fx-tw-ghost { visibility: hidden; }

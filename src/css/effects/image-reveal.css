@@ -1,0 +1,22 @@
+--_ir-d: var(--fx-duration, 1200ms);
+--_ir-delay: var(--fx-delay, 0ms);
+--_ir-c: inset(100% 0 0 0);
+--_ir-c2: inset(0 0 0 0);
+:where(&) { overflow: hidden; }
+&:is([data-fx-from="down"], .fx-from-down) { --_ir-c: inset(0 0 100% 0); }
+&:is([data-fx-from="left"], .fx-from-left) { --_ir-c: inset(0 0 0 100%); }
+&:is([data-fx-from="right"], .fx-from-right) { --_ir-c: inset(0 100% 0 0); }
+&:is([data-fx-from="center"], .fx-from-center) { --_ir-c: inset(0 50% 0 50%); }
+&:is([data-fx-from="circle"], .fx-from-circle) { --_ir-c: circle(0% at 50% 50%); --_ir-c2: circle(75% at 50% 50%); }
+&:is([data-fx-from="diagonal"], .fx-from-diagonal) { --_ir-c: polygon(0 0, 0 0, -30% 100%, 0 100%); --_ir-c2: polygon(0 0, 130% 0, 100% 100%, 0 100%); }
+/* Hidden only once the runtime is present. */
+.fx-ready &:not([data-fx-state~="in"]) { clip-path: var(--_ir-c); }
+.fx-ready &:not([data-fx-state~="in"]) :where(img, video, picture, canvas) { scale: var(--fx-scale, 1.25); }
+.fx-ready:not(.fx-booted) &, .fx-ready:not(.fx-booted) & :where(img, video, picture, canvas) { animation: fx-failsafe .01s 2.5s forwards; }
+&[data-fx-state~="in"] { animation: fx-ir var(--_ir-d) cubic-bezier(.77, 0, .18, 1) var(--_ir-delay) backwards; }
+&[data-fx-state~="in"] :where(img, video, picture, canvas) {
+  animation: fx-ir-img calc(var(--_ir-d) * 1.5) cubic-bezier(.2, .8, .2, 1) var(--_ir-delay) backwards;
+}
+@fx-reduced {
+  &[data-fx-state~="in"], &[data-fx-state~="in"] :where(img, video, picture, canvas) { animation: fx-fade-in .4s ease backwards; }
+}

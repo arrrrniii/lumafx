@@ -1,22 +1,41 @@
 {
   "name": "lumafx",
-  "version": "0.1.0",
-  "description": "Premium web effects from one HTML attribute: border beams, liquid glass, squircles, text reveals, magnetic buttons, stories, WebGL ripples and more. Framework-agnostic, CSS-first, accessible, Tailwind v4 and React Server Component ready.",
+  "version": "0.2.0",
+  "description": "Premium web effects and animated components from one HTML attribute: page transitions, liquid modal, scroll-scrubbed video, chat widget, border beams, liquid glass, text reveals and more. Framework-agnostic, CSS-first, accessible. Tailwind v4, React Server Components and WordPress. Free forever.",
   "license": "MIT",
   "author": "Arnold Kajolli",
   "type": "module",
-  "sideEffects": ["*.css", "./dist/auto.mjs", "./dist/lumafx.global.js"],
+  "sideEffects": [
+    "*.css",
+    "./dist/auto.mjs",
+    "./dist/lumafx.global.js"
+  ],
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/types/index.d.ts",
   "unpkg": "./dist/lumafx.global.js",
   "jsdelivr": "./dist/lumafx.global.js",
   "exports": {
-    ".": { "types": "./dist/types/index.d.ts", "import": "./dist/index.mjs" },
-    "./core": { "types": "./dist/types/core.d.ts", "import": "./dist/core.mjs" },
-    "./auto": { "types": "./dist/types/auto.d.ts", "import": "./dist/auto.mjs" },
-    "./react": { "types": "./dist/types/react/index.d.ts", "import": "./dist/react/index.mjs" },
-    "./react/runtime": { "types": "./dist/types/react/runtime.d.ts", "import": "./dist/react/runtime.mjs" },
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./core": {
+      "types": "./dist/types/core.d.ts",
+      "import": "./dist/core.mjs"
+    },
+    "./auto": {
+      "types": "./dist/types/auto.d.ts",
+      "import": "./dist/auto.mjs"
+    },
+    "./react": {
+      "types": "./dist/types/react/index.d.ts",
+      "import": "./dist/react/index.mjs"
+    },
+    "./react/runtime": {
+      "types": "./dist/types/react/runtime.d.ts",
+      "import": "./dist/react/runtime.mjs"
+    },
     "./css": "./dist/lumafx.css",
     "./lumafx.css": "./dist/lumafx.css",
     "./tailwind.css": "./dist/tailwind.css",
@@ -25,17 +44,52 @@
     "./global": "./dist/lumafx.global.js",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "llms.txt", "README.md", "LICENSE"],
-  "keywords": ["animation", "effects", "tailwind", "tailwindcss", "react", "nextjs", "glassmorphism", "liquid-glass", "squircle", "border-beam", "scroll-animation", "text-animation", "webgl", "view-transitions", "aos"],
+  "files": [
+    "dist",
+    "!dist/lumafx-wordpress.zip",
+    "llms.txt",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "animation",
+    "effects",
+    "tailwind",
+    "tailwindcss",
+    "react",
+    "nextjs",
+    "glassmorphism",
+    "liquid-glass",
+    "squircle",
+    "border-beam",
+    "scroll-animation",
+    "text-animation",
+    "webgl",
+    "view-transitions",
+    "aos",
+    "page-transition",
+    "modal",
+    "video-scrub",
+    "wordpress",
+    "components",
+    "chat-widget"
+  ],
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "vitest run",
     "test:tailwind": "node scripts/test-tailwind.mjs",
     "test:browser": "python3 test/browser_test.py",
-    "test:all": "npm run build && npm test && npm run test:tailwind && npm run test:browser"
+    "test:all": "npm run build && npm test && npm run test:tailwind && npm run test:browser",
+    "test:wordpress": "bash test/wordpress/run.sh"
   },
-  "peerDependencies": { "react": ">=18" },
-  "peerDependenciesMeta": { "react": { "optional": true } },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "@types/react": "^19.0.0",

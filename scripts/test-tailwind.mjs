@@ -22,7 +22,14 @@ fs.writeFileSync(
    <a class="fx-magnetic fx-strength-[0.5]"></a>
    <ul class="fx-stagger fx-stagger-[90ms]"></ul>
    <div class="fx-marquee fx-gap-8"></div>
-   <div class="fx-squircle fx-radius-32"></div>`,
+   <div class="fx-squircle fx-radius-32"></div>
+   <dialog class="fx-modal fx-style-glass fx-color-zinc-900"></dialog>
+   <section class="fx-video-scrub fx-length-[400vh]"></section>
+   <figure class="fx-image-reveal fx-from-circle fx-duration-900"></figure>
+   <div class="fx-scroll-progress fx-height-4 fx-color-amber-400"></div>
+   <nav class="fx-hover-icon fx-side-right"></nav>
+   <section class="fx-dapple fx-opacity-30"></section>
+   <div class="fx-chat fx-position-left"></div>`,
 );
 
 const out = path.join(dir, 'out.css');
@@ -56,10 +63,19 @@ const checks = [
   ['squircle native corners', /corner-shape:squircle/],
   ['registered option properties', /@property --fx-duration/],
   ['keyframes', /@keyframes fx-spin/],
+  ['v0.2: liquid modal utility with backdrop', /\.fx-modal::backdrop/],
+  ['v0.2: modal style option', /\.fx-style-glass\{--fx-style:glass/],
+  ['v0.2: video-scrub pinned height from length', /\.fx-video-scrub\[data-fx-state~=pinned\]\{height:var\(--fx-length/],
+  ['v0.2: image-reveal circle mask', /circle\(0% at 50% 50%\)/],
+  ['v0.2: scroll-progress on a scroll timeline', /animation-timeline:scroll\(root\)/],
+  ['v0.2: hover-icon right side', /\.fx-hover-icon:is\(\[data-fx-side=right\],\.fx-side-right\)/],
+  ['v0.2: dapple opacity as percent', /\.fx-opacity-30\{--fx-opacity:(30%|calc\(30 ?\* ?1%\))/],
+  ['v0.2: chat position option', /\.fx-position-left\{--fx-position:left/],
+  ['v0.2: height option', /\.fx-height-4\{--fx-height:calc\(4 ?\* ?1px\)/],
 ];
 const notExpected = [
   ['unused effect is tree-shaken', /\.fx-aurora\{/],
-  ['unused option is tree-shaken', /\.fx-opacity-/],
+  ['unused option is tree-shaken', /\.fx-magnify-/],
 ];
 
 let failed = 0;

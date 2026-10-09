@@ -7,8 +7,7 @@ import sys
 import numpy as np
 from PIL import Image
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else "demo/img"
-os.makedirs(OUT, exist_ok=True)
+OUT = sys.argv[1] if len(sys.argv) > 1 and __name__ == "__main__" else "demo/img"
 
 
 def hexrgb(h):
@@ -28,7 +27,7 @@ def ridge(width, rng, base, amp, octaves=5, rough=0.42):
     return base + y
 
 
-def scene(w, h, sky, sun, ridges, sea=None, seed=0, sun_pos=(0.62, 0.42), sun_r=0.07):
+def scene(w, h, sky, sun, ridges, sea=None, seed=0, sun_pos=(0.62, 0.42), sun_r=0.07, grain=0.022, extra=None):
     rng = np.random.default_rng(seed)
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     v = yy / h
@@ -72,8 +71,10 @@ def scene(w, h, sky, sun, ridges, sea=None, seed=0, sun_pos=(0.62, 0.42), sun_r=
         refl = (band * streak * (1 - depth[..., 0]) * 0.55)[..., None]
         water = water + sc * refl
         img = img * (1 - m[..., None]) + water * m[..., None]
+    if extra is not None:
+        img = extra(img, xx, yy)
     # grain + vignette
-    img = img + rng.normal(0, 0.022, img.shape).astype(np.float32)
+    img = img + rng.normal(0, grain, img.shape).astype(np.float32)
     vig = 1 - 0.28 * (((xx / w - 0.5) ** 2 + (yy / h - 0.5) ** 2) * 2)
     img = img * vig[..., None]
     return Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8))
@@ -99,12 +100,19 @@ SCENES = {
                [("#40305e", 0.68, 0.015)], {"y": 0.7, "color": "#3a2c5c"}, (0.45, 0.55)),
 }
 
-for i, (name, (sky, sun, ridges, sea, pos)) in enumerate(SCENES.items()):
-    portrait = scene(900, 1125, sky, sun, ridges, sea, seed=i + 3, sun_pos=pos)
-    portrait.save(os.path.join(OUT, f"{name}.jpg"), quality=82, optimize=True, progressive=True)
 
-wide = scene(1600, 1000, *SCENES["ksamil"][:4], seed=42, sun_pos=(0.68, 0.46))
-wide.save(os.path.join(OUT, "ksamil-wide.jpg"), quality=84, optimize=True, progressive=True)
-wide2 = scene(1600, 1000, *SCENES["theth"][:4], seed=7, sun_pos=(0.5, 0.48))
-wide2.save(os.path.join(OUT, "theth-wide.jpg"), quality=84, optimize=True, progressive=True)
-print("ok", sorted(os.listdir(OUT)))
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    for i, (name, (sky, sun, ridges, sea, pos)) in enumerate(SCENES.items()):
+        portrait = scene(900, 1125, sky, sun, ridges, sea, seed=i + 3, sun_pos=pos)
+        portrait.save(os.path.join(OUT, f"{name}.jpg"), quality=82, optimize=True, progressive=True)
+
+    wide = scene(1600, 1000, *SCENES["ksamil"][:4], seed=42, sun_pos=(0.68, 0.46))
+    wide.save(os.path.join(OUT, "ksamil-wide.jpg"), quality=84, optimize=True, progressive=True)
+    wide2 = scene(1600, 1000, *SCENES["theth"][:4], seed=7, sun_pos=(0.5, 0.48))
+    wide2.save(os.path.join(OUT, "theth-wide.jpg"), quality=84, optimize=True, progressive=True)
+    print("ok", sorted(os.listdir(OUT)))
+
+
+if __name__ == "__main__":
+    main()

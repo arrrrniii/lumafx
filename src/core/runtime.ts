@@ -3,6 +3,7 @@ import { env, detect, isBrowser, watchReducedMotion, type EnvOverrides } from '.
 import { cssValue, makeCtx } from './options';
 import type { Cleanup, Effect } from './types';
 import { onView } from './view';
+import { earlyCover } from './arrival';
 
 export interface StartOptions {
   /** Element to scan and watch. Defaults to the whole document. */
@@ -237,10 +238,14 @@ export function start(opts: StartOptions = {}) {
   detectAll();
   const html = document.documentElement;
   html.classList.add('fx-ready', 'fx-booted');
+  // Arriving from a page-transition: keep the cover up until the new page's transition takes over.
+  earlyCover();
   const run = () => {
     rootEl = opts.root ?? document.body ?? html;
     scan(rootEl);
     observe(rootEl);
+    // No page-transition on this page: never leave the cover up.
+    html.classList.remove('fx-pt-arriving');
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
   else run();

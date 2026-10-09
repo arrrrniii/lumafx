@@ -10,6 +10,12 @@ import { squircle } from './squircle';
 import { glass } from './glass';
 import { ripple } from './ripple';
 import { morph } from './morph';
+import { pageTransition, preloader } from './navigation';
+import { modal } from './modal';
+import { hovercard, smartHeader, scrollbar, scrollProgress, dock, lightbox } from './components';
+import { chat } from './chat';
+import { imageReveal, expand, imageTrail, videoScrub, frames } from './media';
+import { svgDraw, dotField, typewriter, rotateWords, clock, ring } from './live';
 
 /** Pure-CSS effects: the runtime only maps options to CSS variables and pauses them off-screen. */
 const css = (name: string): Effect => ({ name, meta: META[name] });
@@ -18,6 +24,8 @@ export const borderBeam = css('border-beam');
 export const shimmer = css('shimmer');
 export const shine = css('shine');
 export const aurora = css('aurora');
+export const hoverIcon = css('hover-icon');
+export const dapple = css('dapple');
 
 export {
   reveal,
@@ -40,6 +48,27 @@ export {
   glass,
   ripple,
   morph,
+  pageTransition,
+  preloader,
+  modal,
+  hovercard,
+  chat,
+  smartHeader,
+  scrollbar,
+  scrollProgress,
+  dock,
+  lightbox,
+  imageReveal,
+  expand,
+  imageTrail,
+  videoScrub,
+  frames,
+  svgDraw,
+  dotField,
+  typewriter,
+  rotateWords,
+  clock,
+  ring,
 };
 
 export const allEffects: Effect[] = [
@@ -67,4 +96,28 @@ export const allEffects: Effect[] = [
   stories,
   ripple,
   morph,
+  // v0.2
+  pageTransition,
+  preloader,
+  modal,
+  hovercard,
+  chat,
+  smartHeader,
+  scrollbar,
+  scrollProgress,
+  dock,
+  hoverIcon,
+  lightbox,
+  imageReveal,
+  expand,
+  imageTrail,
+  videoScrub,
+  frames,
+  svgDraw,
+  dotField,
+  typewriter,
+  rotateWords,
+  clock,
+  dapple,
+  ring,
 ];

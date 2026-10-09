@@ -1,0 +1,20 @@
+--_dp-o: var(--fx-opacity, .4);
+--_dp-d: var(--fx-duration, 16s);
+:where(&) { position: relative; isolation: isolate; overflow: clip; }
+&::after {
+  content: "";
+  position: absolute;
+  inset: -14%;
+  z-index: 1;
+  pointer-events: none;
+  /* Procedural foliage: leaf gaps (fine noise) inside a canopy (coarse noise), heavier toward the top-left. */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='640'%3E%3ClinearGradient id='g' x1='0' y1='0' x2='.55' y2='1'%3E%3Cstop offset='0' stop-color='white'/%3E%3Cstop offset='.85' stop-color='white' stop-opacity='.15'/%3E%3C/linearGradient%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0028 .004' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -2.2' result='c'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.024 .036' numOctaves='3' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -18 0 0 0 10.6'/%3E%3CfeComposite in2='c' operator='in'/%3E%3CfeComposite in2='SourceGraphic' operator='in'/%3E%3CfeGaussianBlur stdDeviation='2.8'/%3E%3CfeColorMatrix values='0 0 0 0 .1  0 0 0 0 .09  0 0 0 0 .05  0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='url(%23g)' filter='url(%23f)'/%3E%3C/svg%3E") center / cover no-repeat;
+  opacity: var(--_dp-o);
+  mix-blend-mode: multiply;
+  transform-origin: 20% 0;
+  animation: fx-dapple var(--_dp-d) ease-in-out infinite alternate;
+}
+:root[data-fx-lite] & { &::after { animation: none; } }
+@fx-reduced {
+  &::after { animation: none; }
+}

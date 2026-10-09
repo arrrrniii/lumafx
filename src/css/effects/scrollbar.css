@@ -1,0 +1,2 @@
+/* The element only carries the options; the rail is .fx-sb on <body> (see base.css). */
+:where(&) { display: none; }

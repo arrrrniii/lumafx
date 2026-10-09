@@ -61,6 +61,9 @@ def new_page(browser, url, errors, **ctx):
     page.on("console", lambda m: m.type == "error" and errors.append(f"console: {m.text}"))
     page.goto(url, wait_until="load")
     page.wait_for_timeout(400)
+    # The demo opens with a preloader; entrance animations start when it lifts.
+    if page.query_selector("[data-fx~=preloader]"):
+        page.wait_for_function("() => document.querySelector('[data-fx~=preloader]').hasAttribute('data-fx-done')", timeout=12000)
     return page
 
 
@@ -85,7 +88,7 @@ def main():
         errors = []
         page = new_page(browser, base + "/index.html", errors, viewport={"width": 1440, "height": 900}, color_scheme="dark")
         info = page.evaluate("({ v: lumafx.version, env: {...lumafx.env}, stats: lumafx.stats(), names: lumafx.effects })")
-        check("runtime boots with version", info["v"] == "0.1.0", info["v"])
+        check("runtime boots with version", info["v"] == "0.2.0", info["v"])
         missing = [n for n in info["names"] if n not in info["stats"]]
         check(f"all {len(info['names'])} effects mounted on the page", not missing, f"missing {missing}")
         check("feature detection: scroll-driven, corner-shape, Chromium", info["env"]["sda"] and info["env"]["cornerShape"] and info["env"]["chromium"], json.dumps(info["env"]))
@@ -93,7 +96,7 @@ def main():
         # hero
         page.wait_for_timeout(1600)
         hero = page.evaluate(
-            """() => { const h = document.querySelector('.wordmark');
+            """() => { const h = document.querySelector('.site-head .logo [data-fx~="text-reveal"]');
                return { units: h.querySelectorAll('.fx-u').length, state: h.getAttribute('data-fx-state'), label: h.getAttribute('aria-label'),
                         op: getComputedStyle(h.querySelector('.fx-ui')).opacity }; }"""
         )
@@ -328,6 +331,225 @@ def main():
         pg = page.evaluate("() => [document.getElementById('pages').dataset.page, document.documentElement.hasAttribute('data-fx-transition')]")
         check("page preset transition runs and cleans up", pg == ["2", False], str(pg))
 
+        # ================================================================== v0.2
+        print("\nv0.2 · navigation, components, media, live")
+        pl = page.evaluate("() => [document.querySelector('#loader').hasAttribute('data-fx-done'), document.documentElement.classList.contains('fx-loading'), document.querySelector('#loader [data-fx-count]').textContent]")
+        check("preloader counted to 100 and lifted", pl == [True, False, "100"], str(pl))
+
+        page.evaluate("scrollTo({ top: 0, behavior: 'instant' })")
+        page.wait_for_timeout(400)
+        top = page.evaluate("() => { const l = document.querySelector('.site-head [data-fx-logo]'); return [l.style.transform, l.getBoundingClientRect().width / l.offsetWidth] }")
+        page.evaluate("scrollTo({ top: 700, behavior: 'instant' })")
+        page.wait_for_timeout(400)
+        docked = page.evaluate("() => [document.querySelector('.site-head [data-fx-logo]').style.transform, document.querySelector('.site-head').getAttribute('data-fx-state')]")
+        check("smart-header: hero wordmark is scaled up, then docks into the bar", top[1] > 5 and docked[0] == "" and "docked" in (docked[1] or ""), f"{top} → {docked}")
+        page.evaluate("scrollTo({ top: 1600, behavior: 'instant' })")
+        page.wait_for_timeout(300)
+        page.evaluate("scrollTo({ top: 2400, behavior: 'instant' })")
+        page.wait_for_timeout(400)
+        hid = page.eval_on_selector(".site-head", "el => el.getAttribute('data-fx-state')")
+        page.evaluate("scrollTo({ top: 2200, behavior: 'instant' })")
+        page.wait_for_timeout(500)
+        back = page.eval_on_selector(".site-head", "el => [el.getAttribute('data-fx-state'), getComputedStyle(el).backdropFilter]")
+        check("smart-header hides on the way down and returns as glass", "hidden" in hid and "hidden" not in back[0] and "scrolled" in back[0] and "blur" in back[1], f"{hid} → {back}")
+        page.screenshot(path=os.path.join(SHOTS, "22-header-glass.png"))
+
+        sp = page.eval_on_selector("[data-fx~=scroll-progress]", "el => [getComputedStyle(el).animationName, getComputedStyle(el).animationTimeline]")
+        check("scroll-progress runs on a scroll() timeline", sp[0] == "fx-progress" and "scroll" in sp[1], str(sp))
+
+        sb = page.evaluate("() => ({ rail: !!document.querySelector('.fx-sb'), html: document.documentElement.hasAttribute('data-fx-scrollbar'), marks: document.querySelectorAll('.fx-sb-marks i').length, native: getComputedStyle(document.documentElement).scrollbarWidth })")
+        check("scrollbar replaces the native one and marks every section", sb["rail"] and sb["html"] and sb["marks"] >= 40 and sb["native"] == "none", json.dumps(sb))
+        page.mouse.move(1300, 450)
+        page.mouse.move(1430, 450, steps=5)
+        page.wait_for_timeout(500)
+        tip = page.evaluate("() => { const r = document.querySelector('.fx-sb'); const t = r.querySelector('.fx-sb-tip'); const b = t.getBoundingClientRect(); return [r.getAttribute('data-fx-state'), t.textContent, getComputedStyle(t).opacity, Math.round(b.top + b.height / 2)] }")
+        check("hovering the scrollbar shows the section at that point, next to the cursor", "tip" in tip[0] and "%" in tip[1] and " · " in tip[1] and tip[2] == "1" and abs(tip[3] - 450) < 30, str(tip))
+        page.screenshot(path=os.path.join(SHOTS, "23-scrollbar-tip.png"), clip={"x": 1040, "y": 300, "width": 400, "height": 300})
+        before = page.evaluate("window.scrollY")
+        page.mouse.click(1430, 820)
+        page.wait_for_timeout(1500)
+        after = page.evaluate("window.scrollY")
+        check("clicking the scrollbar track jumps down the page", after > before + 1000, f"{before} → {after}")
+        page.mouse.move(700, 450)
+
+        scroll_to(page, "#page-transition .stage")
+        page.click("[data-pt=circle]")
+        page.wait_for_timeout(350)
+        ptm = page.evaluate("() => { const l = document.querySelector('.fx-pt'); return [l.dataset.style, l.hasAttribute('data-active'), getComputedStyle(l).visibility] }")
+        page.screenshot(path=os.path.join(SHOTS, "24-page-transition.png"))
+        page.wait_for_timeout(2600)
+        ptd = page.evaluate("() => { const l = document.querySelector('.fx-pt'); return [l.hasAttribute('data-active'), l.hasAttribute('data-covered')] }")
+        check("page-transition covers and reveals in place (circle)", ptm == ["circle", True, "visible"] and ptd == [False, False], f"{ptm} {ptd}")
+
+        scroll_to(page, "#modal .stage")
+        page.click("#modal [data-fx-open='#join']")
+        page.wait_for_timeout(200)
+        mid = page.evaluate("() => { const g = document.querySelector('#join .fx-md-goo'); return [document.querySelector('#join').open, getComputedStyle(g).filter, document.querySelector('#join .fx-md-neck').getAnimations().length > 0, getComputedStyle(document.documentElement).overflow] }")
+        page.screenshot(path=os.path.join(SHOTS, "25-modal-liquid.png"))
+        page.wait_for_timeout(1400)
+        shown = page.evaluate("() => [document.querySelector('#join').getAttribute('data-fx-state'), getComputedStyle(document.querySelector('#join .fx-md-panel')).opacity, document.activeElement.closest('dialog') && document.activeElement.closest('dialog').id]")
+        check("liquid modal: gooey layer, neck animation, scroll locked", mid[0] and "url" in mid[1] and mid[2] and mid[3] == "hidden", str(mid))
+        check("liquid modal settles open with focus inside", "shown" in (shown[0] or "") and shown[1] == "1" and shown[2] == "join", str(shown))
+        page.screenshot(path=os.path.join(SHOTS, "26-modal-open.png"))
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(1500)
+        closed = page.evaluate("() => [document.querySelector('#join').open, document.querySelector('#join').getAttribute('data-fx-state') || '', getComputedStyle(document.documentElement).overflow]")
+        check("Esc melts the modal back and unlocks scrolling", closed[0] is False and "closing" not in closed[1] and closed[2] != "hidden", str(closed))
+
+        scroll_to(page, "#hovercard .stage")
+        page.hover("#hovercard a[data-fx-for='#hc-tirana']")
+        page.wait_for_timeout(700)
+        hc = page.evaluate("() => { const c = document.getElementById('fx-hovercard'); const r = c.getBoundingClientRect(); return [c.getAttribute('data-state'), !!c.querySelector('img'), r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight, getComputedStyle(c).opacity] }")
+        check("hovercard springs open next to the word, inside the viewport", hc == ["open", True, True, "1"], str(hc))
+        page.screenshot(path=os.path.join(SHOTS, "27-hovercard.png"))
+        page.mouse.move(700, 80)
+        page.wait_for_timeout(500)
+
+        page.click(".fx-chat-launch")
+        page.wait_for_timeout(900)
+        page.click(".fx-chat-quick button >> nth=2")
+        page.wait_for_timeout(300)
+        typing = page.evaluate("() => !!document.querySelector('.fx-typing')")
+        page.wait_for_timeout(2500)
+        ch = page.evaluate("() => { const c = document.querySelector('[data-fx~=chat]'); return [c.hasAttribute('data-open'), getComputedStyle(c.querySelector('.fx-chat-panel')).visibility, c.querySelectorAll('.fx-msg[data-from=me]').length, c.querySelectorAll('.fx-msg[data-from=them]').length, c.querySelector('.fx-chat-launch').getAttribute('aria-expanded')] }")
+        check("chat opens, sends a quick reply, shows typing, gets an answer", ch == [True, "visible", 1, 2, "true"] and typing, f"{ch} typing={typing}")
+        page.screenshot(path=os.path.join(SHOTS, "28-chat.png"))
+        page.click(".fx-chat-launch")
+        page.wait_for_timeout(700)
+
+        scroll_to(page, "#dock .stage")
+        x, y, _ = center(page, "[data-fx=dock] a >> nth=2")
+        page.mouse.move(x - 60, y)
+        page.mouse.move(x, y, steps=6)
+        page.wait_for_timeout(700)
+        dk = page.evaluate("() => [...document.querySelectorAll('[data-fx=dock] > a')].map(a => +(a.style.getPropertyValue('--fx-s') || 1))")
+        check("dock magnifies the hovered icon most, neighbours less", dk[2] > 1.5 and 1.05 < dk[1] < dk[2] and dk[0] < dk[1], str([round(v, 2) for v in dk]))
+        page.screenshot(path=os.path.join(SHOTS, "29-dock.png"))
+
+        scroll_to(page, "#hover-icon .stage")
+        page.hover("#hover-icon ul >> nth=0 >> a >> nth=1")
+        page.wait_for_timeout(700)
+        hi = page.evaluate("() => { const a = document.querySelectorAll('#hover-icon ul')[0].querySelectorAll('a')[1]; const b = document.querySelectorAll('#hover-icon ul')[0].querySelectorAll('a')[0]; const s = getComputedStyle(a, '::before'); return [s.content, s.opacity, parseFloat(s.maxWidth) > 0, getComputedStyle(b, '::before').opacity] }")
+        check("hover-icon slides the link's icon in (menu mode)", hi[0] == '"◐"' and hi[1] == "1" and hi[2] and hi[3] == "0", str(hi))
+
+        scroll_to(page, "#lightbox .stage")
+        page.click("#lightbox a >> nth=1")
+        page.wait_for_timeout(1000)
+        lb1 = page.evaluate("() => { const d = document.querySelector('dialog.fx-lb'); return [d.open, d.querySelector('.fx-lb-img').src.split('/').pop(), d.querySelector('.fx-lb-count').textContent] }")
+        page.keyboard.press("ArrowRight")
+        page.wait_for_timeout(500)
+        lb2 = page.evaluate("() => document.querySelector('.fx-lb-count').textContent")
+        page.screenshot(path=os.path.join(SHOTS, "30-lightbox.png"))
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(1000)
+        lb3 = page.evaluate("() => document.querySelector('dialog.fx-lb').open")
+        check("lightbox opens the full image, pages with arrows, closes with Esc", lb1 == [True, "ksamil-wide.jpg", "2 / 4"] and lb2 == "3 / 4" and lb3 is False, f"{lb1} {lb2} {lb3}")
+
+        scroll_to(page, "#ir-demo")
+        page.wait_for_timeout(2600)
+        ir = page.evaluate("() => [...document.querySelectorAll('#ir-demo .ir')].map(e => [e.getAttribute('data-fx-state'), getComputedStyle(e).clipPath])")
+        check("image-reveal: all four uncovered", all(st and "in" in st and cp == "none" for st, cp in ir), str(ir))
+
+        ex = page.eval_on_selector("#expand [data-fx]", "el => [getComputedStyle(el).animationName, getComputedStyle(el).animationTimeline]")
+        check("expand runs on a view() timeline", ex[0] == "fx-expand" and "view" in ex[1], str(ex))
+
+        scroll_to(page, ".trail-zone")
+        x, y, b = center(page, ".trail-zone")
+        for k in range(16):
+            page.mouse.move(b["x"] + 60 + k * 40, y + (k % 4) * 15)
+        page.wait_for_timeout(120)
+        tr = page.evaluate("() => document.querySelectorAll('.trail-zone > .fx-trail').length")
+        check("image-trail drops photos along the cursor path", tr >= 4, str(tr))
+        page.screenshot(path=os.path.join(SHOTS, "31-image-trail.png"))
+        page.mouse.move(10, 400)
+
+        vy = page.evaluate("() => { const s = document.querySelector('#video-scrub .scrub'); return [s.getBoundingClientRect().top + scrollY, s.offsetHeight - innerHeight] }")
+        page.evaluate(f"scrollTo({{ top: {vy[0]} + {vy[1]} * 0.6, behavior: 'instant' }})")
+        page.wait_for_timeout(2200)
+        v1 = page.evaluate("() => { const v = document.querySelector('#video-scrub video'); return [v.currentTime, v.duration, v.currentSrc.slice(0, 5)] }")
+        page.screenshot(path=os.path.join(SHOTS, "32-video-scrub.png"))
+        page.evaluate(f"scrollTo({{ top: {vy[0]} + {vy[1]} * 0.1, behavior: 'instant' }})")
+        page.wait_for_timeout(2200)
+        v2 = page.evaluate("document.querySelector('#video-scrub video').currentTime")
+        check("video-scrub plays forward with the scroll and rewinds back", v1[0] > v1[1] * 0.4 and v2 < v1[0] - 0.8, f"{v1} → {v2}")
+
+        fy = page.evaluate("() => { const s = document.querySelector('#frames .scrub'); return [s.getBoundingClientRect().top + scrollY, s.offsetHeight - innerHeight] }")
+        page.evaluate(f"scrollTo({{ top: {fy[0]} + {fy[1]} * 0.8, behavior: 'instant' }})")
+        page.wait_for_timeout(2500)
+        fr = page.evaluate("""() => { const s = document.querySelector('#frames .scrub'); const c = s.querySelector('canvas'); const g = c.getContext('2d');
+            const d = g.getImageData(c.width / 2, Math.round(c.height * 0.2), 1, 1).data; return [s.getAttribute('data-fx-state'), c.width > 0, d[0] + d[1] + d[2]] }""")
+        check("frames draws the sequence on a canvas (dusk sky at 80%)", "loaded" in (fr[0] or "") and fr[1] and 0 < fr[2] < 400, str(fr))
+        page.screenshot(path=os.path.join(SHOTS, "36-frames.png"))
+
+        dp = page.eval_on_selector("#dapple [data-fx]", "el => { const s = getComputedStyle(el, '::after'); return [s.animationName, s.backgroundImage.startsWith('url(\"data:image/svg+xml'), s.mixBlendMode] }")
+        check("dapple sways procedural leaf shadows", dp == ["fx-dapple", True, "multiply"], str(dp))
+        scroll_to(page, "#dapple [data-fx]")
+        page.screenshot(path=os.path.join(SHOTS, "37-dapple.png"))
+
+        scroll_to(page, "#svg-draw .stage")
+        page.wait_for_timeout(3200)
+        sd = page.evaluate("() => { const s = document.querySelector('#svg-draw svg'); return [s.getAttribute('data-fx-state'), [...s.querySelectorAll('path')].every(p => p.style.strokeDashoffset === '0'), s.querySelectorAll('.fx-pulse').length] }")
+        check("svg-draw draws every path, then sends pulses along them", sd == ["in", True, 10], str(sd))
+        page.screenshot(path=os.path.join(SHOTS, "38-svg-draw.png"))
+
+        scroll_to(page, "#field")
+        x, y, b = center(page, "#field")
+        page.mouse.move(x - 100, y)
+        page.mouse.move(x, y, steps=5)
+        page.wait_for_timeout(400)
+        df = page.evaluate("() => { const c = document.querySelector('#field > .fx-dotfield'); return [c.width > 0, c.height > 0, document.getElementById('fx-x').textContent] }")
+        check("dot-field paints behind the content and tracks the cursor", df[0] and df[1] and df[2] != "0.000", str(df))
+        page.screenshot(path=os.path.join(SHOTS, "39-dot-field.png"))
+
+        scroll_to(page, "#typewriter .term")
+        h0 = page.eval_on_selector("#typewriter .term-body", "el => el.offsetHeight")
+        page.wait_for_timeout(3500)
+        tw = page.evaluate("() => { const b = document.querySelector('#typewriter .term-body'); return [b.offsetHeight, b.querySelector('.fx-tw').textContent, b.querySelectorAll('.fx-sr').length, !!b.querySelector('.fx-caret')] }")
+        check("typewriter types line by line without moving the layout", tw[0] == h0 and tw[1] == "$ npm i lumafx" and tw[2] == 3 and tw[3], f"{h0} {tw}")
+
+        rw0 = page.evaluate("document.querySelector('#rotate-words .fx-rw-word:last-child').textContent")
+        page.wait_for_timeout(2600)
+        rw1 = page.evaluate("document.querySelector('#rotate-words .fx-rw-word:last-child').textContent")
+        check("rotate-words cycles to the next word", rw0 != rw1, f"{rw0} → {rw1}")
+
+        c0 = page.evaluate("[...document.querySelectorAll('#clock time')].map(t => t.textContent)")
+        page.wait_for_timeout(1100)
+        c1 = page.evaluate("document.querySelector('#clock time').textContent")
+        import re as _re
+        check("clocks tick in their own time zones", all(_re.match(r"^\d\d.\d\d(.\d\d)?$", t) for t in c0) and c1 != c0[0] and len(set(c0)) == 4, f"{c0} → {c1}")
+
+        page.mouse.move(5, 5)
+        scroll_to(page, "#ring .stage")
+        r0 = page.eval_on_selector(".fx-ring-track", "el => el.style.transform")
+        page.wait_for_timeout(600)
+        r1 = page.eval_on_selector(".fx-ring-track", "el => el.style.transform")
+        x, y, _ = center(page, "[data-fx=ring]")
+        page.mouse.move(x, y)
+        page.mouse.down()
+        page.mouse.move(x - 260, y, steps=8)
+        page.mouse.up()
+        page.wait_for_timeout(300)
+        r2 = page.eval_on_selector(".fx-ring-track", "el => el.style.transform")
+        check("ring turns by itself and follows a drag", "rotateY" in r0 and r0 != r1 and r2 != r1, f"{r0} | {r1} | {r2}")
+        page.mouse.move(x, y - 400)
+        page.screenshot(path=os.path.join(SHOTS, "40-ring.png"))
+
+        # A real page-to-page transition: cover, navigate, arrive covered, reveal.
+        nav_err = []
+        np_ = new_page(browser, base + "/index.html", nav_err, viewport={"width": 1280, "height": 800}, color_scheme="dark")
+        np_.evaluate("() => { const a = document.createElement('a'); a.href = '/index.html?next'; a.dataset.transition = ''; a.id = 'go'; a.textContent = 'next page'; a.style.cssText = 'position:fixed;left:20px;bottom:20px;z-index:99'; document.body.append(a); }")
+        np_.click("#go")
+        np_.wait_for_timeout(300)
+        leaving = np_.evaluate("() => [document.querySelector('.fx-pt').hasAttribute('data-active'), sessionStorage.getItem('fx-pt') !== null]")
+        np_.wait_for_url("**/index.html?next", timeout=8000)
+        np_.wait_for_load_state("domcontentloaded")
+        arriving = np_.evaluate("() => [document.querySelector('.fx-pt') && document.querySelector('.fx-pt').hasAttribute('data-active'), sessionStorage.getItem('fx-pt')]")
+        np_.wait_for_timeout(2500)
+        settled = np_.evaluate("() => [document.querySelector('.fx-pt').hasAttribute('data-active'), document.documentElement.classList.contains('fx-pt-arriving')]")
+        check("page-transition across a real navigation: covers, arrives covered, reveals", leaving == [True, True] and arriving[0] and arriving[1] is None and settled == [False, False], f"{leaving} {arriving} {settled}")
+        check("no console errors (navigation)", not nav_err, "; ".join(nav_err[:5]))
+        np_.context.close()
+
         # offscreen pausing
         page.evaluate("() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })")
         page.wait_for_timeout(500)
@@ -378,7 +600,10 @@ def main():
         r = rp_.evaluate(
             """() => ({ reduced: lumafx.env.reduced,
                  split: document.querySelectorAll('.fx-u').length,
-                 heroOpacity: getComputedStyle(document.querySelector('.wordmark')).opacity,
+                 heroOpacity: getComputedStyle(document.querySelector('.site-head .logo [data-fx~="text-reveal"]')).opacity,
+                 modal: document.querySelector('#join').getAttribute('data-fx-style-active'),
+                 typed: document.querySelector('#typewriter .term-body').textContent.includes('npm i lumafx'),
+                 loaderDone: document.querySelector('#loader').hasAttribute('data-fx-done'),
                  beam: getComputedStyle(document.querySelector('#border-beam .card'), '::before').animationName,
                  marquee: getComputedStyle(document.querySelector('.fx-mq-track') || document.querySelector('.wordmarks')).animationName,
                  stories: document.querySelector('.phone').getAttribute('data-fx-state'),
@@ -390,6 +615,7 @@ def main():
         check("loops stop (beam, marquee)", r["beam"] == "none" and r["marquee"] == "none", json.dumps(r))
         check("stories become manual, hscroll becomes a native row", "manual" in (r["stories"] or "") and "native" in (r["hscroll"] or ""), json.dumps(r))
         check("counter shows the final number immediately", r["counter"] == "12,480+", r["counter"])
+        check("modal falls back to a fade, typewriter shows its text, preloader done", r["modal"] == "fade" and r["typed"] and r["loaderDone"], json.dumps(r))
         rp_.screenshot(path=os.path.join(SHOTS, "19-reduced.png"))
         check("no console errors (reduced motion)", not rerr, "; ".join(rerr[:5]))
         rp_.context.close()
@@ -399,9 +625,29 @@ def main():
         merr = []
         mp = new_page(browser, base + "/index.html", merr, viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
         mp.wait_for_timeout(1500)
-        m = mp.evaluate("() => ({ overflow: document.scrollingElement.scrollWidth - innerWidth, fine: lumafx.env.finePointer, float: !!document.querySelector('.fx-float'), spot: document.querySelectorAll('.fx-spot').length })")
+        m = mp.evaluate("() => ({ overflow: document.scrollingElement.scrollWidth - innerWidth, fine: lumafx.env.finePointer, float: !!document.querySelector('.fx-float'), spot: document.querySelectorAll('.fx-spot').length, sb: !!document.querySelector('.fx-sb'), launch: !!document.querySelector('.fx-chat-launch') })")
         check("no horizontal overflow on a phone", m["overflow"] <= 0, json.dumps(m))
         check("hover-only effects stay off on touch", not m["fine"] and not m["float"] and m["spot"] == 0, json.dumps(m))
+        check("touch keeps the native scrollbar; chat is available", not m["sb"] and m["launch"], json.dumps(m))
+        mp.click(".fx-chat-launch")
+        mp.wait_for_timeout(900)
+        pw = mp.evaluate("() => { const r = document.querySelector('.fx-chat-panel').getBoundingClientRect(); return [r.left, r.right, innerWidth, document.querySelector('[data-fx~=chat]').hasAttribute('data-open')] }")
+        check("chat panel fits the phone screen", pw[3] and pw[0] >= 0 and pw[1] <= pw[2], str(pw))
+        mp.screenshot(path=os.path.join(SHOTS, "33-phone-chat.png"))
+        mp.click(".fx-chat-launch")
+        mp.wait_for_timeout(400)
+        mp.evaluate("document.querySelector('#modal [data-fx-open]').scrollIntoView({block: 'center', behavior: 'instant'})")
+        mp.click("#modal [data-fx-open='#join']")
+        mp.wait_for_timeout(1500)
+        mb = mp.evaluate("() => { const r = document.querySelector('#join .fx-md-panel').getBoundingClientRect(); return [r.left, r.right, r.bottom, innerWidth, innerHeight] }")
+        check("modal is a bottom sheet inside the phone screen", mb[0] >= 0 and mb[1] <= mb[3] and mb[2] <= mb[4] and mb[2] > mb[4] - 40, str(mb))
+        mp.screenshot(path=os.path.join(SHOTS, "34-phone-modal.png"))
+        mp.keyboard.press("Escape")
+        mp.wait_for_timeout(1200)
+        scroll_to(mp, "#ring .stage")
+        mp.screenshot(path=os.path.join(SHOTS, "35-phone-ring.png"))
+        m2 = mp.evaluate("() => document.scrollingElement.scrollWidth - innerWidth")
+        check("no horizontal overflow on a phone after v0.2 sections", m2 <= 0, str(m2))
         mp.screenshot(path=os.path.join(SHOTS, "20-phone-hero.png"))
         scroll_to(mp, "#glass .glass-scene")
         mp.screenshot(path=os.path.join(SHOTS, "21-phone-glass.png"))

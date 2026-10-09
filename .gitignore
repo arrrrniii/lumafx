@@ -9,3 +9,10 @@ demo/fallback.html
 demo/lumafx.css
 demo/lumafx.global.js
 *.tgz
+test/wordpress/.wp/
+test/wordpress/.server.log
+__pycache__/
+wordpress/lumafx/assets/lumafx.css
+wordpress/lumafx/assets/lumafx.global.js
+wordpress/lumafx/assets/effects.json
+/lumafx-*.zip

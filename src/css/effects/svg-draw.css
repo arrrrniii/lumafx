@@ -1,0 +1,4 @@
+& .fx-pulse {
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px var(--fx-color, #ffb547)) drop-shadow(0 0 9px var(--fx-color, #ffb547));
+}

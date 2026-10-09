@@ -1,0 +1,2 @@
+/* The card is a single shared .fx-hc element on <body> (see base.css). */
+:where(&) { cursor: default; }

@@ -1,0 +1,2 @@
+/* The viewer is a single shared dialog.fx-lb on <body> (see base.css). */
+:where(&) { cursor: zoom-in; }

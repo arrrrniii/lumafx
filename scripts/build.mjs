@@ -187,17 +187,20 @@ const optLine = (k, o) => {
 const llms = [
   `# lumafx ${pkg.version}`,
   '',
-  '> Premium web effects from one HTML attribute. Framework-agnostic, zero dependencies, CSS-first, accessible by default.',
+  '> Premium web effects and animated components from one HTML attribute. Framework-agnostic, zero dependencies, CSS-first, accessible by default. MIT, free forever.',
   '',
   '## Usage',
   '- Plain HTML: <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.css"> and <script src="https://cdn.jsdelivr.net/npm/lumafx/dist/lumafx.global.js"></script> in <head>.',
   '- npm: `import "lumafx/css"; import "lumafx/auto";` (or `import { start } from "lumafx"; start();`).',
   '- Tailwind v4: `@import "lumafx/tailwind.css";` then classes like `fx-border-beam fx-duration-4000 fx-color-violet-500`.',
   '- React/Next.js: `import { BorderBeam, TextReveal } from "lumafx/react"` (Server Component safe) plus `<FxRuntime />` from "lumafx/react/runtime" once in the layout.',
+  '- WordPress: the lumafx plugin adds an Effects panel to every block (stored as a block attribute, rendered as data-fx attributes) and site-wide settings for page transitions, preloader, scrollbar, chat, smart header. Page builders: add fx-<name> classes.',
+  '- Modal: <dialog id="x" data-fx="modal"> opened by data-fx-open="#x", a link to #x, or lumafx.modals.open("#x"); close with data-fx-close or Esc.',
+  '- Chat: listen for fx:chat-send (detail.text) on the element and answer with el.fxChat.reply(text).',
   '- Add an effect: data-fx="name" (several: data-fx="tilt spotlight"), or class="fx-name".',
   '- Options: data-fx-<option>="value". Bare numbers: time = ms, length = px, percent = %.',
   '- Every effect respects prefers-reduced-motion. Content is never left hidden if JavaScript fails.',
-  '- Combine freely. Pseudo-elements in use: border-beam ::before, shine ::after, aurora ::before and ::after. Avoid putting aurora on the same element as border-beam or shine.',
+  '- Combine freely. Pseudo-elements in use: border-beam ::before, shine ::after, aurora ::before and ::after, dapple ::after, hover-icon ::before/::after. Avoid combining effects that use the same pseudo-element.',
   '',
   '## Effects',
   '',
@@ -211,6 +214,9 @@ const llms = [
   '## JavaScript API',
   '- start(options?) · stop() · refresh() · mount(root) · stats() · register(effect)',
   '- transition(update, { preset }) — runs a DOM update inside a View Transition (presets: fade, slide, slide-back, zoom, wipe).',
+  '- page.cover(x?, y?) / page.reveal() — play the page-transition cover in single-page apps.',
+  '- modals.open(target) / modals.close(target).',
+  '- Events: fx:loaded (preloader done), fx:open / fx:close (modal), fx:chat-send / fx:chat-open (chat).',
   '- start({ motion: "reduce" }) forces reduced motion; start({ features: { sda: false } }) tests fallbacks.',
   '',
 ].join('\n');
@@ -242,6 +248,22 @@ if (fs.existsSync(path.join(demoDir, 'page.html'))) {
     path.join(demoDir, 'index.html'),
     `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n${page}\n</body>\n</html>\n`,
   );
+}
+
+// ---------- WordPress plugin ----------
+// The plugin ships the same files as the CDN build, plus effects.json for its editor panel.
+const wpDir = path.join(root, 'wordpress', 'lumafx');
+if (fs.existsSync(wpDir)) {
+  const assets = path.join(wpDir, 'assets');
+  fs.mkdirSync(assets, { recursive: true });
+  for (const f of ['lumafx.css', 'lumafx.global.js', 'effects.json']) fs.copyFileSync(path.join(dist, f), path.join(assets, f));
+  const zip = path.join(dist, 'lumafx-wordpress.zip');
+  try {
+    execSync(`zip -qr ${JSON.stringify(zip)} lumafx -x '*.DS_Store'`, { cwd: path.join(root, 'wordpress') });
+    console.log('wordpress plugin   ' + (fs.statSync(zip).size / 1024).toFixed(1) + ' KB zip');
+  } catch {
+    console.warn('zip not available: skipped dist/lumafx-wordpress.zip');
+  }
 }
 
 // ---------- README effects table ----------

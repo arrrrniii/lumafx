@@ -95,3 +95,40 @@ export const Marquee = named('marquee', 'div', (children) =>
 export const HScroll = named('hscroll', 'section', (children) =>
   createElement('div', { className: 'fx-hs-sticky' }, createElement('div', { 'data-fx-track': '' }, children)),
 );
+
+/* ---------------- v0.2 ---------------- */
+
+const keyed = (base: ReturnType<typeof named>, extra: string[] = []) =>
+  function Keyed(props: Named) {
+    // Effects that rewrite their text re-create the element whenever the text (or word list) changes.
+    const text = typeof props.children === 'string' ? props.children : '';
+    return createElement(base, { ...props, key: [text, ...extra.map((k) => String(props[k] ?? ''))].join('|') });
+  };
+
+/** Place once, anywhere in the layout. Covers on leave, reveals on arrival. */
+export const PageTransition = named('page-transition');
+export const Preloader = named('preloader');
+/** Renders the panel itself so React keeps owning the content. Open with data-fx-open="#id" or modals.open('#id'). */
+export const Modal = named('modal', 'dialog', (children) => createElement('div', { className: 'fx-md-panel' }, children));
+export const Hovercard = named('hovercard', 'span');
+export const Chat = named('chat');
+export const SmartHeader = named('smart-header', 'header');
+export const Scrollbar = named('scrollbar');
+export const ScrollProgress = named('scroll-progress');
+export const Dock = named('dock', 'nav');
+export const HoverIcon = named('hover-icon', 'a');
+export const Lightbox = named('lightbox', 'a');
+export const ImageReveal = named('image-reveal', 'figure');
+export const Expand = named('expand');
+export const ImageTrail = named('image-trail', 'section');
+/** Renders the sticky wrapper itself so React keeps owning its children. */
+export const VideoScrub = named('video-scrub', 'section', (children) => createElement('div', { className: 'fx-pin' }, children));
+export const Frames = named('frames', 'section', (children) => createElement('div', { className: 'fx-pin' }, children));
+export const SvgDraw = named('svg-draw', 'svg');
+export const DotField = named('dot-field', 'section');
+export const Typewriter = keyed(named('typewriter', 'p'));
+export const RotateWords = keyed(named('rotate-words', 'span'), ['words']);
+export const Clock = named('clock', 'time');
+export const Dapple = named('dapple', 'section');
+/** Renders the track itself so React keeps owning its children. */
+export const Ring = named('ring', 'div', (children) => createElement('div', { className: 'fx-ring-track' }, children));

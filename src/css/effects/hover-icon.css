@@ -1,0 +1,62 @@
+/* Icon from data-fx-icon, or --fx-icon (a quoted string in CSS), or a child marked data-fx-icon-el.
+   On a link or button: that element. On anything else (a <nav>, a list, a WordPress menu <li>,
+   a paragraph): every link inside it. */
+--_hi-icon: var(--fx-icon, "→");
+--_hi-gap: .45em;
+--_hi-s0: .4;
+--_hi-r0: -25deg;
+--_hi-t: .45s;
+--_hi-ease: cubic-bezier(.2, .9, .25, 1.2);
+:where(&:is(a, button)), :where(&:not(a, button)) :where(a) { display: inline-flex; align-items: center; }
+&:is(a, button)::before,
+&:is(a, button)::after,
+&:is(a, button) > [data-fx-icon-el],
+&:not(a, button) a::before,
+&:not(a, button) a::after {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  scale: var(--_hi-s0);
+  rotate: var(--_hi-r0);
+  flex: none;
+  transition:
+    max-width var(--_hi-t) var(--_hi-ease),
+    margin var(--_hi-t) var(--_hi-ease),
+    opacity calc(var(--_hi-t) * .45) ease,
+    scale var(--_hi-t) var(--_hi-ease),
+    rotate var(--_hi-t) var(--_hi-ease);
+}
+&:is(a, button)::before, &:not(a, button) a::before { content: var(--_hi-icon); }
+&[data-fx-icon]:is(a, button)::before { content: attr(data-fx-icon); }
+&:not(a, button) a[data-fx-icon]::before { content: attr(data-fx-icon); }
+&:is(a, button):has(> [data-fx-icon-el])::before { content: none; }
+&:is(a, button):is(:hover, :focus-visible)::before,
+&:is(a, button):is(:hover, :focus-visible) > [data-fx-icon-el],
+&:not(a, button) a:is(:hover, :focus-visible)::before {
+  max-width: 1.6em;
+  margin-inline-end: var(--_hi-gap);
+  opacity: 1;
+  scale: 1;
+  rotate: 0deg;
+}
+/* Icon after the text instead */
+&:is([data-fx-side="right"], .fx-side-right):is(a, button)::before,
+&:is([data-fx-side="right"], .fx-side-right):not(a, button) a::before { content: none; }
+&:is([data-fx-side="right"], .fx-side-right):is(a, button)::after,
+&:is([data-fx-side="right"], .fx-side-right):not(a, button) a::after { content: var(--_hi-icon); }
+&:is([data-fx-side="right"], .fx-side-right)[data-fx-icon]:is(a, button)::after { content: attr(data-fx-icon); }
+&:is([data-fx-side="right"], .fx-side-right):not(a, button) a[data-fx-icon]::after { content: attr(data-fx-icon); }
+&:is([data-fx-side="right"], .fx-side-right):is(a, button):is(:hover, :focus-visible)::after,
+&:is([data-fx-side="right"], .fx-side-right):not(a, button) a:is(:hover, :focus-visible)::after {
+  max-width: 1.6em;
+  margin-inline-start: var(--_hi-gap);
+  opacity: 1;
+  scale: 1;
+  rotate: 0deg;
+}
+@fx-reduced {
+  --_hi-s0: 1;
+  --_hi-r0: 0deg;
+  --_hi-t: .01s;
+}
